@@ -14,9 +14,9 @@ import java.util.Properties;
  */
 public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
 
-    private final String connectionUrl;
-    private final Properties connectionProperties;
-    private final Driver jdbcDriver;
+    final String connectionUrl;
+    final Properties connectionProperties;
+    final Driver jdbcDriver;
 
     // cache of opened connections
     private HashSet<Connection> connections = HashSet.empty();

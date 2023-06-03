@@ -2,6 +2,10 @@ package simple.orm.jdbc;
 
 /**
  * Abstraction of database connection, able to execute queries and manage transactions.
+ * <br>
+ * TODO transactions management
+ * <br>
+ * TODO batch processing
  */
 public interface Connection extends AutoCloseable {
 
@@ -20,7 +24,5 @@ public interface Connection extends AutoCloseable {
      * @return execution result.
      */
     <T> T execute(Query query);
-
-    // TODO transaction management
 
 }

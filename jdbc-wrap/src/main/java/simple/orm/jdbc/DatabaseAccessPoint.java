@@ -7,8 +7,6 @@ import java.util.Properties;
  * Abstraction of configured database access point.
  * <br>
  * Opens and manages connections.
- * <br>
- * TODO transactions management
  */
 public interface DatabaseAccessPoint extends AutoCloseable {
 

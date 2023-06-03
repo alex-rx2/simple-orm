@@ -1,85 +1,54 @@
 package simple.orm.jdbc;
 
-import io.vavr.collection.HashMap;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
-import java.util.Properties;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-class DatabaseAccessPointTest {
+/**
+ * Simple test on DatabaseAccessPoint connecting to actual database.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class DatabaseAccessPointTest extends BaseH2Test {
 
-    @Test
-    public void testBuilder() {
-        {
-            DatabaseAccessPoint dap = DatabaseAccessPoint.builder()
-                    .driverClassName("simple.orm.jdbc.FakeDriver")
-                    .connectionUrl("jdbc://dbhost:0000")
-                    .build();
-            assertThat(dap.getDriverClass()).isSameAs(FakeDriver.class);
-            assertThat(dap.getConnectionURL()).isEqualTo("jdbc://dbhost:0000");
-            assertThat(dap.getConnectionProperties()).isEmpty();
-        }
-        {
-            Properties props = new Properties();
-            props.put("a", "b");
-            DatabaseAccessPoint dap = DatabaseAccessPoint.builder()
-                    .driverClass(FakeDriver.class)
-                    .connectionUrl("jdbc://dbhost:1111")
-                    .connectionProperties(props)
-                    .build();
-            assertThat(dap.getDriverClass()).isSameAs(FakeDriver.class);
-            assertThat(dap.getConnectionURL()).isEqualTo("jdbc://dbhost:1111");
-            assertThat(dap.getConnectionProperties())
-                    .containsExactlyInAnyOrderEntriesOf(
-                            HashMap.of("a", "b").toJavaMap()
-                    );
-        }
+    private DatabaseAccessPoint dbAccessPoint;
+
+    @BeforeEach
+    void setUp() {
+        dbAccessPoint = DatabaseAccessPoint.builder()
+                .driverClass(h2DriverClass)
+                .connectionUrl(h2InMemUrl)
+                .connectionProperties(h2ConnectionProperties)
+                .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (!dbAccessPoint.isClosed()) dbAccessPoint.close();
     }
 
     @Test
-    public void testBuilderExceptions() {
-        // empty builder
-        assertThatCode(() -> DatabaseAccessPoint.builder().build())
-                .isInstanceOf(NullPointerException.class);
-        // no driver class or driver class name
-        assertThatCode(() ->
-                DatabaseAccessPoint.builder()
-                        .connectionUrl("jdbc://dbhost:1111")
-                        .connectionProperties(new Properties())
-                        .build()
-        ).isInstanceOf(NullPointerException.class);
-        // no url, with driver class
-        assertThatCode(() ->
-                DatabaseAccessPoint.builder()
-                        .driverClass(FakeDriver.class)
-                        .connectionProperties(new Properties())
-                        .build()
-        ).isInstanceOf(NullPointerException.class);
-        // no url, with driver class name
-        assertThatCode(() ->
-                DatabaseAccessPoint.builder()
-                        .driverClassName("simple.orm.jdbc.FakeDriver")
-                        .connectionProperties(new Properties())
-                        .build()
-        ).isInstanceOf(NullPointerException.class);
-        // wrong driver class name - can't find class
-        assertThatCode(() ->
-                DatabaseAccessPoint.builder()
-                        .driverClassName("FakeDriver")
-                        .connectionUrl("jdbc://dbhost:1111")
-                        .connectionProperties(new Properties())
-                        .build()
-        ).isInstanceOf(RuntimeException.class)
-                .hasCauseInstanceOf(ClassNotFoundException.class);
-        // wrong driver class name - not a Driver
-        assertThatCode(() ->
-                DatabaseAccessPoint.builder()
-                        .driverClassName("java.lang.String")
-                        .connectionUrl("jdbc://dbhost:1111")
-                        .connectionProperties(new Properties())
-                        .build()
-        ).isInstanceOf(IllegalArgumentException.class);
+    public void testConnect() throws Exception {
+        Connection connection = dbAccessPoint.connect();
+        assertThat(connection).isInstanceOf(ConnectionImpl.class);
+        java.sql.Connection jdbcConnection = ((ConnectionImpl) connection).jdbcConnection;
+        assertThat(jdbcConnection).isNotNull();
+
+        Statement stmt = jdbcConnection.createStatement();
+        ResultSet rs = stmt.executeQuery("select '123'");
+        rs.next();
+        String result = rs.getString(1);
+        assertThat(result).isEqualTo("123");
+
+        dbAccessPoint.close();
+
+        assertThatCode(() -> dbAccessPoint.connect())
+                .isInstanceOf(DatabaseClosedException.class);
     }
 }

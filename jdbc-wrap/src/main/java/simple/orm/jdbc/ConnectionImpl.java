@@ -3,11 +3,11 @@ package simple.orm.jdbc;
 /**
  * Simple {@link Connection} implementation.
  */
-class ConnectionImpl implements Connection {
+public class ConnectionImpl implements Connection {
 
-    private final DatabaseAccessPointImpl database;
+    final DatabaseAccessPointImpl database;
 
-    private final java.sql.Connection jdbcConnection;
+    final java.sql.Connection jdbcConnection;
 
     ConnectionImpl(DatabaseAccessPointImpl database, java.sql.Connection connection) {
         this.database = database;
