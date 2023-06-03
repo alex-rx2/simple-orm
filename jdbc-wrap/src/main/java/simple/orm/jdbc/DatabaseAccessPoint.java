@@ -54,6 +54,15 @@ public interface DatabaseAccessPoint extends AutoCloseable {
     void close();
 
     /**
+     * Builder shortcut factory method.
+     *
+     * @return new {@link Builder}.
+     */
+    static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder class.
      */
     class Builder {
@@ -66,36 +75,40 @@ public interface DatabaseAccessPoint extends AutoCloseable {
             return driverClassName;
         }
 
-        public void setDriverClassName(String driverClassName) {
+        public Builder driverClassName(String driverClassName) {
             this.driverClassName = driverClassName;
+            return this;
         }
 
         public Class<? extends Driver> getDriverClass() {
             return driverClass;
         }
 
-        public void setDriverClass(Class<? extends Driver> driverClass) {
+        public Builder driverClass(Class<? extends Driver> driverClass) {
             this.driverClass = driverClass;
+            return this;
         }
 
         public String getConnectionUrl() {
             return connectionUrl;
         }
 
-        public void setConnectionUrl(String connectionUrl) {
+        public Builder connectionUrl(String connectionUrl) {
             this.connectionUrl = connectionUrl;
+            return this;
         }
 
         public Properties getConnectionProperties() {
             return connectionProperties;
         }
 
-        public void setConnectionProperties(Properties connectionProperties) {
+        public Builder connectionProperties(Properties connectionProperties) {
             this.connectionProperties = connectionProperties;
+            return this;
         }
 
         @SuppressWarnings("unchecked")
-        public DatabaseAccessPointImpl build() {
+        public DatabaseAccessPoint build() {
             if (driverClass == null && driverClassName == null) {
                 throw new NullPointerException("driverClass and driverClassName are both null");
             } else if (driverClass == null) {
