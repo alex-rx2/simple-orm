@@ -5,17 +5,17 @@ package simple.orm.jdbc;
  */
 class ConnectionImpl implements Connection {
 
-    private final DatabaseImpl database;
+    private final DatabaseAccessPointImpl database;
 
     private final java.sql.Connection jdbcConnection;
 
-    ConnectionImpl(DatabaseImpl database, java.sql.Connection connection) {
+    ConnectionImpl(DatabaseAccessPointImpl database, java.sql.Connection connection) {
         this.database = database;
         this.jdbcConnection = connection;
     }
 
     @Override
-    public Database getDatabase() {
+    public DatabaseAccessPoint getDatabase() {
         return database;
     }
 

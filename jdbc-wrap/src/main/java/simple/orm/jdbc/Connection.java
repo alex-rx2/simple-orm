@@ -10,7 +10,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return database.
      */
-    Database getDatabase();
+    DatabaseAccessPoint getDatabase();
 
     /**
      * Execute query.

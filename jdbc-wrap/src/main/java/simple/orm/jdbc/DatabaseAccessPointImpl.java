@@ -7,15 +7,15 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.Properties;
 
 /**
- * Simple {@link Database} implementation.
- *
- * TODO merge with configuration?
+ * Simple {@link DatabaseAccessPoint} implementation.
  */
-public class DatabaseImpl implements Database {
+public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
 
-    private final Configuration configuration;
+    private final String connectionUrl;
+    private final Properties connectionProperties;
     private final Driver jdbcDriver;
 
     // cache of opened connections
@@ -23,14 +23,15 @@ public class DatabaseImpl implements Database {
     // flag of being closed
     private boolean closed = false;
 
-    DatabaseImpl(Configuration configuration) {
-        this.configuration = configuration;
+    DatabaseAccessPointImpl(Class<? extends Driver> driverClass, String connectionUrl, Properties connectionProperties) {
+        this.connectionUrl = connectionUrl;
+        this.connectionProperties = connectionProperties;
         // driver should be registered in DriverManager
-        Driver driver = findDriver(DriverManager.getDrivers(), configuration.getDriverClass());
+        Driver driver = findDriver(DriverManager.getDrivers(), driverClass);
         if (driver == null) {
             // weird but try to instantiate it
             try {
-                driver = configuration.getDriverClass().newInstance();
+                driver = driverClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException("failed to instantiate driver class", e);
             }
@@ -47,22 +48,37 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Configuration getConfiguration() {
-        return configuration;
+    public Class<? extends Driver> getDriverClass() {
+        return jdbcDriver.getClass();
+    }
+
+    @Override
+    public String getConnectionURL() {
+        return connectionUrl;
+    }
+
+    @Override
+    public Properties getConnectionProperties() {
+        return connectionProperties;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return closed;
     }
 
     @Override
     public Connection connect() {
         synchronized (this) {
             if (closed) {
-                throw new RuntimeException("database is closed");
+                throw new DatabaseClosedException("database is closed");
             }
         }
         java.sql.Connection jdbcConnection;
         try {
-            jdbcConnection = jdbcDriver.connect(configuration.getConnectionURL(), configuration.getConnectionProperties());
+            jdbcConnection = jdbcDriver.connect(connectionUrl, connectionProperties);
         } catch (SQLException e) {
-            throw new RuntimeException("failed to establish connection", e);
+            throw new JdbcException("failed to establish connection", e);
         }
         ConnectionImpl connection = new ConnectionImpl(this, jdbcConnection);
         addConnection(connection);
@@ -73,23 +89,27 @@ public class DatabaseImpl implements Database {
         synchronized (this) {
             if (closed) {
                 throw tryToClose(conn, Option.none())
-                        .flatMap(exc -> Option.of(new RuntimeException("database is closed", exc)))
-                        .getOrElse(() -> new RuntimeException("database is closed"));
+                        .flatMap(exc -> {
+                            DatabaseClosedException dcExc = new DatabaseClosedException("database is closed");
+                            dcExc.addSuppressed(exc);
+                            return Option.of(dcExc);
+                        })
+                        .getOrElse(() -> new DatabaseClosedException("database is closed"));
             }
             connections = connections.add(conn);
         }
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         synchronized (this) {
             closed = true;
         }
         // close all connections
-        final Exception closeException =
+        final JdbcException closeException =
                 connections
                         .foldLeft(
-                                Option.<Exception>none(),
+                                Option.<JdbcException>none(),
                                 (exceptionOpt, conn) -> tryToClose(conn, exceptionOpt)
                         )
                         .getOrNull();
@@ -109,18 +129,18 @@ public class DatabaseImpl implements Database {
         }
     }
 
-    private Option<Exception> tryToClose(Connection conn, Option<Exception> exceptionOpt) {
+    private Option<JdbcException> tryToClose(Connection conn, Option<JdbcException> exceptionOpt) {
         try {
             conn.close();
             return exceptionOpt;
         } catch (Exception e) {
             return exceptionOpt
                     .map(exc -> combineExceptions(exc, e))
-                    .orElse(() -> Option.of(e));
+                    .orElse(() -> Option.of(new JdbcException("jdbc connection close error", e)));
         }
     }
 
-    private static Exception combineExceptions(Exception exc, Exception suppressed) {
+    private static JdbcException combineExceptions(JdbcException exc, Exception suppressed) {
         exc.addSuppressed(suppressed);
         return exc;
     }
