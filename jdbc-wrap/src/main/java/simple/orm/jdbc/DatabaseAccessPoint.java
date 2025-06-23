@@ -1,5 +1,7 @@
 package simple.orm.jdbc;
 
+import simple.orm.jdbc.exc.DatabaseClosedException;
+
 import java.sql.Driver;
 import java.util.Properties;
 
@@ -42,8 +44,9 @@ public interface DatabaseAccessPoint extends AutoCloseable {
      * Obtain connection to database.
      *
      * @return connection.
+     * @throws DatabaseClosedException this database access point was closed.
      */
-    Connection connect();
+    Connection connect() throws DatabaseClosedException;
 
     /**
      * Close all managed connections and makes access point closed (unable to open new connections).

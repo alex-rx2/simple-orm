@@ -2,6 +2,8 @@ package simple.orm.jdbc;
 
 import io.vavr.collection.HashSet;
 import io.vavr.control.Option;
+import simple.orm.jdbc.exc.DatabaseClosedException;
+import simple.orm.jdbc.exc.JdbcException;
 
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -42,7 +44,8 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
     private Driver findDriver(Enumeration<Driver> drivers, Class<? extends Driver> driverClass) {
         while (drivers.hasMoreElements()) {
             Driver d = drivers.nextElement();
-            if (d.getClass() == driverClass) return d;
+            if (d.getClass() == driverClass)
+                return d;
         }
         return null;
     }
@@ -71,7 +74,7 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
     public Connection connect() {
         synchronized (this) {
             if (closed) {
-                throw new DatabaseClosedException("database is closed");
+                throw new DatabaseClosedException("database access point is closed");
             }
         }
         java.sql.Connection jdbcConnection;
@@ -88,13 +91,13 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
     private void addConnection(Connection conn) {
         synchronized (this) {
             if (closed) {
-                throw tryToClose(conn, Option.none())
+                throw closeConnection(conn, Option.none())
                         .flatMap(exc -> {
-                            DatabaseClosedException dcExc = new DatabaseClosedException("database is closed");
+                            DatabaseClosedException dcExc = new DatabaseClosedException("database access point is closed");
                             dcExc.addSuppressed(exc);
                             return Option.of(dcExc);
                         })
-                        .getOrElse(() -> new DatabaseClosedException("database is closed"));
+                        .getOrElse(() -> new DatabaseClosedException("database access point is closed"));
             }
             connections = connections.add(conn);
         }
@@ -110,7 +113,7 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
                 connections
                         .foldLeft(
                                 Option.<JdbcException>none(),
-                                (exceptionOpt, conn) -> tryToClose(conn, exceptionOpt)
+                                (exceptionOpt, conn) -> closeConnection(conn, exceptionOpt)
                         )
                         .getOrNull();
         // clear connections
@@ -129,7 +132,7 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
         }
     }
 
-    private Option<JdbcException> tryToClose(Connection conn, Option<JdbcException> exceptionOpt) {
+    private Option<JdbcException> closeConnection(Connection conn, Option<JdbcException> exceptionOpt) {
         try {
             conn.close();
             return exceptionOpt;

@@ -1,4 +1,6 @@
-package simple.orm.jdbc;
+package simple.orm.jdbc.exc;
+
+import simple.orm.jdbc.DatabaseAccessPoint;
 
 /**
  * {@link DatabaseAccessPoint} is closed.
