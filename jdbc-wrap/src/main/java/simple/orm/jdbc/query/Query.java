@@ -1,7 +1,7 @@
 package simple.orm.jdbc.query;
 
-import simple.orm.jdbc.map.in.InMapper;
-import simple.orm.jdbc.map.out.OutMapper;
+import io.vavr.collection.Seq;
+import simple.orm.jdbc.map.param.ParameterMapper;
 
 /**
  * SQL Query.
@@ -14,9 +14,9 @@ public interface Query<T> {
 
     String getSQLQuery();
 
-    InMapper getInParametersMapper();
+    Seq<ParameterMapper<?, ?>> getInParametersMappers();
 
-    OutMapper<T> getOutResultMapper();
+    Seq<ParameterMapper<?, ?>> getOutResultMappers();
 
     int getQueryTimeout();
 

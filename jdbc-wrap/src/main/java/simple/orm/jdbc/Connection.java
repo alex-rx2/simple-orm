@@ -13,7 +13,7 @@ import java.sql.SQLException;
  * <br>
  * TODO transactions management
  * <br>
- * TODO batch processing
+ * TODO batch processing (special QueryType?)
  */
 public interface Connection extends AutoCloseable {
 

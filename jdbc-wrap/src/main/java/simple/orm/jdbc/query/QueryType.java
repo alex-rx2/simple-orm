@@ -1,12 +1,11 @@
 package simple.orm.jdbc.query;
 
 /**
- * Type of SQL query.
+ * Type of SQL query (in terms of JDBC processing).
  */
 public enum QueryType {
 
-    NO_RESULT,
-    ROW_COUNT,
-    RESULT_SET
+    EXECUTE_UPDATE,
+    EXECUTE_QUERY
 
 }
