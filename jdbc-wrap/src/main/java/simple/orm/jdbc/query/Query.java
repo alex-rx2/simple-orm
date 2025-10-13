@@ -14,8 +14,10 @@ public interface Query<T> {
 
     String getSQLQuery();
 
+    // TODO replace with InMapper
     Seq<ParameterMapper<?, ?>> getInParametersMappers();
 
+    // TODO replace with OutMapper
     Seq<ParameterMapper<?, ?>> getOutResultMappers();
 
     int getQueryTimeout();

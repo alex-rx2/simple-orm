@@ -14,6 +14,10 @@ import java.sql.SQLException;
  * TODO transactions management
  * <br>
  * TODO batch processing (special QueryType?)
+ * <br>
+ * TODO separate query execution from connection
+ * <br>
+ * TODO object as source of named parameters?
  */
 public interface Connection extends AutoCloseable {
 

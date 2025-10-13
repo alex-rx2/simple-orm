@@ -52,12 +52,12 @@ public final class DefaultMappers {
             new SimpleMapper<>(DefaultTypes.DOUBLE_AS_DOUBLE, Function.identity(), Function.identity());
 
     // Date/time types
-    public static final ParameterMapper<Date, Date> DATE_AS_DATE =
-            new SimpleMapper<>(DefaultTypes.DATE_AS_DATE, Function.identity(), Function.identity());
-    public static final ParameterMapper<Time, Time> TIME_AS_TIME =
-            new SimpleMapper<>(DefaultTypes.TIME_AS_TIME, Function.identity(), Function.identity());
-    public static final ParameterMapper<Timestamp, Timestamp> TIMESTAMP_AS_TIMESTAMP =
-            new SimpleMapper<>(DefaultTypes.TIMESTAMP_AS_TIMESTAMP, Function.identity(), Function.identity());
+    public static final ParameterMapper<Date, Date> SQLDATE_AS_SQLDATE =
+            new SimpleMapper<>(DefaultTypes.SQLDATE_AS_SQLDATE, Function.identity(), Function.identity());
+    public static final ParameterMapper<Time, Time> SQLTIME_AS_SQLTIME =
+            new SimpleMapper<>(DefaultTypes.SQLTIME_AS_SQLTIME, Function.identity(), Function.identity());
+    public static final ParameterMapper<Timestamp, Timestamp> SQLTIMESTAMP_AS_SQLTIMESTAMP =
+            new SimpleMapper<>(DefaultTypes.SQLTIMESTAMP_AS_SQLTIMESTAMP, Function.identity(), Function.identity());
 
     // Other types
     public static final ParameterMapper<Boolean, Boolean> BOOLEAN_AS_BOOLEAN =
@@ -85,9 +85,9 @@ public final class DefaultMappers {
                 REAL_AS_FLOAT,
                 FLOAT_AS_DOUBLE,
                 DOUBLE_AS_DOUBLE,
-                DATE_AS_DATE,
-                TIME_AS_TIME,
-                TIMESTAMP_AS_TIMESTAMP,
+                SQLDATE_AS_SQLDATE,
+                SQLTIME_AS_SQLTIME,
+                SQLTIMESTAMP_AS_SQLTIMESTAMP,
                 BOOLEAN_AS_BOOLEAN
         );
     }

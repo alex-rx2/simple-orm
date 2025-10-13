@@ -48,11 +48,11 @@ public class DefaultTypes {
             new ParameterType<>(JDBCType.DOUBLE, Double.class, Double.class);
 
     // Date/time types
-    public static final ParameterType<Date, Date> DATE_AS_DATE =
+    public static final ParameterType<Date, Date> SQLDATE_AS_SQLDATE =
             new ParameterType<>(JDBCType.DATE, Date.class, Date.class);
-    public static final ParameterType<Time, Time> TIME_AS_TIME =
+    public static final ParameterType<Time, Time> SQLTIME_AS_SQLTIME =
             new ParameterType<>(JDBCType.TIME, Time.class, Time.class);
-    public static final ParameterType<Timestamp, Timestamp> TIMESTAMP_AS_TIMESTAMP =
+    public static final ParameterType<Timestamp, Timestamp> SQLTIMESTAMP_AS_SQLTIMESTAMP =
             new ParameterType<>(JDBCType.TIMESTAMP, Timestamp.class, Timestamp.class);
 
     // Other types

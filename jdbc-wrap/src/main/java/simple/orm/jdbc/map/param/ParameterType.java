@@ -8,7 +8,7 @@ import java.sql.JDBCType;
  * @param <T> class implementing parameter in java (in custom business objects, etc.).
  * @param <I> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
  *
- * TODO JDBCType seems
+ * TODO JDBCType seems to be of no use for us
  */
 public class ParameterType<T, I> {
 

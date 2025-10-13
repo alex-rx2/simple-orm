@@ -6,6 +6,9 @@ package simple.orm.jdbc.query;
 public enum QueryType {
 
     EXECUTE_UPDATE,
-    EXECUTE_QUERY
+    EXECUTE_QUERY,
+    // TODO more types
+    //  (callable at least, batch updates/inserts maybe should be separate query type for ease of implementation
+    //  and logic separation)
 
 }
