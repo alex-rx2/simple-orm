@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
- * Simple test on DatabaseAccessPoint connecting to actual database.
+ * Simple test of {@link DatabaseAccessPoint} connecting to actual database.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DatabaseAccessPointTest extends BaseH2Test {

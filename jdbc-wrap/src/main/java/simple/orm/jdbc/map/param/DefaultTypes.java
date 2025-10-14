@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 /**
  * Collection of standard types.
  */
-public class DefaultTypes {
+public final class DefaultTypes {
     private DefaultTypes() {
     }
 

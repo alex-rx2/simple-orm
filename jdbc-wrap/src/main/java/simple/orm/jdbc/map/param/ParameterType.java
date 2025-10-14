@@ -7,8 +7,6 @@ import java.sql.JDBCType;
  *
  * @param <T> class implementing parameter in java (in custom business objects, etc.).
  * @param <I> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
- *
- * TODO JDBCType seems to be of no use for us
  */
 public class ParameterType<T, I> {
 
@@ -17,6 +15,15 @@ public class ParameterType<T, I> {
     protected final Class<I> jdbcClass;
 
     public ParameterType(JDBCType jdbcType, Class<T> javaClass, Class<I> jdbcClass) {
+        if (jdbcType == null) {
+            throw new NullPointerException("jdbcType is null");
+        }
+        if (javaClass == null) {
+            throw new NullPointerException("javaClass is null");
+        }
+        if (jdbcClass == null) {
+            throw new NullPointerException("jdbcClass is null");
+        }
         this.jdbcType = jdbcType;
         this.javaClass = javaClass;
         this.jdbcClass = jdbcClass;
@@ -49,4 +56,37 @@ public class ParameterType<T, I> {
         return jdbcClass;
     }
 
+    /**
+     * Factory method.
+     *
+     * @return a ParameterType object.
+     */
+    public static <T, I> ParameterType<T, I> of(JDBCType jdbcType, Class<T> javaClass, Class<I> jdbcClass) {
+        return new ParameterType<>(jdbcType, javaClass, jdbcClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return jdbcType.hashCode() * 31 * 31 + javaClass.hashCode() * 31 + jdbcClass.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ParameterType)) {
+            return false;
+        }
+        ParameterType<?, ?> other = (ParameterType<?, ?>) obj;
+        return this.jdbcType == other.jdbcType
+                && this.javaClass == other.javaClass
+                && this.jdbcClass == other.jdbcClass
+                ;
+    }
+
+    @Override
+    public String toString() {
+        return "ParameterType(" + jdbcType +
+                ",javaClass=" + javaClass.getSimpleName() +
+                ",jdbcClass=" + jdbcClass.getSimpleName() + ")"
+                ;
+    }
 }

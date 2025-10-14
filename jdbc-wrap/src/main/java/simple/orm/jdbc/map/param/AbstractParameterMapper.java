@@ -11,8 +11,9 @@ public abstract class AbstractParameterMapper<T, I> implements ParameterMapper<T
      * @param type JDBC type of parameter.
      */
     public AbstractParameterMapper(ParameterType<T, I> type) {
-        if (type == null)
+        if (type == null) {
             throw new NullPointerException("type is null");
+        }
         this.type = type;
     }
 

@@ -19,10 +19,12 @@ public class SimpleMapper<T, I> extends AbstractParameterMapper<T, I> {
                         Function<T, I> mapToJDBC,
                         Function<I, T> mapToJava) {
         super(type);
-        if (mapToJDBC == null)
+        if (mapToJDBC == null) {
             throw new NullPointerException("mapToJDBC is null");
-        if (mapToJava == null)
+        }
+        if (mapToJava == null) {
             throw new NullPointerException("mapToJava is null");
+        }
         this.mapToJDBC = mapToJDBC;
         this.mapToJava = mapToJava;
     }

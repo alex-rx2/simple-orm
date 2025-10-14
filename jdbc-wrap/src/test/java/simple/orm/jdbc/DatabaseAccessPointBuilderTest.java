@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
- * Couple simple tests on {@link DatabaseAccessPoint.Builder}.
+ * Couple simple tests of {@link DatabaseAccessPoint.Builder}.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DatabaseAccessPointBuilderTest {
