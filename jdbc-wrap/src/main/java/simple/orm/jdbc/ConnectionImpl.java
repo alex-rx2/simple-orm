@@ -1,9 +1,9 @@
 package simple.orm.jdbc;
 
-import io.vavr.collection.Map;
-import io.vavr.collection.Traversable;
+import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
-import simple.orm.jdbc.exc.NamedParamsNotSupportedException;
+import simple.orm.jdbc.query.IndexedQuery;
+import simple.orm.jdbc.query.NamedQuery;
 import simple.orm.jdbc.query.Query;
 
 import java.sql.SQLException;
@@ -39,25 +39,60 @@ public class ConnectionImpl implements Connection {
     }
 
     @Override
-    public <T> T execute(Query<T> query) {
+    public void executeDDLUpdate(Query query) {
+        // todo
+    }
+
+    @Override
+    public int executeDMLUpdate(Query query) {
+        // todo
+        return 0;
+    }
+
+    @Override
+    public int executeDMLUpdate(IndexedQuery query, Object... params) {
+        // todo
+        return 0;
+    }
+
+    @Override
+    public int executeDMLUpdate(IndexedQuery query, Seq<Object> params) {
+        // todo
+        return 0;
+    }
+
+    @Override
+    public <I> int executeDMLUpdate(NamedQuery<I, Void> query, I input) {
+        // todo
+        return 0;
+    }
+
+    @Override
+    public Result<Seq<Object>> executeSelect(IndexedQuery query, Object... params) {
         // todo
         return null;
     }
 
     @Override
-    public <T> T execute(Query<T> query, Object... params) {
+    public Result<Seq<Object>> executeSelect(IndexedQuery query, Seq<Object> params) {
         // todo
         return null;
     }
 
     @Override
-    public <T> T execute(Query<T> query, Traversable<Object> params) {
+    public Result<Seq<Object>> executeSelect(IndexedQuery query) {
         // todo
         return null;
     }
 
     @Override
-    public <T> T execute(Query<T> query, Map<String, Object> params) throws NamedParamsNotSupportedException {
+    public <I, O> Result<O> executeSelect(NamedQuery<I, O> query, I input) {
+        // todo
+        return null;
+    }
+
+    @Override
+    public <O> Result<O> executeSelect(NamedQuery<Void, O> query) {
         // todo
         return null;
     }
