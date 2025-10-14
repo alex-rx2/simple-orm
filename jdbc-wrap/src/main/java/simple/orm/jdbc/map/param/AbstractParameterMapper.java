@@ -3,14 +3,14 @@ package simple.orm.jdbc.map.param;
 /**
  * Base class for further {@link ParameterMapper} implementations.
  */
-public abstract class AbstractParameterMapper<T, I> implements ParameterMapper<T, I> {
+public abstract class AbstractParameterMapper<Jdbc, Java> implements ParameterMapper<Jdbc, Java> {
 
-    protected final ParameterType<T, I> type;
+    protected final ParameterType<Jdbc, Java> type;
 
     /**
      * @param type JDBC type of parameter.
      */
-    public AbstractParameterMapper(ParameterType<T, I> type) {
+    public AbstractParameterMapper(ParameterType<Jdbc, Java> type) {
         if (type == null) {
             throw new NullPointerException("type is null");
         }
@@ -21,7 +21,7 @@ public abstract class AbstractParameterMapper<T, I> implements ParameterMapper<T
      * {@inheritDoc}
      */
     @Override
-    public ParameterType<T, I> getType() {
+    public ParameterType<Jdbc, Java> getType() {
         return type;
     }
 

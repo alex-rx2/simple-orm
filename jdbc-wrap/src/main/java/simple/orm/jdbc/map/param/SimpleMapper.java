@@ -5,19 +5,19 @@ import java.util.function.Function;
 /**
  * Implementation of {@link ParameterMapper} for simple cases, where mapping code is small, simple and is provided as functions.
  */
-public class SimpleMapper<T, I> extends AbstractParameterMapper<T, I> {
+public class SimpleMapper<Jdbc, Java> extends AbstractParameterMapper<Jdbc, Java> {
 
-    protected final Function<T, I> mapToJDBC;
-    protected final Function<I, T> mapToJava;
+    protected final Function<Java, Jdbc> mapToJDBC;
+    protected final Function<Jdbc, Java> mapToJava;
 
     /**
      * @param type      JDBC type of parameter.
      * @param mapToJDBC function to map from java value to jdbc value.
      * @param mapToJava function to map from jdbc value to java value.
      */
-    public SimpleMapper(ParameterType<T, I> type,
-                        Function<T, I> mapToJDBC,
-                        Function<I, T> mapToJava) {
+    public SimpleMapper(ParameterType<Jdbc, Java> type,
+                        Function<Java, Jdbc> mapToJDBC,
+                        Function<Jdbc, Java> mapToJava) {
         super(type);
         if (mapToJDBC == null) {
             throw new NullPointerException("mapToJDBC is null");
@@ -33,7 +33,7 @@ public class SimpleMapper<T, I> extends AbstractParameterMapper<T, I> {
      * {@inheritDoc}
      */
     @Override
-    public I mapToJDBC(T object) {
+    public Jdbc mapToJDBC(Java object) {
         return mapToJDBC.apply(object);
     }
 
@@ -41,7 +41,7 @@ public class SimpleMapper<T, I> extends AbstractParameterMapper<T, I> {
      * {@inheritDoc}
      */
     @Override
-    public T mapToJava(I object) {
+    public Java mapToJava(Jdbc object) {
         return mapToJava.apply(object);
     }
 

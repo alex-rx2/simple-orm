@@ -5,28 +5,28 @@ import java.sql.JDBCType;
 /**
  * Type metadata for JDBC (query or result) parameter.
  *
- * @param <T> class implementing parameter in java (in custom business objects, etc.).
- * @param <I> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
+ * @param <Jdbc> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
+ * @param <Java> class implementing parameter in java (in custom business objects, etc.).
  */
-public class ParameterType<T, I> {
+public class ParameterType<Jdbc, Java> {
 
     protected final JDBCType jdbcType;
-    protected final Class<T> javaClass;
-    protected final Class<I> jdbcClass;
+    protected final Class<Jdbc> jdbcClass;
+    protected final Class<Java> javaClass;
 
-    public ParameterType(JDBCType jdbcType, Class<T> javaClass, Class<I> jdbcClass) {
+    public ParameterType(JDBCType jdbcType, Class<Jdbc> jdbcClass, Class<Java> javaClass) {
         if (jdbcType == null) {
             throw new NullPointerException("jdbcType is null");
-        }
-        if (javaClass == null) {
-            throw new NullPointerException("javaClass is null");
         }
         if (jdbcClass == null) {
             throw new NullPointerException("jdbcClass is null");
         }
+        if (javaClass == null) {
+            throw new NullPointerException("javaClass is null");
+        }
         this.jdbcType = jdbcType;
-        this.javaClass = javaClass;
         this.jdbcClass = jdbcClass;
+        this.javaClass = javaClass;
     }
 
     /**
@@ -43,7 +43,7 @@ public class ParameterType<T, I> {
      *
      * @return class implementing parameter in java.
      */
-    public Class<T> getJavaTypeClass() {
+    public Class<Java> getJavaTypeClass() {
         return javaClass;
     }
 
@@ -52,7 +52,7 @@ public class ParameterType<T, I> {
      *
      * @return class implementing parameter value in JDBC.
      */
-    public Class<I> getJDBCTypeImplementingClass() {
+    public Class<Jdbc> getJDBCTypeImplementingClass() {
         return jdbcClass;
     }
 
@@ -61,13 +61,13 @@ public class ParameterType<T, I> {
      *
      * @return a ParameterType object.
      */
-    public static <T, I> ParameterType<T, I> of(JDBCType jdbcType, Class<T> javaClass, Class<I> jdbcClass) {
-        return new ParameterType<>(jdbcType, javaClass, jdbcClass);
+    public static <Jdbc, Java> ParameterType<Jdbc, Java> of(JDBCType jdbcType, Class<Jdbc> jdbcClass, Class<Java> javaClass) {
+        return new ParameterType<>(jdbcType, jdbcClass, javaClass);
     }
 
     @Override
     public int hashCode() {
-        return jdbcType.hashCode() * 31 * 31 + javaClass.hashCode() * 31 + jdbcClass.hashCode();
+        return jdbcType.hashCode() * 31 * 31 + jdbcClass.hashCode() * 31 + javaClass.hashCode();
     }
 
     @Override
@@ -77,16 +77,16 @@ public class ParameterType<T, I> {
         }
         ParameterType<?, ?> other = (ParameterType<?, ?>) obj;
         return this.jdbcType == other.jdbcType
-                && this.javaClass == other.javaClass
                 && this.jdbcClass == other.jdbcClass
+                && this.javaClass == other.javaClass
                 ;
     }
 
     @Override
     public String toString() {
         return "ParameterType(" + jdbcType +
-                ",javaClass=" + javaClass.getSimpleName() +
-                ",jdbcClass=" + jdbcClass.getSimpleName() + ")"
+                ",jdbcClass=" + jdbcClass.getSimpleName() +
+                ",javaClass=" + javaClass.getSimpleName() + ")"
                 ;
     }
 }

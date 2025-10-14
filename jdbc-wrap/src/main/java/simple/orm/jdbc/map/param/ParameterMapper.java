@@ -3,17 +3,17 @@ package simple.orm.jdbc.map.param;
 /**
  * Parameters mappers.
  *
- * @param <T> class implementing parameter in java (in custom business objects, etc.).
- * @param <I> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
+ * @param <Jdbc> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
+ * @param <Java> class implementing parameter in java (in custom business objects, etc.).
  */
-public interface ParameterMapper<T, I> {
+public interface ParameterMapper<Jdbc, Java> {
 
     /**
      * Returns parameter type metadata.
      *
      * @return parameter type.
      */
-    ParameterType<T, I> getType();
+    ParameterType<Jdbc, Java> getType();
 
     /**
      * Map parameter from Java to JDBC.
@@ -21,7 +21,7 @@ public interface ParameterMapper<T, I> {
      * @param object java parameter value.
      * @return JDBC parameter value.
      */
-    I mapToJDBC(T object);
+    Jdbc mapToJDBC(Java object);
 
     /**
      * Map parameter from JDBC to Java.
@@ -29,6 +29,6 @@ public interface ParameterMapper<T, I> {
      * @param object JDBC parameter value.
      * @return java parameter value.
      */
-    T mapToJava(I object);
+    Java mapToJava(Jdbc object);
 
 }

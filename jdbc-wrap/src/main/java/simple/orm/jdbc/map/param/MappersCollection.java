@@ -67,15 +67,15 @@ public class MappersCollection {
         return new MappersCollection(underlyingMappers, newMappers);
     }
 
-    public <T, I> Option<ParameterMapper<T, I>> findMapperFor(JDBCType jdbcType, Class<T> javaClass, Class<I> jdbcClass) {
-        return findMapperFor(ParameterType.of(jdbcType, javaClass, jdbcClass));
+    public <Jdbc, Java> Option<ParameterMapper<Jdbc, Java>> findMapperFor(JDBCType jdbcType, Class<Jdbc> jdbcClass, Class<Java> javaClass) {
+        return findMapperFor(ParameterType.of(jdbcType, jdbcClass, javaClass));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T, I> Option<ParameterMapper<T, I>> findMapperFor(ParameterType<T, I> parameterType) {
+    public <Jdbc, Java> Option<ParameterMapper<Jdbc, Java>> findMapperFor(ParameterType<Jdbc, Java> parameterType) {
         Option<ParameterMapper<?, ?>> mapper = theseMappers.get(parameterType)
                 .orElse(() -> underlyingMappers.flatMap(mc -> mc.findMapperFor(parameterType)));
-        return (Option<ParameterMapper<T, I>>) (Option) mapper;
+        return (Option<ParameterMapper<Jdbc, Java>>) (Option) mapper;
     }
 
 }
