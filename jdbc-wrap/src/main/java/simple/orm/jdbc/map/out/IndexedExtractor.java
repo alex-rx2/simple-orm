@@ -1,4 +1,4 @@
-package simple.orm.jdbc.map.in;
+package simple.orm.jdbc.map.out;
 
 import io.vavr.collection.Seq;
 
