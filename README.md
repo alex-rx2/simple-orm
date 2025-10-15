@@ -12,7 +12,7 @@
   * call chaining
   * immutable objects
   * connections pooling (pluggable? wrap over datasource instead of driver?)
-  * usage can be started from wrapping anything from driver to single statement
+  * usage can be started from wrapping anything from driver to single statement ???
   * more?
 * instrument to map parameters in queries / result sets into objects:
   * can be used independently
