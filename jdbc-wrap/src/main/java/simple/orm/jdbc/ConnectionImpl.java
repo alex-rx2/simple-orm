@@ -2,9 +2,7 @@ package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
-import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.*;
 
 import java.sql.SQLException;
 
@@ -96,4 +94,17 @@ public class ConnectionImpl implements Connection {
         // todo
         return null;
     }
+
+    @Override
+    public <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Seq<Object> params) {
+        // todo
+        return null;
+    }
+
+    @Override
+    public <I> Result<Seq<Object>> executeSelect(NamedIndexedQuery<I> query, I input) {
+        // todo
+        return null;
+    }
+
 }

@@ -2,9 +2,7 @@ package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
-import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.*;
 
 import java.sql.SQLException;
 
@@ -136,5 +134,30 @@ public interface Connection extends AutoCloseable {
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     <O> Result<O> executeSelect(NamedQuery<Void, O> query);
+
+
+    /**
+     * Execute SELECT query with parameters provided as sequence of object, injected by index.
+     * Output ResultSet rows are mapped into object properties.
+     *
+     * @param query  SELECT query.
+     * @param params query parameters.
+     * @param <O>    type of object used to collect each ResultSet row parameters.
+     * @return {@link Result} object to traverse ResultSet.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Seq<Object> params);
+
+    /**
+     * Execute SELECT query with parameters provided as single object, injected as named properties of said object.
+     * Output ResultSet rows are extracted into a sequence of objects each.
+     *
+     * @param query SELECT query.
+     * @param input object which properties used as parameters for a query.
+     * @param <I>   type of object used as source of parameters.
+     * @return {@link Result} object to traverse ResultSet.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    <I> Result<Seq<Object>> executeSelect(NamedIndexedQuery<I> query, I input);
 
 }

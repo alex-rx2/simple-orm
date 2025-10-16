@@ -68,4 +68,14 @@ public interface Result<T> extends AutoCloseable {
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     Seq<T> extractAll();
+
+    /**
+     * If ResultSet has exactly one row - extracts and returns said row.
+     * Throws IllegalStateException otherwise.
+     *
+     * @return sequence of all rows from ResultSet.
+     * @throws JdbcException         a wrap around {@link SQLException}.
+     * @throws IllegalStateException if ResultSet has no or more than one row.
+     */
+    T exactlySingleRow();
 }

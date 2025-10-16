@@ -1,19 +1,19 @@
 package simple.orm.jdbc.query;
 
 import simple.orm.jdbc.map.in.NamedInjector;
-import simple.orm.jdbc.map.out.NamedExtractor;
+import simple.orm.jdbc.map.out.IndexedExtractor;
 
 /**
- * NamedQuery implementation.
+ * NamedIndexedQuery implementation.
  */
-class NamedQueryImpl<I, O> extends BaseQueryImpl implements NamedQuery<I, O> {
+class NamedIndexedQueryImpl<I> extends BaseQueryImpl implements NamedIndexedQuery<I> {
 
     protected final NamedInjector<I> injector;
-    protected final NamedExtractor<O> extractor;
+    protected final IndexedExtractor extractor;
     protected final NamedParametersMap parametersMap;
 
-    public NamedQueryImpl(QueryType queryType, String sql, int queryTimeoutSec,
-                          NamedInjector<I> injector, NamedExtractor<O> extractor, NamedParametersMap parametersMap) {
+    public NamedIndexedQueryImpl(QueryType queryType, String sql, int queryTimeoutSec,
+                                 NamedInjector<I> injector, IndexedExtractor extractor, NamedParametersMap parametersMap) {
         // validation is supposed to be in QueryFactory
         super(queryType, sql, queryTimeoutSec);
         this.injector = injector;
@@ -27,7 +27,7 @@ class NamedQueryImpl<I, O> extends BaseQueryImpl implements NamedQuery<I, O> {
     }
 
     @Override
-    public NamedExtractor<O> getExtractor() {
+    public IndexedExtractor getExtractor() {
         return extractor;
     }
 
