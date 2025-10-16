@@ -10,8 +10,6 @@ import java.sql.Statement;
 // TODO stub interface, make a proper class
 public interface IndexedInjector {
 
-    int getParametersCount();
-
     void injectParameters(Statement stmt, Object... params);
 
     void injectParameters(Statement stmt, Seq<Object> params);

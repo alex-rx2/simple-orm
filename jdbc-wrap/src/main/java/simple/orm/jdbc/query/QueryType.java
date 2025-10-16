@@ -6,8 +6,6 @@ package simple.orm.jdbc.query;
 public enum QueryType {
 
     EXECUTE_UPDATE,
-    EXECUTE_QUERY,
-    // TODO more types
-    //  (callable at least?)
+    EXECUTE_QUERY
 
 }
