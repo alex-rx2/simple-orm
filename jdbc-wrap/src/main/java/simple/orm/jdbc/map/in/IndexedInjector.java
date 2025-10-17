@@ -1,17 +1,32 @@
 package simple.orm.jdbc.map.in;
 
 import io.vavr.collection.Seq;
+import simple.orm.jdbc.exc.JdbcException;
 
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * Injector of sequence of parameters into JDBC statement (by index).
  */
-// TODO stub interface, make a proper class
 public interface IndexedInjector {
 
-    void injectParameters(Statement stmt, Object... params);
+    /**
+     * Injects parameters into {@link PreparedStatement}.
+     *
+     * @param stmt   {@link PreparedStatement}.
+     * @param params parameters to inject.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    void injectParameters(PreparedStatement stmt, Object... params);
 
-    void injectParameters(Statement stmt, Seq<Object> params);
+    /**
+     * Injects parameters into {@link PreparedStatement}.
+     *
+     * @param stmt   {@link PreparedStatement}.
+     * @param params parameters to inject.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    void injectParameters(PreparedStatement stmt, Seq<Object> params);
 
 }
