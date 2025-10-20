@@ -3,6 +3,7 @@ package simple.orm.jdbc.map.out;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
@@ -35,7 +36,9 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
     // types - seq of (index or label in ResultSet),(type),(property name)
     protected Seq<Tuple3<Either<Integer, String>, ParameterType<?, ?>, String>> types;
     protected Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
-    // todo - optimization - internal cache of Constructor/Method/Field (and verify property is assignable from parameter type)
+    // internal cache of constructor and Method/Field accessors
+    protected Constructor<T> constructor;
+    protected Map<String, Either<Method, Field>> methodsAndFields;
 
     public NamedExtractorImpl(Class<T> resultClass,
                               Map<ParameterJdbcType<?>, ParameterGetter<?>> getters,
@@ -94,7 +97,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
             throw new NullPointerException("rs is null");
         }
         Seq<Tuple3<Object, String, ParameterType<?, ?>>> values = doExtractRow(rs);
-        return constructResultObject(values);
+        return constructResult(values);
     }
 
     protected Seq<Tuple3<Object, String, ParameterType<?, ?>>> doExtractRow(ResultSet rs) {
@@ -125,30 +128,43 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
     }
 
-    private T constructResultObject(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+    protected T constructResult(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+        checkCachedReflections(values);
         // create object
         T result;
         try {
-            Constructor<T> constructor = resultClass.getConstructor();
-            if (!constructor.isAccessible() && !Modifier.isPublic(constructor.getModifiers())) {
-                constructor.setAccessible(true);
-            }
             result = constructor.newInstance();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("default constructor not found in " + resultClass.getName(), e);
         } catch (InstantiationException | InvocationTargetException e) {
             throw new IllegalArgumentException("failed to create new instance of result object", e);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("default constructor of result object class is not accessible", e);
         }
         // set its properties
-        values.forEach(t3 -> injectValue(result, t3._2, t3._1, t3._3.getJavaTypeClass()));
+        values.forEach(t3 -> injectValue(result, t3._2, t3._1));
         // return it
         return result;
     }
 
-    private void injectValue(T result, String propertyName, Object value, Class<?> valueClass) {
-        // try to use setter
+    protected void checkCachedReflections(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+        if (constructor == null) {
+            try {
+                constructor = resultClass.getConstructor();
+                if (!constructor.isAccessible() && !Modifier.isPublic(constructor.getModifiers())) {
+                    constructor.setAccessible(true);
+                }
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException("default constructor not found in " + resultClass.getName(), e);
+            }
+        }
+        if (methodsAndFields == null) {
+            methodsAndFields = HashMap.ofEntries(
+                    values.map(t3 -> Tuple.of(t3._2, findAccessor(t3._2, t3._3.getJavaTypeClass())))
+            );
+        }
+    }
+
+    protected Either<Method, Field> findAccessor(String propertyName, Class<?> typeJavaClass) {
+        // try to find setter
         String setter;
         if (propertyName.isEmpty()) {
             setter = "set";
@@ -156,30 +172,48 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
             setter = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
         try {
-            Method method = resultClass.getMethod(setter, valueClass);
+            Method method = resultClass.getMethod(setter, typeJavaClass);
             if (!method.isAccessible() && !Modifier.isPublic(method.getModifiers())) {
                 method.setAccessible(true);
             }
-            method.invoke(result, value);
-            return;
+            return Either.left(method);
         } catch (NoSuchMethodException ignored) {
             ;
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException("property '" + propertyName + "' setter invocation failed", e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("property '" + propertyName + "' setter is not accessible", e);
         }
-        // try direct field access if no getter found
+        // try to find field
         try {
             Field field = resultClass.getField(propertyName);
+            if (!typeJavaClass.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException("field for property '" + propertyName + "'" +
+                        " has incompatible type " + field.getType().getName() +
+                        " (" + typeJavaClass.getName() + " is expected)");
+            }
             if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
                 field.setAccessible(true);
             }
-            field.set(result, value);
+            return Either.right(field);
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException("no property '" + propertyName + "' setter or field found in class " + resultClass, e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("property '" + propertyName + "' field is not accessible", e);
+        }
+    }
+
+    protected void injectValue(T result, String propertyName, Object value) {
+        Either<Method, Field> accessor = methodsAndFields.get(propertyName)
+                .getOrElseThrow(() -> new IllegalStateException("no Method or Field accessor found in internal cache for '" + propertyName + "'"));
+        if (accessor.isLeft()) {
+            try {
+                accessor.getLeft().invoke(result, value);
+            } catch (InvocationTargetException e) {
+                throw new IllegalArgumentException("property '" + propertyName + "' setter invocation failed", e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("property '" + propertyName + "' setter is not accessible", e);
+            }
+        } else {
+            try {
+                accessor.get().set(result, value);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("property '" + propertyName + "' field is not accessible", e);
+            }
         }
     }
 
