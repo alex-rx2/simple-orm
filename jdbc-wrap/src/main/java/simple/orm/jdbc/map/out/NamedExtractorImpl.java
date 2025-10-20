@@ -3,6 +3,7 @@ package simple.orm.jdbc.map.out;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
@@ -35,7 +36,9 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
     // types - seq of (index or label in ResultSet),(type),(property name)
     protected Seq<Tuple3<Either<Integer, String>, ParameterType<?, ?>, String>> types;
     protected Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
-    // todo - optimization - internal cache of Constructor/Method/Field (and verify property is assignable from parameter type)
+    // internal cache of constructor and Method/Field accessors
+    protected Constructor<T> constructor;
+    protected Map<String, Either<Method, Field>> methodsAndFields;
 
     public NamedExtractorImpl(Class<T> resultClass,
                               Map<ParameterJdbcType<?>, ParameterGetter<?>> getters,
@@ -126,6 +129,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
     }
 
     private T constructResultObject(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+        checkCachedReflections(values);
         // create object
         T result;
         try {
@@ -145,6 +149,58 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         values.forEach(t3 -> injectValue(result, t3._2, t3._1, t3._3.getJavaTypeClass()));
         // return it
         return result;
+    }
+
+    protected void checkCachedReflections(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+        if (constructor == null) {
+            try {
+                constructor = resultClass.getConstructor();
+                if (!constructor.isAccessible() && !Modifier.isPublic(constructor.getModifiers())) {
+                    constructor.setAccessible(true);
+                }
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException("default constructor not found in " + resultClass.getName(), e);
+            }
+        }
+        if (methodsAndFields == null) {
+            methodsAndFields = HashMap.ofEntries(
+                    values.map(t3 -> Tuple.of(t3._2, findAccessor(t3._2, t3._3.getJavaTypeClass())))
+            );
+        }
+    }
+
+    protected Either<Method, Field> findAccessor(String propertyName, Class<?> typeJavaClass) {
+        // try to find setter
+        String setter;
+        if (propertyName.isEmpty()) {
+            setter = "set";
+        } else {
+            setter = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        }
+        try {
+            Method method = resultClass.getMethod(setter, typeJavaClass);
+            if (!method.isAccessible() && !Modifier.isPublic(method.getModifiers())) {
+                method.setAccessible(true);
+            }
+            return Either.left(method);
+        } catch (NoSuchMethodException ignored) {
+            ;
+        }
+        // try to find field
+        try {
+            Field field = resultClass.getField(propertyName);
+            if (!typeJavaClass.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException("field for property '" + propertyName + "'" +
+                        " has incompatible type " + field.getType().getName() +
+                        " (" + typeJavaClass.getName() + " is expected)");
+            }
+            if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
+                field.setAccessible(true);
+            }
+            return Either.right(field);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException("no property '" + propertyName + "' getter or field found in class " + resultClass, e);
+        }
     }
 
     private void injectValue(T result, String propertyName, Object value, Class<?> valueClass) {

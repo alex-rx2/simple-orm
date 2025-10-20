@@ -1,10 +1,12 @@
 package simple.orm.jdbc.map.in;
 
 import io.vavr.Tuple;
-import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vavr.collection.Array;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+import io.vavr.control.Either;
 import io.vavr.control.Option;
 import simple.orm.jdbc.exc.JdbcException;
 import simple.orm.jdbc.param.ParameterJdbcType;
@@ -21,13 +23,15 @@ import java.util.Objects;
 
 /**
  * {@link NamedInjector} implementation.
+ * <br><br>
+ * <b>Important:</b> it is expected that NamedInjectorImpl si always used with same query (with same NamedParametersMap).
  */
 public class NamedInjectorImpl<T> implements NamedInjector<T> {
 
     protected Seq<ParameterType<?, ?>> types;
     protected Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
-    // todo - optimization - internal cache of Method/Field (and verify property is assignable to parameter type)
-    // todo - optimization - simplify extractValues (access property for each index, even if several times same property)
+    // internal cache of Method/Field objects to access properties
+    protected Map<String, Either<Method, Field>> methodsAndFields;
 
     public NamedInjectorImpl(ParameterType<?, ?>... types) {
         this(Array.of(types));
@@ -63,29 +67,31 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         if (parametersMap == null) {
             throw new NullPointerException("parametersMap is null");
         }
-        Seq<Object> values = extractValues(source, parametersMap.getParameters());
+        if (parametersMap.getParameters().size() != types.size()) {
+            throw new IllegalArgumentException("parameters count mismatch");
+        }
+        Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> values = extractValues(source, parametersMap);
         doInjectParameters(stmt, values);
     }
 
-    protected Seq<Object> extractValues(T source, Seq<Tuple2<Integer, String>> params) {
-        return params
-                // group and map into list of (name, seq of indexes)
-                .groupBy(t2 -> t2._2)
-                .toList()
-                .map(item -> Tuple.of(item._1, item._2.map(t2 -> t2._1)))
-                // replace name with value
-                .map(item -> Tuple.of(extractValue(source, item._1), item._2))
-                // flatten with indexes making a list of (index,value)
-                .flatMap(item -> item._2.map(idx -> Tuple.of(idx, item._1)))
-                // sort by index
-                .sortBy(item -> item._1)
-                .map(item -> item._2);
+    protected Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> extractValues(T source, NamedParametersMap parametersMap) {
+        // parameters - seq of (index, type, property name)
+        Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params =
+                types.zipWith(parametersMap.getParameters(), (pt, t2) -> Tuple.of(t2._1, pt, t2._2));
+        checkCachedReflections(params, source.getClass());
+        return params.map(t3 -> Tuple.of(t3._1, t3._2, extractValue(source, t3._3)));
     }
 
-    protected Object extractValue(T source, String propertyName) {
-        Option<Object> value;
-        Class<?> aClass = source.getClass();
-        // try to use getter
+    protected void checkCachedReflections(Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params, Class<?> aClass) {
+        if (methodsAndFields == null) {
+            methodsAndFields = HashMap.ofEntries(
+                    params.map(t3 -> Tuple.of(t3._3, findAccessor(t3._1, t3._3, aClass, t3._2.getJavaTypeClass())))
+            );
+        }
+    }
+
+    protected Either<Method, Field> findAccessor(int index, String propertyName, Class<?> sourceClass, Class<?> typeJavaClass) {
+        // try to find getter
         String getter;
         if (propertyName.isEmpty()) {
             getter = "get";
@@ -93,40 +99,60 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
             getter = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
         try {
-            Method method = aClass.getMethod(getter);
+            Method method = sourceClass.getMethod(getter);
+            if (!typeJavaClass.isAssignableFrom(method.getReturnType())) {
+                throw new IllegalArgumentException("for parameter no" + index + " property getter '" + getter + "'" +
+                        " returns incompatible result of type " + method.getReturnType().getName() +
+                        " (" + typeJavaClass.getName() + " is expected)");
+            }
             if (!method.isAccessible() && !Modifier.isPublic(method.getModifiers())) {
                 method.setAccessible(true);
             }
-            value = Option.of(method.invoke(source));
-        } catch (NoSuchMethodException e) {
-            value = null;
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException("property '" + propertyName + "' getter invocation failed", e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("property '" + propertyName + "' getter is not accessible", e);
+            return Either.left(method);
+        } catch (NoSuchMethodException ignored) {
+            ;
         }
-        // try direct field access if no getter found
-        if (value == null) {
+        // try to find field
+        try {
+            Field field = sourceClass.getField(propertyName);
+            if (!typeJavaClass.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException("for parameter no" + index + " property field '" + propertyName + "'" +
+                        " has incompatible type " + field.getType().getName() +
+                        " (" + typeJavaClass.getName() + " is expected)");
+            }
+            if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
+                field.setAccessible(true);
+            }
+            return Either.right(field);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException("no property '" + propertyName + "' getter or field found in class " + sourceClass.getName(), e);
+        }
+    }
+
+    protected Object extractValue(T source, String propertyName) {
+        Option<Object> value;
+        Class<?> aClass = source.getClass();
+        Either<Method, Field> accessor = methodsAndFields.get(propertyName)
+                .getOrElseThrow(() -> new IllegalStateException("no Method or Field accessor found in internal cache"));
+        if (accessor.isLeft()) {
             try {
-                Field field = aClass.getField(propertyName);
-                if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
-                    field.setAccessible(true);
-                }
-                value = Option.of(field.get(source));
-            } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("no property '" + propertyName + "' getter or field found in class " + aClass, e);
+                return accessor.getLeft().invoke(source);
+            } catch (InvocationTargetException e) {
+                throw new IllegalArgumentException("property '" + propertyName + "' getter invocation failed", e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("property '" + propertyName + "' getter is not accessible", e);
+            }
+        } else {
+            try {
+                return accessor.get().get(source);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException("property '" + propertyName + "' field is not accessible", e);
             }
         }
-        // if we got here - we found it
-        return value.getOrNull();
     }
 
-    protected void doInjectParameters(PreparedStatement stmt, Seq<Object> params) {
-        types.zipWithIndex((pt, idx) -> Tuple.of(idx + 1, pt))
-                .zipWith(params, (t2, p) -> Tuple.of(t2._1, t2._2, p))
-                .forEach(t3 -> inject(stmt, t3._1, t3._2, t3._3));
+    protected void doInjectParameters(PreparedStatement stmt, Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> values) {
+        values.forEach(t3 -> inject(stmt, t3._1, t3._2, t3._3));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -135,9 +161,6 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
             if (value == null) {
                 stmt.setNull(index, type.getJDBCType().getVendorTypeNumber());
                 return;
-            }
-            if (!type.getJavaTypeClass().isAssignableFrom(value.getClass())) {
-                throw new IllegalArgumentException("for parameter no" + index + " of type " + type + " provided value class is " + value.getClass());
             }
             Object jdbcValue = type.fromJava(value);
             ParameterSetter setter = setters.get(type.getParameterJdbcType()).getOrNull();
