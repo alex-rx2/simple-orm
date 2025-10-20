@@ -1,21 +1,22 @@
 package simple.orm.jdbc.map.in;
 
 import simple.orm.jdbc.exc.JdbcException;
+import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Interface for single defined (non-null) setter of PreparedStatement parameter.
+ * Interface for setter of a single defined (non-null) parameter of PreparedStatement.
  */
 public interface ParameterSetter<T> {
 
     /**
-     * Parameter class.
+     * Parameter type.
      *
-     * @return parameter class.
+     * @return parameter type.
      */
-    Class<T> getJdbcClass();
+    ParameterJdbcType<T> getJdbcType();
 
     /**
      * Setter method.
@@ -25,6 +26,6 @@ public interface ParameterSetter<T> {
      * @param value <b>non-null</b> value to be set.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
-    void inject(PreparedStatement stmt, int index, T value);
+    void setValue(PreparedStatement stmt, int index, T value);
 
 }

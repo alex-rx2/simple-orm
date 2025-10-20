@@ -5,50 +5,34 @@ import io.vavr.collection.Array;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
+import simple.orm.jdbc.param.ParameterJdbcType;
 import simple.orm.jdbc.param.ParameterType;
 
-import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
- * IndexedInjector implementation.
+ * {@link IndexedInjector} implementation.
  */
 public class IndexedInjectorImpl implements IndexedInjector {
 
-    private static final Seq<ParameterSetter<?>> DEFAULT_SETTERS = Array.of(
-            new ParameterSetterImpl<>(Boolean.class, PreparedStatement::setBoolean),
-            new ParameterSetterImpl<>(Integer.class, PreparedStatement::setInt),
-            new ParameterSetterImpl<>(Long.class, PreparedStatement::setLong),
-            new ParameterSetterImpl<>(Float.class, PreparedStatement::setFloat),
-            new ParameterSetterImpl<>(Double.class, PreparedStatement::setDouble),
-            new ParameterSetterImpl<>(BigDecimal.class, PreparedStatement::setBigDecimal),
-            new ParameterSetterImpl<>(String.class, PreparedStatement::setString),
-            new ParameterSetterImpl<>(Date.class, PreparedStatement::setDate),
-            new ParameterSetterImpl<>(Time.class, PreparedStatement::setTime),
-            new ParameterSetterImpl<>(Timestamp.class, PreparedStatement::setTimestamp)
-    );
-
-    private static final Map<Class<?>, ParameterSetter<?>> DEFAULT_SETTERS_MAP =
-            DEFAULT_SETTERS.toMap(ParameterSetter::getJdbcClass, Function.identity());
-
     protected Seq<ParameterType<?, ?>> types;
-    protected Map<Class<?>, ParameterSetter<?>> setters;
+    protected Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
 
     public IndexedInjectorImpl(ParameterType<?, ?>... types) {
         this(Array.of(types));
     }
 
-    public IndexedInjectorImpl(Map<Class<?>, ParameterSetter<?>> setters, ParameterType<?, ?>... types) {
+    public IndexedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, ParameterType<?, ?>... types) {
         this(setters, Array.of(types));
     }
 
     public IndexedInjectorImpl(Seq<ParameterType<?, ?>> types) {
-        this(DEFAULT_SETTERS_MAP, types);
+        this(ParameterSetterImpl.DEFAULT_SETTERS_MAP, types);
     }
 
-    public IndexedInjectorImpl(Map<Class<?>, ParameterSetter<?>> setters, Seq<ParameterType<?, ?>> types) {
+    public IndexedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Seq<ParameterType<?, ?>> types) {
         if (types == null) {
             throw new NullPointerException("types is null");
         }
@@ -60,10 +44,6 @@ public class IndexedInjectorImpl implements IndexedInjector {
         }
         this.types = types;
         this.setters = setters;
-    }
-
-    public Seq<ParameterType<?, ?>> getTypes() {
-        return types;
     }
 
     @Override
@@ -102,11 +82,11 @@ public class IndexedInjectorImpl implements IndexedInjector {
                 throw new IllegalArgumentException("for parameter no" + index + " of type " + type + " provided value class is " + value.getClass());
             }
             Object jdbcValue = type.fromJava(value);
-            ParameterSetter setter = (ParameterSetter) setters.get(type.getJavaTypeClass());
+            ParameterSetter setter = setters.get(type.getParameterJdbcType()).getOrNull();
             if (setter == null) {
                 stmt.setObject(index, jdbcValue, type.getJDBCType().getVendorTypeNumber());
             } else {
-                setter.inject(stmt, index, value);
+                setter.setValue(stmt, index, value);
             }
         } catch (SQLException e) {
             throw new JdbcException(e);

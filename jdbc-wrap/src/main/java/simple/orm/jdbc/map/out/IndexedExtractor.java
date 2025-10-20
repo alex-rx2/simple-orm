@@ -5,13 +5,16 @@ import io.vavr.collection.Seq;
 import java.sql.ResultSet;
 
 /**
- * Extractor of parameters from ResultSet current row as a sequence of indexed values.
+ * Extractor of parameters from ResultSet current row as a sequence of values.
  */
-// TODO stub interface, make a proper class
 public interface IndexedExtractor {
 
-    int getParametersCount();
-
+    /**
+     * Extracts a row of data from {@link ResultSet}.
+     *
+     * @param rs a ResultSet.
+     * @return extracted columns as a sequence of objects.
+     */
     Seq<Object> extractRow(ResultSet rs);
 
 }

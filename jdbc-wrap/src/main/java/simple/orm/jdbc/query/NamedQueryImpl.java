@@ -4,7 +4,7 @@ import simple.orm.jdbc.map.in.NamedInjector;
 import simple.orm.jdbc.map.out.NamedExtractor;
 
 /**
- * NamedQuery implementation.
+ * {@link NamedQuery} implementation.
  */
 class NamedQueryImpl<I, O> extends BaseQueryImpl implements NamedQuery<I, O> {
 

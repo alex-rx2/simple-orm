@@ -4,7 +4,7 @@ import simple.orm.jdbc.map.in.IndexedInjector;
 import simple.orm.jdbc.map.out.IndexedExtractor;
 
 /**
- * IndexedQuery implementation.
+ * {@link IndexedQuery} implementation.
  */
 class IndexedQueryImpl extends BaseQueryImpl implements IndexedQuery {
 

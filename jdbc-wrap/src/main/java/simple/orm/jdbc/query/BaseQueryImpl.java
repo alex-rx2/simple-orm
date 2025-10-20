@@ -1,7 +1,7 @@
 package simple.orm.jdbc.query;
 
 /**
- * Default Query implementation.
+ * Default {@link Query} implementation.
  */
 class BaseQueryImpl implements Query {
     protected final QueryType queryType;
