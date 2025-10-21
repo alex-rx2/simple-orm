@@ -1,12 +1,13 @@
 package simple.orm.jdbc.map.in;
 
 import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.collection.Array;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
 import simple.orm.jdbc.exc.JdbcException;
 import simple.orm.jdbc.param.ParameterJdbcType;
 import simple.orm.jdbc.param.ParameterType;
@@ -18,37 +19,31 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Objects;
 
 /**
  * {@link NamedInjector} implementation.
  * <br><br>
- * <b>Important:</b> it is expected that NamedInjectorImpl si always used with same query (with same NamedParametersMap).
+ * <b>Important:</b> it is expected that NamedInjectorImpl is always used with same query (with same NamedParametersMap).
+ *
+ * @param <T> {@inheritDoc}
  */
 public class NamedInjectorImpl<T> implements NamedInjector<T> {
 
-    protected Seq<ParameterType<?, ?>> types;
+    protected Map<String, ParameterType<?, ?>> types;
     protected Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
-    // internal cache of Method/Field objects to access properties
+    // internal cache of Class and Method/Field objects to access properties
+    protected Class<T> sourceClass;
     protected Map<String, Either<Method, Field>> methodsAndFields;
 
-    public NamedInjectorImpl(ParameterType<?, ?>... types) {
-        this(Array.of(types));
-    }
-
-    public NamedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, ParameterType<?, ?>... types) {
-        this(setters, Array.of(types));
-    }
-
-    public NamedInjectorImpl(Seq<ParameterType<?, ?>> types) {
+    public NamedInjectorImpl(Map<String, ParameterType<?, ?>> types) {
         this(ParameterSetterImpl.DEFAULT_SETTERS_MAP, types);
     }
 
-    public NamedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Seq<ParameterType<?, ?>> types) {
+    public NamedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Map<String, ParameterType<?, ?>> types) {
         if (types == null) {
             throw new NullPointerException("types is null");
         }
-        if (types.find(Objects::isNull).isDefined()) {
+        if (types.find(t2 -> t2._1 == null || t2._2 == null).isDefined()) {
             throw new NullPointerException("types contains nulls");
         }
         this.types = types;
@@ -69,6 +64,10 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         if (parametersMap.getParameters().size() != types.size()) {
             throw new IllegalArgumentException("parameters count mismatch");
         }
+        Option<Tuple2<Integer, String>> parameterWithoutType = parametersMap.getParameters().find(t2 -> !types.containsKey(t2._2));
+        if (parameterWithoutType.isDefined()) {
+            throw new IllegalArgumentException("query parameter '" + parameterWithoutType.get()._2 + "' has no type defined in injector");
+        }
         Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> values = extractValues(source, parametersMap);
         doInjectParameters(stmt, values);
     }
@@ -76,20 +75,25 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
     protected Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> extractValues(T source, NamedParametersMap parametersMap) {
         // parameters - seq of (index, type, property name)
         Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params =
-                types.zipWith(parametersMap.getParameters(), (pt, t2) -> Tuple.of(t2._1, pt, t2._2));
+                parametersMap.getParameters().map(t2 -> Tuple.of(t2._1, types.get(t2._2).get(), t2._2));
         checkCachedReflections(params, source.getClass());
         return params.map(t3 -> Tuple.of(t3._1, t3._2, extractValue(source, t3._3)));
     }
 
+    @SuppressWarnings("unchecked")
     protected void checkCachedReflections(Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params, Class<?> aClass) {
+        if (sourceClass != aClass) {
+            methodsAndFields = null;
+        }
+        sourceClass = (Class<T>) aClass;
         if (methodsAndFields == null) {
             methodsAndFields = HashMap.ofEntries(
-                    params.map(t3 -> Tuple.of(t3._3, findAccessor(t3._1, t3._3, aClass, t3._2.getJavaTypeClass())))
+                    params.map(t3 -> Tuple.of(t3._3, findAccessor(t3._1, t3._3, t3._2.getJavaTypeClass())))
             );
         }
     }
 
-    protected Either<Method, Field> findAccessor(int index, String propertyName, Class<?> sourceClass, Class<?> typeJavaClass) {
+    protected Either<Method, Field> findAccessor(int index, String propertyName, Class<?> typeJavaClass) {
         // try to find getter
         String getter;
         if (propertyName.isEmpty()) {

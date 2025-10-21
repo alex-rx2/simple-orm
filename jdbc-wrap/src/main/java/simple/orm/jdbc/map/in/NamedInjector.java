@@ -8,6 +8,8 @@ import java.sql.SQLException;
 
 /**
  * Injector of properties of object into JDBC statement (using object properties names and named parameters in a query).
+ *
+ * @param <T> class of object used as source of parameters' values for query.
  */
 public interface NamedInjector<T> {
 

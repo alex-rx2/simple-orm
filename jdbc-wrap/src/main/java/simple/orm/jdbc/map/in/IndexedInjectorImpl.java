@@ -79,7 +79,7 @@ public class IndexedInjectorImpl implements IndexedInjector {
                 return;
             }
             if (!type.getJavaTypeClass().isAssignableFrom(value.getClass())) {
-                throw new IllegalArgumentException("for parameter no" + index + " of type " + type + " provided value class is " + value.getClass());
+                throw new IllegalArgumentException("for parameter no" + index + " of type " + type + " provided value of incompatible class " + value.getClass());
             }
             Object jdbcValue = type.fromJava(value);
             ParameterSetter setter = setters.get(type.getParameterJdbcType()).getOrNull();

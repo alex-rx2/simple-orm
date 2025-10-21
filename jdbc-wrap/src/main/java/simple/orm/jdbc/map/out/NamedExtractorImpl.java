@@ -33,7 +33,7 @@ import java.sql.SQLException;
 public class NamedExtractorImpl<T> implements NamedExtractor<T> {
 
     protected Class<T> resultClass;
-    // types - seq of (index or label in ResultSet),(type),(property name)
+    // types - seq of (index or label in ResultSet, type, property name)
     protected Seq<Tuple3<Either<Integer, String>, ParameterType<?, ?>, String>> types;
     protected Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
     // internal cache of constructor and Method/Field accessors
@@ -87,6 +87,28 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         this.resultClass = resultClass;
         this.types = typesByLabel.toList().map(
                 t2 -> Tuple.of(Either.right(t2._1), t2._2, labelsToNames.getOrElse(t2._1, t2._1))
+        );
+        this.getters = getters;
+    }
+
+    public NamedExtractorImpl(Class<T> resultClass,
+                              Map<ParameterJdbcType<?>, ParameterGetter<?>> getters,
+                              Map<String, Tuple2<ParameterType<?, ?>, String>> typesAndNamesByLabel) {
+        if (resultClass == null) {
+            throw new NullPointerException("resultClass is null");
+        }
+        if (typesAndNamesByLabel == null) {
+            throw new NullPointerException("typesAndNamesByLabel is null");
+        }
+        if (typesAndNamesByLabel.find(t2 -> t2._1 == null || t2._2 == null || t2._2._1 == null || t2._2._2 == null).isDefined()) {
+            throw new NullPointerException("typesAndNamesByLabel contains nulls");
+        }
+        if (getters == null) {
+            throw new NullPointerException("getters is null");
+        }
+        this.resultClass = resultClass;
+        this.types = typesAndNamesByLabel.toList().map(
+                t2 -> Tuple.of(Either.right(t2._1), t2._2._1, t2._2._2)
         );
         this.getters = getters;
     }
