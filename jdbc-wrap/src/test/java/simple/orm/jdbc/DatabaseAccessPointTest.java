@@ -31,7 +31,7 @@ public class DatabaseAccessPointTest extends BaseH2Test {
 
     @AfterEach
     void tearDown() {
-        if (!dbAccessPoint.isClosed()) dbAccessPoint.close();
+        dbAccessPoint.close();
     }
 
     @Test

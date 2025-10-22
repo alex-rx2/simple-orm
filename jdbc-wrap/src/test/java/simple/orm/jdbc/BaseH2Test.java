@@ -1,5 +1,7 @@
 package simple.orm.jdbc;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -14,6 +16,16 @@ public abstract class BaseH2Test {
     public BaseH2Test() {
         h2ConnectionProperties = new Properties();
         h2ConnectionProperties.put("sa", "");
+    }
+
+    protected Connection directConnect() throws SQLException {
+        return org.h2.Driver.load().connect(h2InMemUrl, h2ConnectionProperties);
+    }
+
+    protected void dropAllObjects() throws SQLException {
+        try (Connection conn = directConnect()) {
+            conn.createStatement().executeUpdate("DROP ALL OBJECTS");
+        }
     }
 
 }
