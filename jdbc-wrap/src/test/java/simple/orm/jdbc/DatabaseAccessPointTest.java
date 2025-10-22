@@ -38,7 +38,7 @@ public class DatabaseAccessPointTest extends BaseH2Test {
     public void testConnect() throws Exception {
         Connection connection = dbAccessPoint.connect();
         assertThat(connection).isInstanceOf(ConnectionImpl.class);
-        java.sql.Connection jdbcConnection = ((ConnectionImpl) connection).jdbcConnection;
+        java.sql.Connection jdbcConnection = ((ConnectionImpl) connection).getJdbcConnection();
         assertThat(jdbcConnection).isNotNull();
 
         Statement stmt = jdbcConnection.createStatement();

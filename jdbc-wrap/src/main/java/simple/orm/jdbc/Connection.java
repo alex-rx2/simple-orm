@@ -4,7 +4,9 @@ import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
 import simple.orm.jdbc.query.*;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Abstraction of database connection, able to execute queries and manage transactions.
@@ -25,6 +27,20 @@ public interface Connection extends AutoCloseable {
     DatabaseAccessPoint getDatabase();
 
     /**
+     * Get underlying JDBC connection.
+     *
+     * @return JDBC connection.
+     */
+    java.sql.Connection getJdbcConnection();
+
+    /**
+     * Close JDBC {@link ResultSet} and {@link Statement} if any are open.
+     *
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    void releaseResources();
+
+    /**
      * Close connection.
      *
      * @throws JdbcException a wrap around {@link SQLException}.
@@ -43,7 +59,7 @@ public interface Connection extends AutoCloseable {
      * Execute DML query having no parameters.
      *
      * @param query DML query.
-     * @return execution result (updated row count) as per {@link java.sql.Statement#executeUpdate(String)}.
+     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     int executeDMLUpdate(Query query);
@@ -53,7 +69,7 @@ public interface Connection extends AutoCloseable {
      *
      * @param query  DML query.
      * @param params query parameters.
-     * @return execution result (updated row count) as per {@link java.sql.Statement#executeUpdate(String)}.
+     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     int executeDMLUpdate(IndexedQuery query, Object... params);
@@ -63,7 +79,7 @@ public interface Connection extends AutoCloseable {
      *
      * @param query  DML query.
      * @param params query parameters.
-     * @return execution result (updated row count) as per {@link java.sql.Statement#executeUpdate(String)}.
+     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     int executeDMLUpdate(IndexedQuery query, Seq<Object> params);
@@ -74,7 +90,7 @@ public interface Connection extends AutoCloseable {
      * @param query DML query.
      * @param input object which properties used as parameters for a query.
      * @param <I>   type of object used as source of parameters.
-     * @return execution result (updated row count) as per {@link java.sql.Statement#executeUpdate(String)}.
+     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     <I> int executeDMLUpdate(NamedQuery<I, Void> query, I input);
@@ -134,7 +150,6 @@ public interface Connection extends AutoCloseable {
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     <O> Result<O> executeSelect(NamedQuery<Void, O> query);
-
 
     /**
      * Execute SELECT query with parameters provided as sequence of object, injected by index.

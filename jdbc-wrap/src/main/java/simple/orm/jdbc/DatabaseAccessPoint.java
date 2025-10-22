@@ -1,8 +1,12 @@
 package simple.orm.jdbc;
 
+import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.DatabaseClosedException;
+import simple.orm.jdbc.map.out.IndexedExtractor;
+import simple.orm.jdbc.map.out.NamedExtractor;
 
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.util.Properties;
 
 /**
@@ -11,6 +15,22 @@ import java.util.Properties;
  * Opens and manages connections.
  */
 public interface DatabaseAccessPoint extends AutoCloseable {
+
+    /**
+     * Factory of {@link Connection} implementations.
+     */
+    interface ConnectionFactory {
+        Connection connection(DatabaseAccessPoint dap, java.sql.Connection jdbcConn, ResultFactory resultFactory);
+    }
+
+    /**
+     * Factory of {@link Result} implementations.
+     */
+    interface ResultFactory {
+        Result<Seq<Object>> indexed(Connection conn, ResultSet rs, IndexedExtractor extractor);
+
+        <T> Result<T> named(Connection conn, ResultSet rs, NamedExtractor<T> extractor);
+    }
 
     /**
      * Get JDBC driver class to be used.
@@ -71,18 +91,12 @@ public interface DatabaseAccessPoint extends AutoCloseable {
         private Class<? extends Driver> driverClass;
         private String connectionUrl;
         private Properties connectionProperties;
-
-        public String getDriverClassName() {
-            return driverClassName;
-        }
+        private ConnectionFactory connectionFactory;
+        private ResultFactory resultFactory;
 
         public Builder driverClassName(String driverClassName) {
             this.driverClassName = driverClassName;
             return this;
-        }
-
-        public Class<? extends Driver> getDriverClass() {
-            return driverClass;
         }
 
         public Builder driverClass(Class<? extends Driver> driverClass) {
@@ -90,21 +104,23 @@ public interface DatabaseAccessPoint extends AutoCloseable {
             return this;
         }
 
-        public String getConnectionUrl() {
-            return connectionUrl;
-        }
-
         public Builder connectionUrl(String connectionUrl) {
             this.connectionUrl = connectionUrl;
             return this;
         }
 
-        public Properties getConnectionProperties() {
-            return connectionProperties;
-        }
-
         public Builder connectionProperties(Properties connectionProperties) {
             this.connectionProperties = connectionProperties;
+            return this;
+        }
+
+        public Builder connectionFactory(ConnectionFactory connectionFactory) {
+            this.connectionFactory = connectionFactory;
+            return this;
+        }
+
+        public Builder resultFactory(ResultFactory resultFactory) {
+            this.resultFactory = resultFactory;
             return this;
         }
 
@@ -130,7 +146,14 @@ public interface DatabaseAccessPoint extends AutoCloseable {
             if (connectionProperties == null) {
                 connectionProperties = new Properties();
             }
-            return new DatabaseAccessPointImpl(driverClass, connectionUrl, connectionProperties);
+            if (resultFactory == null) {
+                resultFactory = new DatabaseAccessPointImpl.DefaultResultFactory();
+            }
+            if (connectionFactory == null) {
+                connectionFactory = new DatabaseAccessPointImpl.DefaultConnectionFactory();
+            }
+            return new DatabaseAccessPointImpl(driverClass, connectionUrl, connectionProperties, connectionFactory, resultFactory);
         }
     }
+
 }

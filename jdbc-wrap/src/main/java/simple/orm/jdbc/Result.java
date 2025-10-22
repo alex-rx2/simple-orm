@@ -32,6 +32,7 @@ public interface Result<T> extends AutoCloseable {
      * Returns <code>true</code> if underlying ResultSet is closed.
      *
      * @return <code>true</code> if underlying ResultSet is closed.
+     * @throws JdbcException a wrap around {@link SQLException}.
      */
     boolean isClosed();
 
@@ -54,25 +55,32 @@ public interface Result<T> extends AutoCloseable {
      * Returns next row of data.
      *
      * @return next row on data.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @throws IllegalStateException if there is no next row.
+     * @throws JdbcException         a wrap around {@link SQLException}.
      */
     T nextRow();
 
     /**
      * Traverses all rows in ResultSet and collects them into sequence.
+     * <br>
+     * Throws IllegalStateException if {@link #hasNextRow()} was called at least once.
      *
      * @return sequence of all rows from ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @throws JdbcException         a wrap around {@link SQLException}.
+     * @throws IllegalStateException if {@link #hasNextRow()} was called at least once.
      */
     Seq<T> extractAll();
 
     /**
      * If ResultSet has exactly one row - extracts and returns said row.
-     * Throws IllegalStateException otherwise.
+     * <br>
+     * Return <code>null</code> if there are no rows.
+     * <br>
+     * Throws IllegalStateException if result contains more than one row (or {@link #hasNextRow()} was called at least once).
      *
-     * @return sequence of all rows from ResultSet.
+     * @return that one single row, <code>null</code> if there are no rows.
      * @throws JdbcException         a wrap around {@link SQLException}.
-     * @throws IllegalStateException if ResultSet has no or more than one row.
+     * @throws IllegalStateException if ResultSet has more than one row or {@link #hasNextRow()} was called at least once.
      */
     T exactlySingleRow();
 }
