@@ -4,10 +4,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple4;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import simple.orm.jdbc.query.QueryFactory;
 
 import java.sql.ResultSet;
@@ -25,7 +22,7 @@ public class DDLQueryTests extends BaseH2Test {
 
     private DatabaseAccessPoint database;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() throws SQLException {
         dropAllObjects();
         database = DatabaseAccessPoint.builder()
@@ -35,7 +32,7 @@ public class DDLQueryTests extends BaseH2Test {
                 .build();
     }
 
-    @AfterEach
+    @AfterAll
     void tearDown() throws SQLException {
         database.close();
         dropAllObjects();

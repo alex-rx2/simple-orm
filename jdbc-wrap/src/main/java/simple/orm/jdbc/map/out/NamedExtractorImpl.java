@@ -195,7 +195,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
         try {
             Method method = resultClass.getMethod(setter, typeJavaClass);
-            if (!method.isAccessible() && !Modifier.isPublic(method.getModifiers())) {
+            if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
             return Either.left(method);
@@ -204,18 +204,31 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
         // try to find field
         try {
-            Field field = resultClass.getField(propertyName);
+            Field field = findField(resultClass, propertyName);
             if (!typeJavaClass.isAssignableFrom(field.getType())) {
                 throw new IllegalArgumentException("field for property '" + propertyName + "'" +
                         " has incompatible type " + field.getType().getName() +
                         " (" + typeJavaClass.getName() + " is expected)");
             }
-            if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
+            if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
             return Either.right(field);
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException("no property '" + propertyName + "' setter or field found in class " + resultClass, e);
+        }
+    }
+
+    protected Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
+        try {
+            return aClass.getDeclaredField(field);
+        } catch (NoSuchFieldException e) {
+            Class<?> supClass = aClass.getSuperclass();
+            if (supClass != null && supClass != Object.class) {
+                return findField(supClass, field);
+            } else {
+                throw e;
+            }
         }
     }
 

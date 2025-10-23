@@ -16,7 +16,6 @@ import simple.orm.jdbc.query.NamedParametersMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -108,7 +107,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
                         " returns incompatible result of type " + method.getReturnType().getName() +
                         " (" + typeJavaClass.getName() + " is expected)");
             }
-            if (!method.isAccessible() && !Modifier.isPublic(method.getModifiers())) {
+            if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
             return Either.left(method);
@@ -117,18 +116,31 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
         // try to find field
         try {
-            Field field = sourceClass.getField(propertyName);
+            Field field = findField(sourceClass, propertyName);
             if (!typeJavaClass.isAssignableFrom(field.getType())) {
                 throw new IllegalArgumentException("for parameter no" + index + " property field '" + propertyName + "'" +
                         " has incompatible type " + field.getType().getName() +
                         " (" + typeJavaClass.getName() + " is expected)");
             }
-            if (!field.isAccessible() && !Modifier.isPublic(field.getModifiers())) {
+            if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
             return Either.right(field);
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException("no property '" + propertyName + "' getter or field found in class " + sourceClass.getName(), e);
+        }
+    }
+
+    protected Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
+        try {
+            return aClass.getDeclaredField(field);
+        } catch (NoSuchFieldException e) {
+            Class<?> supClass = aClass.getSuperclass();
+            if (supClass != null && supClass != Object.class) {
+                return findField(supClass, field);
+            } else {
+                throw e;
+            }
         }
     }
 
