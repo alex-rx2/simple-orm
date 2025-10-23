@@ -7,6 +7,7 @@ import simple.orm.jdbc.map.InjectorsExtractors;
 import simple.orm.jdbc.param.BasicTypes;
 import simple.orm.jdbc.query.IndexedQuery;
 import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryFactory;
 
 import java.math.BigDecimal;
@@ -274,12 +275,48 @@ public class DMLQueryTests extends BaseH2Test {
         }
     }
 
-    private class NamedRow2 extends NamedRow1 {
+    @Test
+    public void testDeleteWithoutParameters() throws SQLException {
+        // test
+        {
+            simple.orm.jdbc.Connection conn = database.connect();
+            Query query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1", 10);
+            conn.executeDMLUpdate(query);
+            conn.close();
+        }
+        // verify
+        {
+            Seq<String> columns = List.empty();
+            try (java.sql.Connection conn = directConnect()) {
+                ResultSet rs = conn.createStatement().executeQuery("" +
+                        "SELECT concat_ws(','," +
+                        "  id," +
+                        "  to_char(col_ti),col_s1," +
+                        "  to_char(col_si),col_s2," +
+                        "  to_char(col_bi),col_s3," +
+                        "  to_char(col_r),col_s4," +
+                        "  to_char(col_d),col_s5," +
+                        "  to_char(col_nu),col_s6" +
+                        ")" +
+                        "\nFROM table_one ORDER BY id"
+                );
+                while (rs.next()) {
+                    columns = columns.append(rs.getString(1));
+                }
+            }
+            assertThat(columns).containsExactly(
+                    // 10.10 -> 10.1 and numeric fills 0 to all fractional digits
+                    "1,10,p1,10,p2,10,p3,10.1,p4,10.1,p5,10.1000000000,p6"
+            );
+        }
+    }
+
+    private static class NamedRow2 extends NamedRow1 {
         private Integer id;
-        private Integer tiny;
-        private Integer small;
+        private Integer tinyTiny;
+        private Integer smallSmall;
         private Long big;
-        private Float real;
+        private Float realFloat;
         private Double doublePrecision;
         private BigDecimal num;
 
@@ -289,24 +326,24 @@ public class DMLQueryTests extends BaseH2Test {
                          String s1, String s2, String s3, String s4, String s5, String s6) {
             super(s1, s2, s3, s4, s5, s6);
             this.id = id;
-            this.tiny = tiny;
-            this.small = small;
+            this.tinyTiny = tiny;
+            this.smallSmall = small;
             this.big = big;
-            this.real = real;
+            this.realFloat = real;
             this.doublePrecision = doublePrecision;
             this.num = num;
         }
 
         public Integer getTiny() {
-            return tiny;
+            return tinyTiny;
         }
 
         public Integer getSmall() {
-            return small;
+            return smallSmall;
         }
 
         public Float getReal() {
-            return real;
+            return realFloat;
         }
 
         public Double getDoublePrecision() {
@@ -316,7 +353,7 @@ public class DMLQueryTests extends BaseH2Test {
     }
 
 
-    private class NamedRow1 {
+    private static class NamedRow1 {
         private String s1;
         private String s2;
         private String s3;
