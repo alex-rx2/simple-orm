@@ -1,6 +1,7 @@
 package simple.orm.jdbc.map;
 
 import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -24,7 +25,7 @@ public class NamedInjectorBuilder<T> {
         return new NamedInjectorBuilder<>();
     }
 
-    protected Map<String, ParameterType<?, ?>> types;
+    protected Map<String, Tuple2<ParameterType<?, ?>, String>> types;
     protected Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
 
     public NamedInjectorBuilder() {
@@ -39,7 +40,42 @@ public class NamedInjectorBuilder<T> {
         if (type == null) {
             throw new NullPointerException("type is null");
         }
-        this.types = this.types.put(name, type);
+        this.types = this.types.put(name, Tuple.of(type, name));
+        return this;
+    }
+
+    public NamedInjectorBuilder<T> param(String paramName, ParameterType<?, ?> type, String propertyName) {
+        if (paramName == null) {
+            throw new NullPointerException("paramName is null");
+        }
+        if (type == null) {
+            throw new NullPointerException("type is null");
+        }
+        if (propertyName == null) {
+            throw new NullPointerException("propertyName is null");
+        }
+        this.types = this.types.put(paramName, Tuple.of(type, propertyName));
+        return this;
+    }
+
+    public NamedInjectorBuilder<T> param(String paramName, ParameterType<?, ?> type, ParameterSetter<?> setter, String propertyName) {
+        if (paramName == null) {
+            throw new NullPointerException("paramName is null");
+        }
+        if (type == null) {
+            throw new NullPointerException("type is null");
+        }
+        if (setter == null) {
+            throw new NullPointerException("setter is null");
+        }
+        if (!type.getParameterJdbcType().equals(setter.getJdbcType())) {
+            throw new IllegalArgumentException("types mismatch");
+        }
+        if (propertyName == null) {
+            throw new NullPointerException("propertyName is null");
+        }
+        this.types = this.types.put(paramName, Tuple.of(type, propertyName));
+        this.setters = this.setters.put(setter.getJdbcType(), setter);
         return this;
     }
 
@@ -56,19 +92,32 @@ public class NamedInjectorBuilder<T> {
         if (!type.getParameterJdbcType().equals(setter.getJdbcType())) {
             throw new IllegalArgumentException("types mismatch");
         }
-        this.types = this.types.put(name, type);
+        this.types = this.types.put(name, Tuple.of(type, name));
         this.setters = this.setters.put(setter.getJdbcType(), setter);
         return this;
     }
 
-    public NamedInjectorBuilder<T> params(Map<String, ParameterType<?, ?>> types) {
+    public NamedInjectorBuilder<T> params(Map<String, Tuple2<ParameterType<?, ?>, String>> types) {
+        if (types == null) {
+            throw new NullPointerException("types is null");
+        }
+        if (types.find(t2 -> t2._1 == null || t2._2 == null || t2._2._1 == null || t2._2._2 == null).isDefined()) {
+            throw new NullPointerException("types contains nulls");
+        }
+        this.types = types.merge(this.types);
+        return this;
+    }
+
+    public NamedInjectorBuilder<T> paramsSimple(Map<String, ParameterType<?, ?>> types) {
         if (types == null) {
             throw new NullPointerException("types is null");
         }
         if (types.find(t2 -> t2._1 == null || t2._2 == null).isDefined()) {
             throw new NullPointerException("types contains nulls");
         }
-        this.types = types.merge(this.types);
+        this.types = types
+                .<String, Tuple2<ParameterType<?, ?>, String>>map((name, type) -> Tuple.of(name, Tuple.of(type, name)))
+                .merge(this.types);
         return this;
     }
 

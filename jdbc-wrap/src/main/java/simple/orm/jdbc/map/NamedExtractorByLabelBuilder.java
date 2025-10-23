@@ -63,6 +63,19 @@ public class NamedExtractorByLabelBuilder<T> extends NamedExtractorBuilder<T, Na
         return this;
     }
 
+    public NamedExtractorByLabelBuilder<T> paramsSimple(Map<String, ParameterType<?, ?>> types) {
+        if (types == null) {
+            throw new NullPointerException("types is null");
+        }
+        if (types.find(t2 -> t2._1 == null || t2._2 == null).isDefined()) {
+            throw new NullPointerException("types contains nulls");
+        }
+        this.types = types
+                .<String, Tuple2<ParameterType<?, ?>, String>>map((name, type) -> Tuple.of(name, Tuple.of(type, name)))
+                .merge(this.types);
+        return this;
+    }
+
     public NamedExtractor<T> build() {
         return new NamedExtractorImpl<>(resultClass, getters, types);
     }

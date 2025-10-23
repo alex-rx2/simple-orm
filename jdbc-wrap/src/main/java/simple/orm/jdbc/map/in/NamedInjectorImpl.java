@@ -28,17 +28,18 @@ import java.sql.SQLException;
  */
 public class NamedInjectorImpl<T> implements NamedInjector<T> {
 
-    protected Map<String, ParameterType<?, ?>> types;
+    // types - map of ( parameter name in query -> (type, property name) )
+    protected Map<String, Tuple2<ParameterType<?, ?>, String>> types;
     protected Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
     // internal cache of Class and Method/Field objects to access properties
     protected Class<T> sourceClass;
     protected Map<String, Either<Method, Field>> methodsAndFields;
 
-    public NamedInjectorImpl(Map<String, ParameterType<?, ?>> types) {
+    public NamedInjectorImpl(Map<String, Tuple2<ParameterType<?, ?>, String>> types) {
         this(ParameterSetterImpl.DEFAULT_SETTERS_MAP, types);
     }
 
-    public NamedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Map<String, ParameterType<?, ?>> types) {
+    public NamedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Map<String, Tuple2<ParameterType<?, ?>, String>> types) {
         if (types == null) {
             throw new NullPointerException("types is null");
         }
@@ -74,7 +75,13 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
     protected Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> extractValues(T source, NamedParametersMap parametersMap) {
         // parameters - seq of (index, type, property name)
         Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params =
-                parametersMap.getParameters().map(t2 -> Tuple.of(t2._1, types.get(t2._2).get(), t2._2));
+                parametersMap.getParameters()
+                        .map(indexParam ->
+                                types.get(indexParam._2)
+                                        .map(typeProperty ->
+                                                Tuple.<Integer, ParameterType<?, ?>, String>of(indexParam._1, typeProperty._1, typeProperty._2))
+                                        .get()
+                        );
         checkCachedReflections(params, source.getClass());
         return params.map(t3 -> Tuple.of(t3._1, t3._2, extractValue(source, t3._3)));
     }

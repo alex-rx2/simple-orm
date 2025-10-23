@@ -214,7 +214,67 @@ public class DMLQueryTests extends BaseH2Test {
         }
     }
 
-    private class NamedRow2 extends NamedRow1{
+    @Test
+    public void testInsertNamedPartiallyOtherPropNames() throws SQLException {
+        // test
+        {
+            simple.orm.jdbc.Connection conn = database.connect();
+            NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
+                    "INSERT INTO table_one VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)", 10,
+                    InjectorsExtractors.<NamedRow2>namedInjector()
+                            .param("111", BasicTypes.INTEGER, "id")
+                            .param("222", BasicTypes.TINYINT, "tiny")
+                            .param("333", BasicTypes.VARCHAR, "s1")
+                            .param("aaa", BasicTypes.SMALLINT, "small")
+                            .param("bbb", BasicTypes.VARCHAR, "s2")
+                            .param("___", BasicTypes.BIGINT, "big")
+                            .param("s3", BasicTypes.VARCHAR)
+                            .param("real", BasicTypes.REAL)
+                            .param("s4", BasicTypes.VARCHAR)
+                            .param("doublePrecision", BasicTypes.DOUBLE)
+                            .param("s5", BasicTypes.VARCHAR)
+                            .param("num", BasicTypes.NUMERIC)
+                            .param("s6", BasicTypes.VARCHAR)
+                            .build()
+            );
+            conn.executeDMLUpdate(query,
+                    new NamedRow2(5,
+                            55, 55, 555555555555555555L, -5.5f, 6.6, new BigDecimal("777.777"),
+                            "t2-1", "t2-2", "t2-3", "t2-4", "t2-5", "t2-6"
+                    )
+            );
+            conn.close();
+        }
+        // verify
+        {
+            Seq<String> columns = List.empty();
+            try (java.sql.Connection conn = directConnect()) {
+                ResultSet rs = conn.createStatement().executeQuery("" +
+                        "SELECT concat_ws(','," +
+                        "  id," +
+                        "  to_char(col_ti),col_s1," +
+                        "  to_char(col_si),col_s2," +
+                        "  to_char(col_bi),col_s3," +
+                        "  to_char(col_r),col_s4," +
+                        "  to_char(col_d),col_s5," +
+                        "  to_char(col_nu),col_s6" +
+                        ")" +
+                        "\nFROM table_one ORDER BY id"
+                );
+                while (rs.next()) {
+                    columns = columns.append(rs.getString(1));
+                }
+            }
+            assertThat(columns).containsExactly(
+                    // 10.10 -> 10.1 and numeric fills 0 to all fractional digits
+                    "1,10,p1,10,p2,10,p3,10.1,p4,10.1,p5,10.1000000000,p6",
+                    "2,-10,n1,-10,n2,-10,n3,-10.1,n4,-10.1,n5,-10.1000000000,n6",
+                    "5,55,t2-1,55,t2-2,555555555555555555,t2-3,-5.5,t2-4,6.6,t2-5,777.7770000000,t2-6"
+            );
+        }
+    }
+
+    private class NamedRow2 extends NamedRow1 {
         private Integer id;
         private Integer tiny;
         private Integer small;
@@ -224,9 +284,9 @@ public class DMLQueryTests extends BaseH2Test {
         private BigDecimal num;
 
         public NamedRow2(Integer id,
-                        Integer tiny, Integer small, Long big,
-                        Float real, Double doublePrecision, BigDecimal num,
-                        String s1, String s2, String s3, String s4, String s5, String s6) {
+                         Integer tiny, Integer small, Long big,
+                         Float real, Double doublePrecision, BigDecimal num,
+                         String s1, String s2, String s3, String s4, String s5, String s6) {
             super(s1, s2, s3, s4, s5, s6);
             this.id = id;
             this.tiny = tiny;
