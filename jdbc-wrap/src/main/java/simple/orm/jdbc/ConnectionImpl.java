@@ -1,5 +1,6 @@
 package simple.orm.jdbc;
 
+import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.exc.JdbcException;
 import simple.orm.jdbc.query.*;
@@ -141,6 +142,9 @@ public class ConnectionImpl implements Connection {
 
     @Override
     public int executeDMLUpdate(IndexedQuery query, Object... params) {
+        if (params == null) {
+            throw new NullPointerException("params is null");
+        }
         try {
             PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
             query.getInjector().injectParameters(stmt, params);
@@ -174,6 +178,9 @@ public class ConnectionImpl implements Connection {
 
     @Override
     public Result<Seq<Object>> executeSelect(IndexedQuery query, Object... params) {
+        if (params == null) {
+            throw new NullPointerException("params is null");
+        }
         try {
             PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
             query.getInjector().injectParameters(stmt, params);
@@ -223,6 +230,14 @@ public class ConnectionImpl implements Connection {
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
+    }
+
+    @Override
+    public <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Object... params) {
+        if (params == null) {
+            throw new NullPointerException("params is null");
+        }
+        return executeSelect(query, List.of(params));
     }
 
     @Override

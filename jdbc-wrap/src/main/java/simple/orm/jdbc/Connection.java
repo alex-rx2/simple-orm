@@ -161,6 +161,18 @@ public interface Connection extends AutoCloseable {
      * @return {@link Result} object to traverse ResultSet.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
+    <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Object... params);
+
+    /**
+     * Execute SELECT query with parameters provided as sequence of object, injected by index.
+     * Output ResultSet rows are mapped into object properties.
+     *
+     * @param query  SELECT query.
+     * @param params query parameters.
+     * @param <O>    type of object used to collect each ResultSet row parameters.
+     * @return {@link Result} object to traverse ResultSet.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
     <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Seq<Object> params);
 
     /**
