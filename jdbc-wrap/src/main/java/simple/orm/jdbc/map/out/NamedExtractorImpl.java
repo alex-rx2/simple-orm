@@ -171,7 +171,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         if (constructor == null) {
             try {
                 constructor = resultClass.getConstructor();
-                if (!constructor.isAccessible() && !Modifier.isPublic(constructor.getModifiers())) {
+                if (!constructor.isAccessible()) {
                     constructor.setAccessible(true);
                 }
             } catch (NoSuchMethodException e) {

@@ -19,7 +19,7 @@ import java.sql.Statement;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests of DML query
+ * Tests of DML queries.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DMLQueryTests extends BaseH2Test {

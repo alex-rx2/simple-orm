@@ -9,6 +9,7 @@ import io.vavr.collection.Seq;
 import simple.orm.jdbc.map.in.NamedInjector;
 import simple.orm.jdbc.map.in.NamedInjectorImpl;
 import simple.orm.jdbc.map.in.ParameterSetter;
+import simple.orm.jdbc.map.in.ParameterSetterImpl;
 import simple.orm.jdbc.param.ParameterJdbcType;
 import simple.orm.jdbc.param.ParameterType;
 
@@ -30,7 +31,7 @@ public class NamedInjectorBuilder<T> {
 
     public NamedInjectorBuilder() {
         this.types = HashMap.empty();
-        this.setters = HashMap.empty();
+        this.setters = ParameterSetterImpl.DEFAULT_SETTERS_MAP;
     }
 
     public NamedInjectorBuilder<T> param(String name, ParameterType<?, ?> type) {

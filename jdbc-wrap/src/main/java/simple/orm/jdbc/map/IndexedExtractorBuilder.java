@@ -8,6 +8,7 @@ import io.vavr.collection.Seq;
 import simple.orm.jdbc.map.out.IndexedExtractor;
 import simple.orm.jdbc.map.out.IndexedExtractorImpl;
 import simple.orm.jdbc.map.out.ParameterGetter;
+import simple.orm.jdbc.map.out.ParameterGetterImpl;
 import simple.orm.jdbc.param.ParameterJdbcType;
 import simple.orm.jdbc.param.ParameterType;
 
@@ -27,7 +28,7 @@ public class IndexedExtractorBuilder {
 
     protected IndexedExtractorBuilder() {
         this.types = List.empty();
-        this.getters = HashMap.empty();
+        this.getters = ParameterGetterImpl.DEFAULT_GETTERS_MAP;
     }
 
     public IndexedExtractorBuilder param(ParameterType<?, ?> type) {

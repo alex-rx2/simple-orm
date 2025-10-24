@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests of DDL query
+ * Tests of DDL queries.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DDLQueryTests extends BaseH2Test {

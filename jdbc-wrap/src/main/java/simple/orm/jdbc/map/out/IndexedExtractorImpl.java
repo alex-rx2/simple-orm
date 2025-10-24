@@ -56,7 +56,7 @@ public class IndexedExtractorImpl implements IndexedExtractor {
 
     protected Seq<Object> doExtractRow(ResultSet rs) {
         return types.zipWithIndex((t, i) -> Tuple.of(t, i + 1))
-                .map(t2 -> Tuple.of(t2._1, extract(rs, t2._2, t2._1)));
+                .map(t2 -> extract(rs, t2._2, t2._1));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

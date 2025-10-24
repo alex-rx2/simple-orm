@@ -86,7 +86,7 @@ public class IndexedInjectorImpl implements IndexedInjector {
             if (setter == null) {
                 stmt.setObject(index, jdbcValue, type.getJDBCType().getVendorTypeNumber());
             } else {
-                setter.setValue(stmt, index, value);
+                setter.setValue(stmt, index, jdbcValue);
             }
         } catch (SQLException e) {
             throw new JdbcException(e);

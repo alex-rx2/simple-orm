@@ -74,12 +74,16 @@ public class ResultImpl<T> implements Result<T> {
                 try {
                     boolean next = resultSet.next();
                     state = next ? State.NEXT_READY : State.THE_END;
+                    return hasNextRow();
                 } catch (SQLException e) {
                     throw new JdbcException(e);
                 }
             case NEXT_READY:
                 return true;
             case THE_END:
+                if (shouldAutoClose) {
+                    close();
+                }
                 return false;
             default:
                 throw new IllegalStateException("unreachable");
@@ -93,6 +97,7 @@ public class ResultImpl<T> implements Result<T> {
             case THE_START:
             case NEXT_DONE:
                 hasNextRow();
+                return nextRow();
             case NEXT_READY:
                 final T row;
                 if (extractor.isLeft()) {
@@ -103,6 +108,9 @@ public class ResultImpl<T> implements Result<T> {
                 state = State.NEXT_DONE;
                 return row;
             case THE_END:
+                if (shouldAutoClose) {
+                    close();
+                }
                 throw new IllegalStateException("no next row");
             default:
                 throw new IllegalStateException("unreachable");
