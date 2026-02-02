@@ -1,1 +1,1 @@
-# simple-orm
+# Pet project simple-orm
