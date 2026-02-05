@@ -1,5 +1,6 @@
 package simple.orm.jdbc.query;
 
+import simple.orm.jdbc.Connection;
 import simple.orm.jdbc.impl.query.BaseQueryImpl;
 
 /**
@@ -23,7 +24,9 @@ public sealed interface Query
     String getSQLQuery();
 
     /**
-     * Desired query timeout in seconds, 0 means no timeout.
+     * Desired query timeout in seconds,
+     *   0 means no timeout,
+     *   negative values mean {@link Connection#getDefaultTimeout()} should be used.
      *
      * @return query timeout in seconds.
      */

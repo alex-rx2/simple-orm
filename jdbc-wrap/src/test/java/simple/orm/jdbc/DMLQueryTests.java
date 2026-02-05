@@ -7,12 +7,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.common.InjectorsExtractors;
 import simple.orm.jdbc.common.BasicTypes;
+import simple.orm.jdbc.common.InjectorsExtractors;
+import simple.orm.jdbc.common.QueryFactory;
 import simple.orm.jdbc.query.IndexedQuery;
 import simple.orm.jdbc.query.NamedQuery;
 import simple.orm.jdbc.query.Query;
-import simple.orm.jdbc.common.QueryFactory;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -110,9 +110,9 @@ public class DMLQueryTests extends BaseH2Test {
     public void testInsertIndexed() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect();
+            simple.orm.jdbc.Connection conn = database.connect(10);
             IndexedQuery query = QFACTORY.iudQuery(
-                    "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10,
+                    "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     InjectorsExtractors.indexedInjector().params(
                             BasicTypes.INTEGER,
                             BasicTypes.TINYINT, BasicTypes.VARCHAR,
@@ -167,13 +167,12 @@ public class DMLQueryTests extends BaseH2Test {
     public void testInsertNamed() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect();
+            simple.orm.jdbc.Connection conn = database.connect(10);
             NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
                     """
                     INSERT INTO table_one\
                      VALUES (:id, :tiny, :s1, :small, :s2, :big, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
                     """,
-                    10,
                     InjectorsExtractors.<NamedRow2>namedInjector()
                             .param("id", BasicTypes.INTEGER)
                             .param("tiny", BasicTypes.TINYINT)
@@ -233,13 +232,12 @@ public class DMLQueryTests extends BaseH2Test {
     public void testInsertNamedPartiallyOtherPropNames() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect();
+            simple.orm.jdbc.Connection conn = database.connect(10);
             NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
                     """
                     INSERT INTO table_one\
                      VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
                     """,
-                    10,
                     InjectorsExtractors.<NamedRow2>namedInjector()
                             .param("111", BasicTypes.INTEGER, "id")
                             .param("222", BasicTypes.TINYINT, "tiny")
@@ -299,8 +297,8 @@ public class DMLQueryTests extends BaseH2Test {
     public void testDeleteWithoutParameters() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect();
-            Query query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1", 10);
+            simple.orm.jdbc.Connection conn = database.connect(10);
+            Query query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1");
             conn.executeDMLUpdate(query);
             conn.close();
         }
@@ -371,9 +369,7 @@ public class DMLQueryTests extends BaseH2Test {
         public Double getDoublePrecision() {
             return doublePrecision;
         }
-
     }
-
 
     private static class NamedRow1 {
         private String s1;

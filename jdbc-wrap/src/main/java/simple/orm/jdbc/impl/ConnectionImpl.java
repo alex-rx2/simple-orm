@@ -25,17 +25,20 @@ public class ConnectionImpl implements Connection {
     private final DatabaseAccessPointImpl database;
     private final java.sql.Connection jdbcConnection;
     private final DatabaseAccessPoint.ResultFactory resultFactory;
+    private final int defaultTimeout;
 
     private Statement currentStatement;
     private String lastPreparedQuery;
     private ResultSet currentResultSet;
 
     public ConnectionImpl(DatabaseAccessPointImpl database,
-                             java.sql.Connection connection,
-                             DatabaseAccessPoint.ResultFactory resultFactory) {
+                          java.sql.Connection connection,
+                          DatabaseAccessPoint.ResultFactory resultFactory,
+                          int defaultTimeout) {
         this.database = database;
         this.jdbcConnection = connection;
         this.resultFactory = resultFactory;
+        this.defaultTimeout = defaultTimeout;
     }
 
     @Override
@@ -78,6 +81,11 @@ public class ConnectionImpl implements Connection {
         } finally {
             database.removeConnection(this);
         }
+    }
+
+    @Override
+    public int getDefaultTimeout() {
+        return defaultTimeout;
     }
 
     private Statement obtainSimpleStatement(int timeout) {
@@ -132,7 +140,7 @@ public class ConnectionImpl implements Connection {
     @Override
     public void executeDDLUpdate(Query query) {
         try {
-            obtainSimpleStatement(query.getQueryTimeout()).executeUpdate(query.getSQLQuery());
+            obtainSimpleStatement(getTimeoutFor(query)).executeUpdate(query.getSQLQuery());
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
@@ -141,7 +149,7 @@ public class ConnectionImpl implements Connection {
     @Override
     public int executeDMLUpdate(Query query) {
         try {
-            return obtainSimpleStatement(query.getQueryTimeout()).executeUpdate(query.getSQLQuery());
+            return obtainSimpleStatement(getTimeoutFor(query)).executeUpdate(query.getSQLQuery());
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
@@ -161,7 +169,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.injector is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, params);
             return stmt.executeUpdate();
         } catch (SQLException e) {
@@ -178,7 +186,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.injector is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, input, query.getParametersMap());
             return stmt.executeUpdate();
         } catch (SQLException e) {
@@ -203,7 +211,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, params);
             return resultFactory.indexed(this, stmt.executeQuery(), query.getExtractor());
         } catch (SQLException e) {
@@ -217,7 +225,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            Statement stmt = obtainSimpleStatement(query.getQueryTimeout());
+            Statement stmt = obtainSimpleStatement(getTimeoutFor(query));
             return resultFactory.indexed(this, stmt.executeQuery(query.getSQLQuery()), query.getExtractor());
         } catch (SQLException e) {
             throw new JdbcException(e);
@@ -236,7 +244,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, input, query.getParametersMap());
             return resultFactory.named(this, stmt.executeQuery(), query.getExtractor());
         } catch (SQLException e) {
@@ -250,7 +258,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            Statement stmt = obtainSimpleStatement(query.getQueryTimeout());
+            Statement stmt = obtainSimpleStatement(getTimeoutFor(query));
             return resultFactory.named(this, stmt.executeQuery(query.getSQLQuery()), query.getExtractor());
         } catch (SQLException e) {
             throw new JdbcException(e);
@@ -274,7 +282,7 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, params);
             return resultFactory.named(this, stmt.executeQuery(), query.getExtractor());
         } catch (SQLException e) {
@@ -294,12 +302,17 @@ public class ConnectionImpl implements Connection {
             throw new NullPointerException("query.extractor is null");
         }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), query.getQueryTimeout());
+            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
             query.getInjector().injectParameters(stmt, input, query.getParametersMap());
             return resultFactory.indexed(this, stmt.executeQuery(), query.getExtractor());
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
+    }
+
+    private int getTimeoutFor(Query query) {
+        int queryTimeout = query.getQueryTimeout();
+        return queryTimeout < 0 ? defaultTimeout : queryTimeout;
     }
 
 }

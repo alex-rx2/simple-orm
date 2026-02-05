@@ -27,11 +27,11 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
 
     public static class DefaultConnectionFactory implements ConnectionFactory {
         @Override
-        public Connection connection(DatabaseAccessPoint dap, java.sql.Connection jdbcConn, ResultFactory resultFactory) {
+        public Connection connection(DatabaseAccessPoint dap, java.sql.Connection jdbcConn, ResultFactory resultFactory, int defaultTimeout) {
             if (!(dap instanceof DatabaseAccessPointImpl)) {
                 throw new IllegalArgumentException("DefaultConnectionFactory is designed to work only with DatabaseAccessPointImpl");
             }
-            return new ConnectionImpl((DatabaseAccessPointImpl) dap, jdbcConn, resultFactory);
+            return new ConnectionImpl((DatabaseAccessPointImpl) dap, jdbcConn, resultFactory, defaultTimeout);
         }
     }
 
@@ -59,10 +59,10 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
     private boolean closed = false;
 
     public DatabaseAccessPointImpl(Class<? extends Driver> driverClass,
-                                      String connectionUrl,
-                                      Properties connectionProperties,
-                                      ConnectionFactory connectionFactory,
-                                      ResultFactory resultFactory) {
+                                   String connectionUrl,
+                                   Properties connectionProperties,
+                                   ConnectionFactory connectionFactory,
+                                   ResultFactory resultFactory) {
         this.connectionUrl = connectionUrl;
         this.connectionProperties = connectionProperties;
         // driver should be registered in DriverManager
@@ -113,7 +113,15 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
     }
 
     @Override
-    public Connection connect() {
+    public Connection connect() throws DatabaseClosedException {
+        return connect(0);
+    }
+
+    @Override
+    public Connection connect(int defaultTimeout) {
+        if (defaultTimeout < 0) {
+            throw new IllegalArgumentException("defaultTimeout is negative");
+        }
         synchronized (this) {
             if (closed) {
                 throw new DatabaseClosedException("database access point is closed");
@@ -125,7 +133,7 @@ public class DatabaseAccessPointImpl implements DatabaseAccessPoint {
         } catch (SQLException e) {
             throw new JdbcException("failed to establish connection", e);
         }
-        Connection connection = connectionFactory.connection(this, jdbcConnection, resultFactory);
+        Connection connection = connectionFactory.connection(this, jdbcConnection, resultFactory, defaultTimeout);
         addConnection(connection);
         return connection;
     }

@@ -14,7 +14,6 @@ import java.sql.Statement;
 /**
  * Abstraction of database connection, able to execute queries and manage transactions.
  */
-// TODO default query timeout in connection?
 // TODO transactions management
 // TODO api for batch updates
 // TODO separate query execution from connection ???
@@ -49,6 +48,14 @@ public interface Connection extends AutoCloseable {
      * @throws JdbcException a wrap around {@link SQLException}.
      */
     void close();
+
+    /**
+     * Returns default timeout for query execution.
+     * Default timeout is applyed if {@link Query} doesn't specify its own proper timeout.
+     *
+     * @return query timeout in seconds.
+     */
+    int getDefaultTimeout();
 
     /**
      * Execute DDL query.

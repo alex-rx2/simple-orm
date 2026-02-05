@@ -58,6 +58,13 @@ public class QueryFactory {
     /**
      * Creates SQL DDL query.
      */
+    public Query ddlQuery(String sql) {
+        return ddlQuery(sql, -1);
+    }
+
+    /**
+     * Creates SQL DDL query.
+     */
     public Query ddlQuery(
             String sql,
             int queryTimeoutSeconds
@@ -65,10 +72,91 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         return new BaseQueryImpl(QueryType.EXECUTE_UPDATE, sql, queryTimeoutSeconds);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query parameters are represented as a sequence of java object (injected by index).
+     */
+    public IndexedQuery iudQuery(String sql, IndexedInjector injector) {
+        return iudQuery(sql, -1, injector);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query parameters are represented as a sequence of java object (injected by index).
+     */
+    public IndexedQuery iudQuery(
+            String sql,
+            int queryTimeoutSeconds,
+            IndexedInjector injector
+    ) {
+        if (sql == null) {
+            throw new NullPointerException("sql is null");
+        }
+        if (injector == null) {
+            throw new NullPointerException("injector is null");
+        }
+        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, null);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query parameters are represented as properties of java object.
+     */
+    public <I> NamedQuery<I, Void> iudQuery(String sql, NamedInjector<I> injector) {
+        return iudQuery(sql, -1, injector);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query parameters are represented as properties of java object.
+     */
+    public <I> NamedQuery<I, Void> iudQuery(
+            String sql,
+            int queryTimeoutSeconds,
+            NamedInjector<I> injector
+    ) {
+        if (sql == null) {
+            throw new NullPointerException("sql is null");
+        }
+        if (injector == null) {
+            throw new NullPointerException("injector is null");
+        }
+        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
+        return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, null, processed._2);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query has no parameters.
+     */
+    public Query iudQueryWithoutParameters(String sql) {
+        return iudQueryWithoutParameters(sql, -1);
+    }
+
+    /**
+     * Creates SQL INSERT/UPDATE/DELETE query.
+     * Query has no parameters.
+     */
+    public Query iudQueryWithoutParameters(
+            String sql,
+            int queryTimeoutSeconds
+    ) {
+        if (sql == null) {
+            throw new NullPointerException("sql is null");
+        }
+        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, null, null);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query parameters are represented as a sequence of java object (injected by index).
+     * Each ResultSet row is represented as a sequence of objects (extracted by index).
+     */
+    public IndexedQuery selectQuery(String sql, IndexedInjector injector, IndexedExtractor extractor) {
+        return selectQuery(sql, -1, injector, extractor);
     }
 
     /**
@@ -85,9 +173,6 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
@@ -95,6 +180,15 @@ public class QueryFactory {
             throw new NullPointerException("extractor is null");
         }
         return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, extractor);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query parameters are represented as properties of java object.
+     * Each ResultSet row is represented as java object (properties of said object).
+     */
+    public <I, O> NamedQuery<I, O> selectQuery(String sql, NamedInjector<I> injector, NamedExtractor<O> extractor) {
+        return selectQuery(sql, -1, injector, extractor);
     }
 
     /**
@@ -111,9 +205,6 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
@@ -122,6 +213,15 @@ public class QueryFactory {
         }
         Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
         return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, extractor, processed._2);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query parameters are represented as a sequence of java object (injected by index).
+     * Each ResultSet row is represented as java object (properties of said object).
+     */
+    public <O> IndexedNamedQuery<O> selectQuery(String sql, IndexedInjector injector, NamedExtractor<O> extractor) {
+        return selectQuery(sql, -1, injector, extractor);
     }
 
     /**
@@ -138,9 +238,6 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
@@ -148,6 +245,15 @@ public class QueryFactory {
             throw new NullPointerException("extractor is null");
         }
         return new IndexedNamedQueryImpl<>(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, extractor);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query parameters are represented as properties of java object.
+     * Each ResultSet row is represented as a sequence of objects (extracted by index).
+     */
+    public <I> NamedIndexedQuery<I> selectQuery(String sql, NamedInjector<I> injector, IndexedExtractor extractor) {
+        return selectQuery(sql, -1, injector, extractor);
     }
 
     /**
@@ -164,9 +270,6 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
@@ -182,6 +285,15 @@ public class QueryFactory {
      * Query has no parameters.
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
+    public IndexedQuery selectQueryWithoutParameters(String sql, IndexedExtractor extractor) {
+        return selectQueryWithoutParameters(sql, -1, extractor);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query has no parameters.
+     * Each ResultSet row is represented as a sequence of objects (extracted by index).
+     */
     public IndexedQuery selectQueryWithoutParameters(
             String sql,
             int queryTimeoutSeconds,
@@ -190,13 +302,19 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
         return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, null, extractor);
+    }
+
+    /**
+     * Creates SQL SELECT.
+     * Query has no parameters.
+     * Each ResultSet row is represented as java object (properties of said object).
+     */
+    public <O> NamedQuery<Void, O> selectQueryWithoutParameters(String sql, NamedExtractor<O> extractor) {
+        return selectQueryWithoutParameters(sql, -1, extractor);
     }
 
     /**
@@ -212,9 +330,6 @@ public class QueryFactory {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
@@ -222,63 +337,4 @@ public class QueryFactory {
         return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, null, extractor, processed._2);
     }
 
-    /**
-     * Creates SQL INSERT/UPDATE/DELETE query.
-     * Query parameters are represented as a sequence of java object (injected by index).
-     */
-    public IndexedQuery iudQuery(
-            String sql,
-            int queryTimeoutSeconds,
-            IndexedInjector injector
-    ) {
-        if (sql == null) {
-            throw new NullPointerException("sql is null");
-        }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
-        if (injector == null) {
-            throw new NullPointerException("injector is null");
-        }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, null);
-    }
-
-    /**
-     * Creates SQL INSERT/UPDATE/DELETE query.
-     * Query parameters are represented as properties of java object.
-     */
-    public <I> NamedQuery<I, Void> iudQuery(
-            String sql,
-            int queryTimeoutSeconds,
-            NamedInjector<I> injector
-    ) {
-        if (sql == null) {
-            throw new NullPointerException("sql is null");
-        }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
-        if (injector == null) {
-            throw new NullPointerException("injector is null");
-        }
-        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, null, processed._2);
-    }
-
-    /**
-     * Creates SQL INSERT/UPDATE/DELETE query.
-     * Query has no parameters.
-     */
-    public Query iudQueryWithoutParameters(
-            String sql,
-            int queryTimeoutSeconds
-    ) {
-        if (sql == null) {
-            throw new NullPointerException("sql is null");
-        }
-        if (queryTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
-        }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, null, null);
-    }
 }

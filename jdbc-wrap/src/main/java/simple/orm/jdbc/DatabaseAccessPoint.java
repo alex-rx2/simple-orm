@@ -20,7 +20,7 @@ public interface DatabaseAccessPoint extends AutoCloseable {
      * Factory of {@link Connection} implementations.
      */
     interface ConnectionFactory {
-        Connection connection(DatabaseAccessPoint dap, java.sql.Connection jdbcConn, ResultFactory resultFactory);
+        Connection connection(DatabaseAccessPoint dap, java.sql.Connection jdbcConn, ResultFactory resultFactory, int defaultTimeout);
     }
 
     /**
@@ -63,10 +63,19 @@ public interface DatabaseAccessPoint extends AutoCloseable {
     /**
      * Obtain connection to database.
      *
-     * @return connection.
+     * @return new connection.
      * @throws DatabaseClosedException this database access point was closed.
      */
     Connection connect() throws DatabaseClosedException;
+
+    /**
+     * Obtain connection to database.
+     *
+     * @param defaultTimeout default timeout for query execution in seconds; 0 means no timeout, negative values are not allowed.
+     * @return new connection.
+     * @throws DatabaseClosedException this database access point was closed.
+     */
+    Connection connect(int defaultTimeout) throws DatabaseClosedException;
 
     /**
      * Close all managed connections and makes access point closed (unable to open new connections).

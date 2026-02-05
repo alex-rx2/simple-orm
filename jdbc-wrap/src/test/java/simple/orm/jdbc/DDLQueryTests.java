@@ -45,9 +45,9 @@ public class DDLQueryTests extends BaseH2Test {
     public void testCreateTable() throws SQLException {
         // test
         {
-            Connection conn = database.connect();
+            Connection conn = database.connect(10);
             conn.executeDDLUpdate(
-                    QFACTORY.ddlQuery("CREATE TABLE test_table (id INT PRIMARY KEY, some_value VARCHAR(255) NULL)", 0)
+                    QFACTORY.ddlQuery("CREATE TABLE test_table (id INT PRIMARY KEY, some_value VARCHAR(255) NULL)")
             );
             conn.close();
         }
