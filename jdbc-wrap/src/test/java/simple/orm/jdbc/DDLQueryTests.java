@@ -4,7 +4,10 @@ import io.vavr.Tuple;
 import io.vavr.Tuple4;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import simple.orm.jdbc.query.QueryFactory;
 
 import java.sql.ResultSet;
@@ -43,7 +46,9 @@ public class DDLQueryTests extends BaseH2Test {
         // test
         {
             Connection conn = database.connect();
-            conn.executeDDLUpdate(QFACTORY.ddlQuery(CREATE_TABLE, 0));
+            conn.executeDDLUpdate(
+                    QFACTORY.ddlQuery("CREATE TABLE test_table (id INT PRIMARY KEY, some_value VARCHAR(255) NULL)", 0)
+            );
             conn.close();
         }
         // verify
@@ -66,10 +71,5 @@ public class DDLQueryTests extends BaseH2Test {
             );
         }
     }
-
-    private static final String CREATE_TABLE = "" +
-            "\nCREATE TABLE test_table" +
-            "\n(id INT PRIMARY KEY, some_value VARCHAR(255) NULL)" +
-            "";
 
 }

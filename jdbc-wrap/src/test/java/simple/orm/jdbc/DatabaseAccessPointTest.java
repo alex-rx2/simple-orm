@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.exc.DatabaseClosedException;
+import simple.orm.jdbc.impl.ConnectionImpl;
 
 import java.sql.ResultSet;
 import java.sql.Statement;

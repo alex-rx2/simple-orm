@@ -1,22 +1,23 @@
 package simple.orm.jdbc.param;
 
+import io.vavr.Function1;
+
 import java.sql.JDBCType;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * {@link ParameterType} implementation.
  */
 public class ParameterTypeImpl<Jdbc, Java> extends AbstractParameterImplType<Jdbc, Java> {
 
-    protected Function<Jdbc, Java> jdbcToJava;
-    protected Function<Java, Jdbc> javaToJdbc;
+    protected Function1<Jdbc, Java> jdbcToJava;
+    protected Function1<Java, Jdbc> javaToJdbc;
 
     public ParameterTypeImpl(JDBCType jdbcType,
                              Class<Jdbc> jdbcClass,
                              Class<Java> javaClass,
-                             Function<Java, Jdbc> javaToJdbc,
-                             Function<Jdbc, Java> jdbcToJava
+                             Function1<Java, Jdbc> javaToJdbc,
+                             Function1<Jdbc, Java> jdbcToJava
     ) {
         super(jdbcType, jdbcClass, javaClass);
         if (javaToJdbc == null) {

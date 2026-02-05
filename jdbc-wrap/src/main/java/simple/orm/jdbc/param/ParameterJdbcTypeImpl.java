@@ -1,8 +1,9 @@
 package simple.orm.jdbc.param;
 
+import io.vavr.Function1;
+
 import java.sql.JDBCType;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * +
@@ -36,8 +37,8 @@ public class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc> {
 
     @Override
     public <Java> ParameterType<Jdbc, Java> implementedBy(Class<Java> javaClass,
-                                                          Function<Java, Jdbc> javaToJdbc,
-                                                          Function<Jdbc, Java> jdbcToJava) {
+                                                          Function1<Java, Jdbc> javaToJdbc,
+                                                          Function1<Jdbc, Java> jdbcToJava) {
         return ParameterType.of(jdbcType, jdbcClass, javaClass, javaToJdbc, jdbcToJava);
     }
 

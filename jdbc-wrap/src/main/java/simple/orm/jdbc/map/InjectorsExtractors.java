@@ -1,5 +1,11 @@
 package simple.orm.jdbc.map;
 
+import simple.orm.jdbc.map.builders.IndexedExtractorBuilder;
+import simple.orm.jdbc.map.builders.IndexedInjectorBuilder;
+import simple.orm.jdbc.map.builders.NamedExtractorByIndexBuilder;
+import simple.orm.jdbc.map.builders.NamedExtractorByLabelBuilder;
+import simple.orm.jdbc.map.builders.NamedInjectorBuilder;
+
 /**
  * Utility class providing single point access to builders.
  */

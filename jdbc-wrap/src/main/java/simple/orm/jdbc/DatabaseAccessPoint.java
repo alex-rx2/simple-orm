@@ -1,9 +1,9 @@
 package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.exc.DatabaseClosedException;
-import simple.orm.jdbc.map.out.IndexedExtractor;
-import simple.orm.jdbc.map.out.NamedExtractor;
+import simple.orm.jdbc.impl.DatabaseAccessPointImpl;
+import simple.orm.jdbc.map.IndexedExtractor;
+import simple.orm.jdbc.map.NamedExtractor;
 
 import java.sql.Driver;
 import java.sql.ResultSet;
@@ -146,11 +146,11 @@ public interface DatabaseAccessPoint extends AutoCloseable {
             if (connectionProperties == null) {
                 connectionProperties = new Properties();
             }
-            if (resultFactory == null) {
-                resultFactory = new DatabaseAccessPointImpl.DefaultResultFactory();
-            }
             if (connectionFactory == null) {
                 connectionFactory = new DatabaseAccessPointImpl.DefaultConnectionFactory();
+            }
+            if (resultFactory == null) {
+                resultFactory = new DatabaseAccessPointImpl.DefaultResultFactory();
             }
             return new DatabaseAccessPointImpl(driverClass, connectionUrl, connectionProperties, connectionFactory, resultFactory);
         }

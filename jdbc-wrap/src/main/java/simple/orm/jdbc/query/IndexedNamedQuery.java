@@ -1,14 +1,14 @@
 package simple.orm.jdbc.query;
 
-import simple.orm.jdbc.map.in.IndexedInjector;
-import simple.orm.jdbc.map.out.NamedExtractor;
+import simple.orm.jdbc.map.IndexedInjector;
+import simple.orm.jdbc.map.NamedExtractor;
 
 /**
  * Query with query parameters represented as sequence of objects, result rows represented as java object properties.
  *
  * @param <O> type of java object extracted from ResultSet row.
  */
-public interface IndexedNamedQuery<O> extends Query {
+public non-sealed interface IndexedNamedQuery<O> extends Query {
 
     /**
      * Returns parameters injector. <code>Null</code> should be returned if there are no parameters in the query.

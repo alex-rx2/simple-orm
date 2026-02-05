@@ -1,7 +1,7 @@
 package simple.orm.jdbc.query;
 
-import simple.orm.jdbc.map.in.NamedInjector;
-import simple.orm.jdbc.map.out.NamedExtractor;
+import simple.orm.jdbc.map.NamedExtractor;
+import simple.orm.jdbc.map.NamedInjector;
 
 /**
  * Query with in and out parameters represented as java object properties. With said parameters mapped by properties names.
@@ -9,7 +9,7 @@ import simple.orm.jdbc.map.out.NamedExtractor;
  * @param <I> type of object, which properties are used as query parameters.
  * @param <O> type of java object extracted from ResultSet row.
  */
-public interface NamedQuery<I, O> extends Query {
+public non-sealed interface NamedQuery<I, O> extends Query {
 
     /**
      * Returns parameters injector. <code>Null</code> should be returned if there are no parameters in the query.

@@ -2,7 +2,11 @@ package simple.orm.jdbc;
 
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import simple.orm.jdbc.map.InjectorsExtractors;
 import simple.orm.jdbc.param.BasicTypes;
 import simple.orm.jdbc.query.IndexedQuery;
@@ -52,22 +56,24 @@ public class DMLQueryTests extends BaseH2Test {
 
     private void createTables() throws SQLException {
         try (Connection conn = directConnect()) {
-            conn.createStatement().executeUpdate("" +
-                    "CREATE TABLE table_one" +
-                    " (id INT PRIMARY KEY," +
-                    "  col_ti TINYINT NULL," +
-                    "  col_s1 VARCHAR(256) NULL," +
-                    "  col_si SMALLINT NULL," +
-                    "  col_s2 VARCHAR(256) NULL," +
-                    "  col_bi BIGINT NULL," +
-                    "  col_s3 VARCHAR(256) NULL," +
-                    "  col_r REAL NULL," +
-                    "  col_s4 VARCHAR(256) NULL," +
-                    "  col_d DOUBLE PRECISION NULL," +
-                    "  col_s5 VARCHAR(256) NULL," +
-                    "  col_nu NUMERIC(30,10) NULL," +
-                    "  col_s6 VARCHAR(256) NULL" +
-                    ")");
+            conn.createStatement().executeUpdate(
+                    """
+                    CREATE TABLE table_one\
+                     (id INT PRIMARY KEY,\
+                      col_ti TINYINT NULL,\
+                      col_s1 VARCHAR(256) NULL,\
+                      col_si SMALLINT NULL,\
+                      col_s2 VARCHAR(256) NULL,\
+                      col_bi BIGINT NULL,\
+                      col_s3 VARCHAR(256) NULL,\
+                      col_r REAL NULL,\
+                      col_s4 VARCHAR(256) NULL,\
+                      col_d DOUBLE PRECISION NULL,\
+                      col_s5 VARCHAR(256) NULL,\
+                      col_nu NUMERIC(30,10) NULL,\
+                      col_s6 VARCHAR(256) NULL\
+                    )\
+                    """);
         }
     }
 
@@ -75,26 +81,28 @@ public class DMLQueryTests extends BaseH2Test {
         try (Connection conn = directConnect()) {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("TRUNCATE TABLE table_one");
-            stmt.executeUpdate("" +
-                    "INSERT INTO table_one" +
-                    " VALUES (1," +
-                    "  10,    'p1'," +
-                    "  10,    'p2'," +
-                    "  10,    'p3'," +
-                    "  10.10, 'p4'," +
-                    "  10.10, 'p5'," +
-                    "  10.10, 'p6'" +
-                    ")");
-            stmt.executeUpdate("" +
-                    "INSERT INTO table_one" +
-                    " VALUES (2," +
-                    "  -10,    'n1'," +
-                    "  -10,    'n2'," +
-                    "  -10,    'n3'," +
-                    "  -10.10, 'n4'," +
-                    "  -10.10, 'n5'," +
-                    "  -10.10, 'n6'" +
-                    ")");
+            stmt.executeUpdate("""
+                               INSERT INTO table_one\
+                                VALUES (1,\
+                                 10,    'p1',\
+                                 10,    'p2',\
+                                 10,    'p3',\
+                                 10.10, 'p4',\
+                                 10.10, 'p5',\
+                                 10.10, 'p6'\
+                               )\
+                               """);
+            stmt.executeUpdate("""
+                               INSERT INTO table_one\
+                                VALUES (2,\
+                                 -10,    'n1',\
+                                 -10,    'n2',\
+                                 -10,    'n3',\
+                                 -10.10, 'n4',\
+                                 -10.10, 'n5',\
+                                 -10.10, 'n6'\
+                               )\
+                               """);
         }
     }
 
@@ -161,7 +169,11 @@ public class DMLQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
-                    "INSERT INTO table_one VALUES (:id, :tiny, :s1, :small, :s2, :big, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)", 10,
+                    """
+                    INSERT INTO table_one\
+                     VALUES (:id, :tiny, :s1, :small, :s2, :big, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
+                    """,
+                    10,
                     InjectorsExtractors.<NamedRow2>namedInjector()
                             .param("id", BasicTypes.INTEGER)
                             .param("tiny", BasicTypes.TINYINT)
@@ -190,17 +202,19 @@ public class DMLQueryTests extends BaseH2Test {
         {
             Seq<String> columns = List.empty();
             try (java.sql.Connection conn = directConnect()) {
-                ResultSet rs = conn.createStatement().executeQuery("" +
-                        "SELECT concat_ws(','," +
-                        "  id," +
-                        "  to_char(col_ti),col_s1," +
-                        "  to_char(col_si),col_s2," +
-                        "  to_char(col_bi),col_s3," +
-                        "  to_char(col_r),col_s4," +
-                        "  to_char(col_d),col_s5," +
-                        "  to_char(col_nu),col_s6" +
-                        ")" +
-                        "\nFROM table_one ORDER BY id"
+                ResultSet rs = conn.createStatement().executeQuery(
+                        """
+                        SELECT concat_ws(',',\
+                          id,\
+                          to_char(col_ti),col_s1,\
+                          to_char(col_si),col_s2,\
+                          to_char(col_bi),col_s3,\
+                          to_char(col_r),col_s4,\
+                          to_char(col_d),col_s5,\
+                          to_char(col_nu),col_s6\
+                         )\
+                         FROM table_one ORDER BY id
+                        """
                 );
                 while (rs.next()) {
                     columns = columns.append(rs.getString(1));
@@ -221,7 +235,11 @@ public class DMLQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
-                    "INSERT INTO table_one VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)", 10,
+                    """
+                    INSERT INTO table_one\
+                     VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
+                    """,
+                    10,
                     InjectorsExtractors.<NamedRow2>namedInjector()
                             .param("111", BasicTypes.INTEGER, "id")
                             .param("222", BasicTypes.TINYINT, "tiny")
@@ -250,17 +268,19 @@ public class DMLQueryTests extends BaseH2Test {
         {
             Seq<String> columns = List.empty();
             try (java.sql.Connection conn = directConnect()) {
-                ResultSet rs = conn.createStatement().executeQuery("" +
-                        "SELECT concat_ws(','," +
-                        "  id," +
-                        "  to_char(col_ti),col_s1," +
-                        "  to_char(col_si),col_s2," +
-                        "  to_char(col_bi),col_s3," +
-                        "  to_char(col_r),col_s4," +
-                        "  to_char(col_d),col_s5," +
-                        "  to_char(col_nu),col_s6" +
-                        ")" +
-                        "\nFROM table_one ORDER BY id"
+                ResultSet rs = conn.createStatement().executeQuery(
+                        """
+                        SELECT concat_ws(',',\
+                          id,\
+                          to_char(col_ti),col_s1,\
+                          to_char(col_si),col_s2,\
+                          to_char(col_bi),col_s3,\
+                          to_char(col_r),col_s4,\
+                          to_char(col_d),col_s5,\
+                          to_char(col_nu),col_s6\
+                         )\
+                         FROM table_one ORDER BY id
+                        """
                 );
                 while (rs.next()) {
                     columns = columns.append(rs.getString(1));
@@ -288,17 +308,19 @@ public class DMLQueryTests extends BaseH2Test {
         {
             Seq<String> columns = List.empty();
             try (java.sql.Connection conn = directConnect()) {
-                ResultSet rs = conn.createStatement().executeQuery("" +
-                        "SELECT concat_ws(','," +
-                        "  id," +
-                        "  to_char(col_ti),col_s1," +
-                        "  to_char(col_si),col_s2," +
-                        "  to_char(col_bi),col_s3," +
-                        "  to_char(col_r),col_s4," +
-                        "  to_char(col_d),col_s5," +
-                        "  to_char(col_nu),col_s6" +
-                        ")" +
-                        "\nFROM table_one ORDER BY id"
+                ResultSet rs = conn.createStatement().executeQuery(
+                        """
+                        SELECT concat_ws(',',\
+                          id,\
+                          to_char(col_ti),col_s1,\
+                          to_char(col_si),col_s2,\
+                          to_char(col_bi),col_s3,\
+                          to_char(col_r),col_s4,\
+                          to_char(col_d),col_s5,\
+                          to_char(col_nu),col_s6\
+                         )\
+                         FROM table_one ORDER BY id
+                        """
                 );
                 while (rs.next()) {
                     columns = columns.append(rs.getString(1));

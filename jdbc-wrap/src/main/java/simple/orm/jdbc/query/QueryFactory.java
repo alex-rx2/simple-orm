@@ -1,17 +1,39 @@
 package simple.orm.jdbc.query;
 
 import io.vavr.Tuple2;
-import simple.orm.jdbc.map.in.IndexedInjector;
-import simple.orm.jdbc.map.in.NamedInjector;
-import simple.orm.jdbc.map.out.IndexedExtractor;
-import simple.orm.jdbc.map.out.NamedExtractor;
+import simple.orm.jdbc.impl.query.BaseQueryImpl;
+import simple.orm.jdbc.impl.query.IndexedNamedQueryImpl;
+import simple.orm.jdbc.impl.query.IndexedQueryImpl;
+import simple.orm.jdbc.impl.query.NamedIndexedQueryImpl;
+import simple.orm.jdbc.impl.query.NamedQueryImpl;
+import simple.orm.jdbc.map.IndexedExtractor;
+import simple.orm.jdbc.map.IndexedInjector;
+import simple.orm.jdbc.map.NamedExtractor;
+import simple.orm.jdbc.map.NamedInjector;
 
 /**
  * Simple factory to create queries.
+ * <br>
+ * For default factory {@link #defaultFactory()} named parameters in SQL query
+ * are strings of format <nobr><code>:[a-zA-Z0-9_]+</code></nobr> that are not inside comments or SQL string literals.
+ * Said parameters are collected and replaced inside query with <code>?</code>.
  */
 public class QueryFactory {
 
-    protected static final QueryFactory defaultFactory = new QueryFactory(new DefaultNPProcessor());
+    /**
+     * Interface for utility class that extracts named parameters from SQL query replacing them with ? in the query.
+     */
+    public interface NamedParametersProcessor {
+        /**
+         * This method extracts named parameters from SQL query, replacing them with ? in the query.
+         *
+         * @param sql SQL query.
+         * @return {@link Tuple2} of processed query and extracted named parameters.
+         */
+        Tuple2<String, NamedParametersMap> process(String sql);
+    }
+
+    private static final QueryFactory defaultFactory = new QueryFactory(new DefaultNPProcessor());
 
     public static QueryFactory defaultFactory() {
         return defaultFactory;
@@ -19,7 +41,7 @@ public class QueryFactory {
 
     private final NamedParametersProcessor namedParametersProcessor;
 
-    protected QueryFactory(NamedParametersProcessor extractor) {
+    public QueryFactory(NamedParametersProcessor extractor) {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
@@ -39,7 +61,7 @@ public class QueryFactory {
         if (queryTimeoutSeconds < 0) {
             throw new IllegalArgumentException("queryTimeoutSeconds should be >= 0");
         }
-        return new IndexedQueryImpl(QueryType.EXECUTE_UPDATE, sql, queryTimeoutSeconds, null, null);
+        return new BaseQueryImpl(QueryType.EXECUTE_UPDATE, sql, queryTimeoutSeconds);
     }
 
     /**

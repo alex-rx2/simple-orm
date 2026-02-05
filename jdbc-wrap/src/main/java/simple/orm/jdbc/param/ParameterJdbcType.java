@@ -1,7 +1,8 @@
 package simple.orm.jdbc.param;
 
+import io.vavr.Function1;
+
 import java.sql.JDBCType;
-import java.util.function.Function;
 
 /**
  * Type metadata for JDBC (query or result) parameter.
@@ -34,6 +35,6 @@ public interface ParameterJdbcType<Jdbc> {
     /**
      * Factory method to create {@link ParameterType} of this type implemented by specified Java class.
      */
-    <Java> ParameterType<Jdbc, Java> implementedBy(Class<Java> javaClass, Function<Java, Jdbc> javaToJdbc, Function<Jdbc, Java> jdbcToJava);
+    <Java> ParameterType<Jdbc, Java> implementedBy(Class<Java> javaClass, Function1<Java, Jdbc> javaToJdbc, Function1<Jdbc, Java> jdbcToJava);
 
 }

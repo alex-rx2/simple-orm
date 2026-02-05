@@ -1,7 +1,6 @@
 package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.exc.JdbcException;
 
 import java.sql.SQLException;
 

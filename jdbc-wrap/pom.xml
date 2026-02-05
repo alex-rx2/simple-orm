@@ -4,13 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>simple-orm-jdbc-wrap</artifactId>
-
     <parent>
         <groupId>simple.orm</groupId>
         <artifactId>simple-orm-parent</artifactId>
-        <version>0.1</version>
+        <version>${revision}</version>
     </parent>
+
+    <artifactId>simple-orm-jdbc-wrap</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>simple.orm</groupId>
+            <artifactId>simple-orm-util</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 
     <properties>
     </properties>

@@ -1,9 +1,12 @@
 package simple.orm.jdbc.query;
 
+import simple.orm.jdbc.impl.query.BaseQueryImpl;
+
 /**
  * SQL Query.
  */
-public interface Query {
+public sealed interface Query
+        permits IndexedQuery, IndexedNamedQuery, NamedQuery, NamedIndexedQuery, BaseQueryImpl {
 
     /**
      * Returns type of the query.

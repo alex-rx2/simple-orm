@@ -1,7 +1,8 @@
 package simple.orm.jdbc.param;
 
+import io.vavr.Function1;
+
 import java.sql.JDBCType;
-import java.util.function.Function;
 
 /**
  * JDBC query or result parameter specification.
@@ -62,8 +63,8 @@ public interface ParameterType<Jdbc, Java> {
     static <Jdbc, Java> ParameterType<Jdbc, Java> of(JDBCType jdbcType,
                                                      Class<Jdbc> jdbcClass,
                                                      Class<Java> javaClass,
-                                                     Function<Java, Jdbc> javaToJdbc,
-                                                     Function<Jdbc, Java> jdbcToJava) {
+                                                     Function1<Java, Jdbc> javaToJdbc,
+                                                     Function1<Jdbc, Java> jdbcToJava) {
         return new ParameterTypeImpl<>(jdbcType, jdbcClass, javaClass, javaToJdbc, jdbcToJava);
     }
 

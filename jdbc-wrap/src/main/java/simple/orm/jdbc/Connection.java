@@ -1,8 +1,11 @@
 package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.exc.JdbcException;
-import simple.orm.jdbc.query.*;
+import simple.orm.jdbc.query.IndexedNamedQuery;
+import simple.orm.jdbc.query.IndexedQuery;
+import simple.orm.jdbc.query.NamedIndexedQuery;
+import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.Query;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,10 +14,10 @@ import java.sql.Statement;
 /**
  * Abstraction of database connection, able to execute queries and manage transactions.
  */
+// TODO default query timeout in connection?
 // TODO transactions management
 // TODO api for batch updates
 // TODO separate query execution from connection ???
-// TODO default query timeout in connection?
 // TODO how should Result object not closed automatically managed (and their Statement/ResultSet)?
 // TODO how should Statements be managed? timeouts? pools? (and mind the transactions management)
 public interface Connection extends AutoCloseable {

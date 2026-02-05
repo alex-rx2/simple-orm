@@ -1,17 +1,29 @@
 package simple.orm.jdbc;
 
 import io.vavr.collection.Seq;
-import org.junit.jupiter.api.*;
-import simple.orm.jdbc.exc.JdbcException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import simple.orm.jdbc.map.InjectorsExtractors;
 import simple.orm.jdbc.param.BasicTypes;
 import simple.orm.jdbc.param.ParameterType;
 import simple.orm.jdbc.param.ParameterTypeImpl;
-import simple.orm.jdbc.query.*;
+import simple.orm.jdbc.query.IndexedNamedQuery;
+import simple.orm.jdbc.query.IndexedQuery;
+import simple.orm.jdbc.query.NamedIndexedQuery;
+import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.QueryFactory;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.*;
+import java.sql.Date;
+import java.sql.JDBCType;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -50,17 +62,19 @@ public class SelectQueryTests extends BaseH2Test {
 
     private void createTables() throws SQLException {
         try (java.sql.Connection conn = directConnect()) {
-            conn.createStatement().executeUpdate("" +
-                    "CREATE TABLE table_one" +
-                    " (id INT PRIMARY KEY," +
-                    "  col_d DOUBLE PRECISION NULL," +
-                    "  col_str1 VARCHAR(256) NULL," +
-                    "  col_nu NUMERIC(30,10) NULL," +
-                    "  col_str2 VARCHAR(256) NULL," +
-                    "  col_date DATE NULL," +
-                    "  col_time TIME NULL," +
-                    "  col_timestamp TIMESTAMP(9) NULL" +
-                    ")");
+            conn.createStatement().executeUpdate(
+                    """
+                    CREATE TABLE table_one\
+                     (id INT PRIMARY KEY,\
+                      col_d DOUBLE PRECISION NULL,\
+                      col_str1 VARCHAR(256) NULL,\
+                      col_nu NUMERIC(30,10) NULL,\
+                      col_str2 VARCHAR(256) NULL,\
+                      col_date DATE NULL,\
+                      col_time TIME NULL,\
+                      col_timestamp TIMESTAMP(9) NULL\
+                    )\
+                    """);
         }
     }
 
@@ -68,24 +82,27 @@ public class SelectQueryTests extends BaseH2Test {
         try (Connection conn = directConnect()) {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("TRUNCATE TABLE table_one");
-            stmt.executeUpdate("" +
-                    "INSERT INTO table_one" +
-                    " VALUES (1," +
-                    "  10.10,   'p1'," +
-                    "  100.001, 'p2'," +
-                    "  '2000-01-31'," +
-                    "  '12:30:55.555666777'," +
-                    "  '2001-02-13 10:20:30'" +
-                    ")");
-            stmt.executeUpdate("" +
-                    "INSERT INTO table_one" +
-                    " VALUES (2," +
-                    "  -10.10,   'n1'," +
-                    "  -100.001, 'n2'," +
-                    "  '2025-10-24'," +
-                    "  '13:20:00.000000111'," +
-                    "  '2025-10-24 13:20:30.123123123'" +
-                    ")");
+            stmt.executeUpdate(
+                    """
+                    INSERT INTO table_one\
+                     VALUES (1,\
+                      10.10,   'p1',\
+                      100.001, 'p2',\
+                      '2000-01-31',\
+                      '12:30:55.555666777',\
+                      '2001-02-13 10:20:30'\
+                    )\
+                    """);
+            stmt.executeUpdate(
+                    """
+                    INSERT INTO table_one\
+                     VALUES (2,\
+                      -10.10,   'n1',\
+                      -100.001, 'n2',\
+                      '2025-10-24',\
+                      '13:20:00.000000111',\
+                      '2025-10-24 13:20:30.123123123'\
+                    )""");
         }
     }
 
@@ -238,7 +255,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             IndexedQuery query = QFACTORY.selectQuery(
-                    "SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp FROM table_one WHERE id=?", 10,
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=?\
+                    """,
+                    10,
                     InjectorsExtractors.indexedInjector()
                             .params(INT_STRING_TYPE)
                             .build(),
@@ -266,8 +288,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             IndexedQuery query = QFACTORY.selectQuery(
-                    "SELECT col_date, col_time, col_timestamp FROM table_one" +
-                            " WHERE id=? AND col_d=? AND col_nu=? AND col_str1=? AND col_str2=?", 10,
+                    """
+                    SELECT col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=? AND col_d=? AND col_nu=? AND col_str1=? AND col_str2=?\
+                    """,
+                    10,
                     InjectorsExtractors.indexedInjector()
                             .params(
                                     INT_STRING_TYPE,
@@ -297,7 +323,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedQuery<HasId, NamedRow2> query = QFACTORY.selectQuery(
-                    "SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp FROM table_one WHERE id=:id", 10,
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=:id\
+                    """,
+                    10,
                     InjectorsExtractors.namedInjector(HasId.class)
                             .param("id", BasicTypes.INTEGER)
                             .build(),
@@ -329,8 +360,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedQuery<HasId, NamedRow2> query = QFACTORY.selectQuery(
-                    "SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp" +
-                            " FROM table_one WHERE id=:someid", 10,
+                    """
+                    SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=:someid\
+                    """,
+                    10,
                     InjectorsExtractors.namedInjector(HasId.class)
                             .param("someid", BasicTypes.INTEGER, "id")
                             .build(),
@@ -365,7 +400,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             IndexedNamedQuery<NamedRow2> query = QFACTORY.selectQuery(
-                    "SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp FROM table_one WHERE id=?", 10,
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=?\
+                    """,
+                    10,
                     InjectorsExtractors.indexedInjector()
                             .param(INT_STRING_TYPE)
                             .build(),
@@ -397,8 +437,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             IndexedNamedQuery<NamedRow2> query = QFACTORY.selectQuery(
-                    "SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp" +
-                            " FROM table_one WHERE id=? AND col_str1=? AND col_str2=?", 10,
+                    """
+                    SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=? AND col_str1=? AND col_str2=?\
+                    """,
+                    10,
                     InjectorsExtractors.indexedInjector()
                             .params(BasicTypes.INTEGER, BasicTypes.VARCHAR, BasicTypes.VARCHAR)
                             .build(),
@@ -432,7 +476,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedIndexedQuery<HasId> query = QFACTORY.selectQuery(
-                    "SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp FROM table_one WHERE id=:id", 10,
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=:id\
+                    """,
+                    10,
                     InjectorsExtractors.namedInjector(HasId.class)
                             .param("id", BasicTypes.INTEGER)
                             .build(),
@@ -460,8 +509,12 @@ public class SelectQueryTests extends BaseH2Test {
         {
             simple.orm.jdbc.Connection conn = database.connect();
             NamedIndexedQuery<NamedRow1> query = QFACTORY.selectQuery(
-                    "SELECT col_date, col_time, col_timestamp, col_d, col_nu FROM table_one" +
-                            " WHERE id=:someid AND col_str1=:str1 AND col_str2=:str2", 10,
+                    """
+                    SELECT col_date, col_time, col_timestamp, col_d, col_nu\
+                     FROM table_one\
+                     WHERE id=:someid AND col_str1=:str1 AND col_str2=:str2\
+                    """,
+                    10,
                     InjectorsExtractors.namedInjector(NamedRow1.class)
                             .param("someid", BasicTypes.INTEGER, "id")
                             .param("str2", BasicTypes.VARCHAR)
@@ -486,6 +539,108 @@ public class SelectQueryTests extends BaseH2Test {
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
+        }
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testSelectWithoutParameters() throws SQLException {
+        // test 1
+        {
+            simple.orm.jdbc.Connection conn = database.connect();
+            IndexedQuery query = QFACTORY.selectQueryWithoutParameters(
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=1\
+                    """,
+                    10,
+                    InjectorsExtractors.indexedExtractor()
+                            .params(
+                                    INT_STRING_TYPE,
+                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC, BasicTypes.VARCHAR, BasicTypes.VARCHAR,
+                                    BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL
+                            )
+                            .build()
+            );
+            Result<Seq<Object>> result = conn.executeSelect(query);
+            assertThat(result.hasNextRow()).isTrue();
+            Seq<Object> row = result.nextRow();
+            assertThat(row).containsExactly(
+                    "1", 10.1d, new BigDecimal("100.0010000000"), "p1", "p2",
+                    new Date(100, 0, 31),
+                    new Time(12, 30, 56), // nano part supported by h2 is rounded (up)
+                    new Timestamp(101, 1, 13, 10, 20, 30, 0)
+            );
+            assertThat(result.hasNextRow()).isFalse();
+            conn.close();
+        }
+        // test 2, extraction by index
+        {
+            simple.orm.jdbc.Connection conn = database.connect();
+            NamedQuery<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
+                    """
+                    SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=1\
+                    """,
+                    10,
+                    InjectorsExtractors.namedExtractorByIndex(NamedRow2.class)
+                            .param(BasicTypes.INTEGER, "id")
+                            .param(BasicTypes.DOUBLE, "doublePrecision")
+                            .param(BasicTypes.NUMERIC, "num")
+                            .param(BasicTypes.VARCHAR, "str1")
+                            .param(BasicTypes.VARCHAR, "str2")
+                            .param(BasicTypes.DATE_STRING, "date")
+                            .param(BasicTypes.TIME_STRING, "time")
+                            .param(BasicTypes.TIMESTAMP_STRING, "timestamp")
+                            .build()
+            );
+            Result<NamedRow2> result = conn.executeSelect(query);
+            NamedRow2 row = result.exactlySingleRow();
+            assertThat(row).isNotNull();
+            assertThat(row.id).isEqualTo(1);
+            assertThat(row.doublePrecision).isEqualTo(10.1d);
+            assertThat(row.num).isEqualTo(new BigDecimal("100.0010000000"));
+            assertThat(row.str1).isEqualTo("p1");
+            assertThat(row.getStr2()).isEqualTo("p2");
+            assertThat(row.date).isEqualTo("2000-01-31");
+            assertThat(row.time).isEqualTo("12:30:56"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30.0");
+            conn.close();
+        }
+        // test 3, extraction by label (some labels not matching property names)
+        {
+            simple.orm.jdbc.Connection conn = database.connect();
+            NamedQuery<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
+                    """
+                    SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id=2\
+                    """,
+                    10,
+                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
+                            .param("id", BasicTypes.INTEGER)
+                            .param("col_str1", BasicTypes.VARCHAR, "str1")
+                            .param("col_str2", BasicTypes.VARCHAR, "str2")
+                            .param("doublePrecision", BasicTypes.DOUBLE)
+                            .param("num", BasicTypes.NUMERIC)
+                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
+                            .param("col_date", BasicTypes.DATE_STRING, "date")
+                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                            .build()
+            );
+            Result<NamedRow2> result = conn.executeSelect(query);
+            NamedRow2 row = result.exactlySingleRow();
+            assertThat(row).isNotNull();
+            assertThat(row.id).isEqualTo(2);
+            assertThat(row.doublePrecision).isEqualTo(-10.1d);
+            assertThat(row.num).isEqualTo(new BigDecimal("-100.0010000000"));
+            assertThat(row.str1).isEqualTo("n1");
+            assertThat(row.getStr2()).isEqualTo("n2");
+            assertThat(row.date).isEqualTo("2025-10-24");
+            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
         }
     }
 
