@@ -1,27 +1,27 @@
-package simple.orm.jdbc.impl.map;
+package simple.orm.jdbc.common;
 
 import io.vavr.Function1;
 import io.vavr.collection.Array;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.JdbcException;
 import simple.orm.jdbc.map.ParameterSetter;
+import simple.orm.jdbc.map.ParameterSetterImpl;
 import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
-import static simple.orm.jdbc.param.BasicJdbcTypes.*;
+import static simple.orm.jdbc.common.BasicJdbcTypes.*;
 
 /**
- * Implementation of {@link ParameterSetter}.
+ * Default ParameterSetter implementations for {@link BasicJdbcTypes} types.
  */
-public class ParameterSetterImpl<T> implements ParameterSetter<T> {
-
-    public interface Setter<T> {
-        void inject(PreparedStatement stmt, int index, T value) throws SQLException;
+public final class BasicSetters {
+    private BasicSetters() {
     }
 
+    /**
+     * Default ParameterSetter implementations for {@link BasicJdbcTypes} types.
+     */
     public static final Seq<ParameterSetter<?>> DEFAULT_SETTERS = Array.of(
             // bit/boolean
             new ParameterSetterImpl<>(BIT, PreparedStatement::setBoolean),
@@ -49,35 +49,10 @@ public class ParameterSetterImpl<T> implements ParameterSetter<T> {
             new ParameterSetterImpl<>(TIMESTAMP, PreparedStatement::setTimestamp)
     );
 
+    /**
+     * Map of default setters by type.
+     */
     public static final Map<ParameterJdbcType<?>, ParameterSetter<?>> DEFAULT_SETTERS_MAP =
             DEFAULT_SETTERS.toMap(ParameterSetter::getJdbcType, Function1.identity());
-
-    private final ParameterJdbcType<T> jdbcType;
-    private final Setter<T> setter;
-
-    public ParameterSetterImpl(ParameterJdbcType<T> jdbcType, Setter<T> setter) {
-        if (jdbcType == null) {
-            throw new NullPointerException("jdbcType is null");
-        }
-        if (setter == null) {
-            throw new NullPointerException("setter is null");
-        }
-        this.jdbcType = jdbcType;
-        this.setter = setter;
-    }
-
-    @Override
-    public ParameterJdbcType<T> getJdbcType() {
-        return jdbcType;
-    }
-
-    @Override
-    public void setValue(PreparedStatement stmt, int index, T value) {
-        try {
-            setter.inject(stmt, index, value);
-        } catch (SQLException e) {
-            throw new JdbcException(e);
-        }
-    }
 
 }

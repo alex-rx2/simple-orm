@@ -1,4 +1,4 @@
-package simple.orm.jdbc.query;
+package simple.orm.jdbc.common;
 
 import io.vavr.Tuple2;
 import simple.orm.jdbc.impl.query.BaseQueryImpl;
@@ -10,6 +10,13 @@ import simple.orm.jdbc.map.IndexedExtractor;
 import simple.orm.jdbc.map.IndexedInjector;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.map.NamedInjector;
+import simple.orm.jdbc.query.IndexedNamedQuery;
+import simple.orm.jdbc.query.IndexedQuery;
+import simple.orm.jdbc.query.NamedIndexedQuery;
+import simple.orm.jdbc.query.NamedParametersMap;
+import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.QueryType;
 
 /**
  * Simple factory to create queries.

@@ -1,6 +1,7 @@
-package simple.orm.jdbc.query;
+package simple.orm.jdbc.common;
 
 import io.vavr.Tuple2;
+import simple.orm.jdbc.query.NamedParametersMap;
 
 /**
  * Default implementation of {@link QueryFactory.NamedParametersProcessor}.

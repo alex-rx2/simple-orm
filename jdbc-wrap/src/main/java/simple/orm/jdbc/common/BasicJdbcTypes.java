@@ -1,4 +1,6 @@
-package simple.orm.jdbc.param;
+package simple.orm.jdbc.common;
+
+import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.math.BigDecimal;
 import java.sql.Date;

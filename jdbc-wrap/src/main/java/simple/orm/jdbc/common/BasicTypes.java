@@ -1,6 +1,7 @@
-package simple.orm.jdbc.param;
+package simple.orm.jdbc.common;
 
 import io.vavr.Function1;
+import simple.orm.jdbc.param.ParameterType;
 
 import java.math.BigDecimal;
 import java.sql.Date;

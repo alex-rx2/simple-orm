@@ -8,7 +8,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.query.QueryFactory;
+import simple.orm.jdbc.common.QueryFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

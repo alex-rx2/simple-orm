@@ -7,7 +7,9 @@ open module simple.orm.jdbc.wrap {
     exports simple.orm.jdbc;
     exports simple.orm.jdbc.param;
     exports simple.orm.jdbc.map;
-    exports simple.orm.jdbc.map.builders;
     exports simple.orm.jdbc.query;
+
+    exports simple.orm.jdbc.common;
+    exports simple.orm.jdbc.common.builders;
 
 }

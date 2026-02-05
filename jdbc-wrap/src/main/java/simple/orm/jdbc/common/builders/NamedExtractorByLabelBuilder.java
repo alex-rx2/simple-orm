@@ -1,4 +1,4 @@
-package simple.orm.jdbc.map.builders;
+package simple.orm.jdbc.common.builders;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;

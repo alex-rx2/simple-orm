@@ -1,11 +1,10 @@
-package simple.orm.jdbc.map.builders;
+package simple.orm.jdbc.common.builders;
 
 import io.vavr.Tuple;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.impl.map.ParameterGetterImpl;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.map.ParameterGetter;
 import simple.orm.jdbc.param.ParameterJdbcType;
@@ -21,7 +20,7 @@ abstract class NamedExtractorBuilder<T, SELF> {
     protected Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
 
     public NamedExtractorBuilder() {
-        this.getters = ParameterGetterImpl.DEFAULT_GETTERS_MAP;
+        this.getters = HashMap.empty();
     }
 
     @SuppressWarnings("unchecked")

@@ -1,14 +1,15 @@
-package simple.orm.jdbc.query;
+package simple.orm.jdbc.common;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import simple.orm.jdbc.query.NamedParametersMap;
 
 /**
  * {@link DefaultNPProcessor} algorithm implementation. Made as separate class for ease of algorithm state maintenance.
  */
-final class DefaultNPProcessorExtractor {
+public final class DefaultNPProcessorExtractor {
 
     private enum State {
         SQL, // some sql character to be analyzed
@@ -29,11 +30,11 @@ final class DefaultNPProcessorExtractor {
     private State state;
     private Seq<StringBuilder> names;
 
-    DefaultNPProcessorExtractor(String sql) {
+    public DefaultNPProcessorExtractor(String sql) {
         this.sql = sql;
     }
 
-    Tuple2<String, NamedParametersMap> extract() {
+    public Tuple2<String, NamedParametersMap> extract() {
         init();
         process();
         return Tuple.of(

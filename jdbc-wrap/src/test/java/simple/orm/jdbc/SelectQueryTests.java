@@ -6,15 +6,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.map.InjectorsExtractors;
-import simple.orm.jdbc.param.BasicTypes;
+import simple.orm.jdbc.common.InjectorsExtractors;
+import simple.orm.jdbc.common.BasicTypes;
 import simple.orm.jdbc.param.ParameterType;
 import simple.orm.jdbc.param.ParameterTypeImpl;
 import simple.orm.jdbc.query.IndexedNamedQuery;
 import simple.orm.jdbc.query.IndexedQuery;
 import simple.orm.jdbc.query.NamedIndexedQuery;
 import simple.orm.jdbc.query.NamedQuery;
-import simple.orm.jdbc.query.QueryFactory;
+import simple.orm.jdbc.common.QueryFactory;
 
 import java.math.BigDecimal;
 import java.sql.Connection;

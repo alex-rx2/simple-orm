@@ -22,10 +22,6 @@ public class IndexedInjectorImpl implements IndexedInjector {
     private final Seq<ParameterType<?, ?>> types;
     private final Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
 
-    public IndexedInjectorImpl(Seq<ParameterType<?, ?>> types) {
-        this(ParameterSetterImpl.DEFAULT_SETTERS_MAP, types);
-    }
-
     public IndexedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Seq<ParameterType<?, ?>> types) {
         if (types == null) {
             throw new NullPointerException("types is null");
