@@ -4,7 +4,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
-import simple.orm.jdbc.impl.map.NamedExtractorImpl;
+import simple.orm.jdbc.common.map.NamedExtractorImpl;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.map.ParameterGetter;
 import simple.orm.jdbc.param.ParameterType;

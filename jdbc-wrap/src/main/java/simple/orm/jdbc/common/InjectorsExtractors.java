@@ -26,20 +26,8 @@ public final class InjectorsExtractors {
         return NamedInjectorBuilder.<T>builder().withSetters(DEFAULT_SETTERS_MAP);
     }
 
-    public static <T> NamedInjectorBuilder<T> namedInjector(Class<T> sourceClass) {
-        return NamedInjectorBuilder.<T>builder().withSetters(DEFAULT_SETTERS_MAP);
-    }
-
-    public static <T> NamedExtractorByIndexBuilder<T> namedExtractorByIndex() {
-        return NamedExtractorByIndexBuilder.<T>builder().withGetters(BASIC_GETTERS_MAP);
-    }
-
     public static <T> NamedExtractorByIndexBuilder<T> namedExtractorByIndex(Class<T> resultClass) {
         return NamedExtractorByIndexBuilder.<T>builder().withGetters(BASIC_GETTERS_MAP).resultClass(resultClass);
-    }
-
-    public static <T> NamedExtractorByLabelBuilder<T> namedExtractorByLabel() {
-        return NamedExtractorByLabelBuilder.<T>builder().withGetters(BASIC_GETTERS_MAP);
     }
 
     public static <T> NamedExtractorByLabelBuilder<T> namedExtractorByLabel(Class<T> resultClass) {

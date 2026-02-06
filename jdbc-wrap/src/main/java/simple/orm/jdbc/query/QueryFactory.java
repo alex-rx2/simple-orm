@@ -1,22 +1,20 @@
-package simple.orm.jdbc.common;
+package simple.orm.jdbc.query;
 
 import io.vavr.Tuple2;
-import simple.orm.jdbc.impl.query.BaseQueryImpl;
-import simple.orm.jdbc.impl.query.IndexedNamedQueryImpl;
-import simple.orm.jdbc.impl.query.IndexedQueryImpl;
-import simple.orm.jdbc.impl.query.NamedIndexedQueryImpl;
-import simple.orm.jdbc.impl.query.NamedQueryImpl;
+import io.vavr.collection.Seq;
+import simple.orm.jdbc.impl.query.BasicQuery;
+import simple.orm.jdbc.impl.query.IndexedIndexedQuery;
+import simple.orm.jdbc.impl.query.IndexedNamedQuery;
+import simple.orm.jdbc.impl.query.IndexedParamsNoResultSetQuery;
+import simple.orm.jdbc.impl.query.NamedIndexedQuery;
+import simple.orm.jdbc.impl.query.NamedNamedQuery;
+import simple.orm.jdbc.impl.query.NamedParamsNoResultSetQuery;
+import simple.orm.jdbc.impl.query.NoParamsIndexedQuery;
+import simple.orm.jdbc.impl.query.NoParamsNamedQuery;
 import simple.orm.jdbc.map.IndexedExtractor;
 import simple.orm.jdbc.map.IndexedInjector;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.map.NamedInjector;
-import simple.orm.jdbc.query.IndexedNamedQuery;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedIndexedQuery;
-import simple.orm.jdbc.query.NamedParametersMap;
-import simple.orm.jdbc.query.NamedQuery;
-import simple.orm.jdbc.query.Query;
-import simple.orm.jdbc.query.QueryType;
 
 /**
  * Simple factory to create queries.
@@ -58,28 +56,28 @@ public class QueryFactory {
     /**
      * Creates SQL DDL query.
      */
-    public Query ddlQuery(String sql) {
+    public Query<Void, Void> ddlQuery(String sql) {
         return ddlQuery(sql, -1);
     }
 
     /**
      * Creates SQL DDL query.
      */
-    public Query ddlQuery(
+    public Query<Void, Void> ddlQuery(
             String sql,
             int queryTimeoutSeconds
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        return new BaseQueryImpl(QueryType.EXECUTE_UPDATE, sql, queryTimeoutSeconds);
+        return new BasicQuery<>(QueryType.DDL, sql, queryTimeoutSeconds);
     }
 
     /**
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query parameters are represented as a sequence of java object (injected by index).
      */
-    public IndexedQuery iudQuery(String sql, IndexedInjector injector) {
+    public Query<Seq<Object>, Integer> iudQuery(String sql, IndexedInjector injector) {
         return iudQuery(sql, -1, injector);
     }
 
@@ -87,7 +85,7 @@ public class QueryFactory {
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query parameters are represented as a sequence of java object (injected by index).
      */
-    public IndexedQuery iudQuery(
+    public Query<Seq<Object>, Integer> iudQuery(
             String sql,
             int queryTimeoutSeconds,
             IndexedInjector injector
@@ -98,14 +96,14 @@ public class QueryFactory {
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, null);
+        return new IndexedParamsNoResultSetQuery<>(QueryType.DML, sql, queryTimeoutSeconds, injector);
     }
 
     /**
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query parameters are represented as properties of java object.
      */
-    public <I> NamedQuery<I, Void> iudQuery(String sql, NamedInjector<I> injector) {
+    public <P> Query<P, Integer> iudQuery(String sql, NamedInjector<P> injector) {
         return iudQuery(sql, -1, injector);
     }
 
@@ -113,10 +111,10 @@ public class QueryFactory {
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query parameters are represented as properties of java object.
      */
-    public <I> NamedQuery<I, Void> iudQuery(
+    public <P> Query<P, Integer> iudQuery(
             String sql,
             int queryTimeoutSeconds,
-            NamedInjector<I> injector
+            NamedInjector<P> injector
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
@@ -125,14 +123,14 @@ public class QueryFactory {
             throw new NullPointerException("injector is null");
         }
         Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, null, processed._2);
+        return new NamedParamsNoResultSetQuery<>(QueryType.DML, processed._1, queryTimeoutSeconds, injector, processed._2);
     }
 
     /**
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query has no parameters.
      */
-    public Query iudQueryWithoutParameters(String sql) {
+    public Query<Void, Integer> iudQueryWithoutParameters(String sql) {
         return iudQueryWithoutParameters(sql, -1);
     }
 
@@ -140,14 +138,14 @@ public class QueryFactory {
      * Creates SQL INSERT/UPDATE/DELETE query.
      * Query has no parameters.
      */
-    public Query iudQueryWithoutParameters(
+    public Query<Void, Integer> iudQueryWithoutParameters(
             String sql,
             int queryTimeoutSeconds
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
         }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, null, null);
+        return new BasicQuery<>(QueryType.DML, sql, queryTimeoutSeconds);
     }
 
     /**
@@ -155,7 +153,7 @@ public class QueryFactory {
      * Query parameters are represented as a sequence of java object (injected by index).
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public IndexedQuery selectQuery(String sql, IndexedInjector injector, IndexedExtractor extractor) {
+    public Query<Seq<Object>, Seq<Object>> selectQuery(String sql, IndexedInjector injector, IndexedExtractor extractor) {
         return selectQuery(sql, -1, injector, extractor);
     }
 
@@ -164,7 +162,7 @@ public class QueryFactory {
      * Query parameters are represented as a sequence of java object (injected by index).
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public IndexedQuery selectQuery(
+    public Query<Seq<Object>, Seq<Object>> selectQuery(
             String sql,
             int queryTimeoutSeconds,
             IndexedInjector injector,
@@ -179,7 +177,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, extractor);
+        return new IndexedIndexedQuery(QueryType.SELECT, sql, queryTimeoutSeconds, injector, extractor);
     }
 
     /**
@@ -187,7 +185,7 @@ public class QueryFactory {
      * Query parameters are represented as properties of java object.
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <I, O> NamedQuery<I, O> selectQuery(String sql, NamedInjector<I> injector, NamedExtractor<O> extractor) {
+    public <P, R> Query<P, R> selectQuery(String sql, NamedInjector<P> injector, NamedExtractor<R> extractor) {
         return selectQuery(sql, -1, injector, extractor);
     }
 
@@ -196,11 +194,11 @@ public class QueryFactory {
      * Query parameters are represented as properties of java object.
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <I, O> NamedQuery<I, O> selectQuery(
+    public <P, R> Query<P, R> selectQuery(
             String sql,
             int queryTimeoutSeconds,
-            NamedInjector<I> injector,
-            NamedExtractor<O> extractor
+            NamedInjector<P> injector,
+            NamedExtractor<R> extractor
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
@@ -212,7 +210,7 @@ public class QueryFactory {
             throw new NullPointerException("extractor is null");
         }
         Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, extractor, processed._2);
+        return new NamedNamedQuery<>(QueryType.SELECT, processed._1, queryTimeoutSeconds, injector, processed._2, extractor);
     }
 
     /**
@@ -220,7 +218,7 @@ public class QueryFactory {
      * Query parameters are represented as a sequence of java object (injected by index).
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <O> IndexedNamedQuery<O> selectQuery(String sql, IndexedInjector injector, NamedExtractor<O> extractor) {
+    public <R> Query<Seq<Object>, R> selectQuery(String sql, IndexedInjector injector, NamedExtractor<R> extractor) {
         return selectQuery(sql, -1, injector, extractor);
     }
 
@@ -229,11 +227,11 @@ public class QueryFactory {
      * Query parameters are represented as a sequence of java object (injected by index).
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <O> IndexedNamedQuery<O> selectQuery(
+    public <R> Query<Seq<Object>, R> selectQuery(
             String sql,
             int queryTimeoutSeconds,
             IndexedInjector injector,
-            NamedExtractor<O> extractor
+            NamedExtractor<R> extractor
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
@@ -244,7 +242,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        return new IndexedNamedQueryImpl<>(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, injector, extractor);
+        return new IndexedNamedQuery<>(QueryType.SELECT, sql, queryTimeoutSeconds, injector, extractor);
     }
 
     /**
@@ -252,7 +250,7 @@ public class QueryFactory {
      * Query parameters are represented as properties of java object.
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public <I> NamedIndexedQuery<I> selectQuery(String sql, NamedInjector<I> injector, IndexedExtractor extractor) {
+    public <P> Query<P, Seq<Object>> selectQuery(String sql, NamedInjector<P> injector, IndexedExtractor extractor) {
         return selectQuery(sql, -1, injector, extractor);
     }
 
@@ -261,10 +259,10 @@ public class QueryFactory {
      * Query parameters are represented as properties of java object.
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public <I> NamedIndexedQuery<I> selectQuery(
+    public <P> Query<P, Seq<Object>> selectQuery(
             String sql,
             int queryTimeoutSeconds,
-            NamedInjector<I> injector,
+            NamedInjector<P> injector,
             IndexedExtractor extractor
     ) {
         if (sql == null) {
@@ -277,7 +275,7 @@ public class QueryFactory {
             throw new NullPointerException("extractor is null");
         }
         Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedIndexedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, injector, extractor, processed._2);
+        return new NamedIndexedQuery<>(QueryType.SELECT, processed._1, queryTimeoutSeconds, injector, processed._2, extractor);
     }
 
     /**
@@ -285,7 +283,7 @@ public class QueryFactory {
      * Query has no parameters.
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public IndexedQuery selectQueryWithoutParameters(String sql, IndexedExtractor extractor) {
+    public Query<Void, Seq<Object>> selectQueryWithoutParameters(String sql, IndexedExtractor extractor) {
         return selectQueryWithoutParameters(sql, -1, extractor);
     }
 
@@ -294,7 +292,7 @@ public class QueryFactory {
      * Query has no parameters.
      * Each ResultSet row is represented as a sequence of objects (extracted by index).
      */
-    public IndexedQuery selectQueryWithoutParameters(
+    public Query<Void, Seq<Object>> selectQueryWithoutParameters(
             String sql,
             int queryTimeoutSeconds,
             IndexedExtractor extractor
@@ -305,7 +303,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        return new IndexedQueryImpl(QueryType.EXECUTE_QUERY, sql, queryTimeoutSeconds, null, extractor);
+        return new NoParamsIndexedQuery(QueryType.SELECT, sql, queryTimeoutSeconds, extractor);
     }
 
     /**
@@ -313,7 +311,7 @@ public class QueryFactory {
      * Query has no parameters.
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <O> NamedQuery<Void, O> selectQueryWithoutParameters(String sql, NamedExtractor<O> extractor) {
+    public <R> Query<Void, R> selectQueryWithoutParameters(String sql, NamedExtractor<R> extractor) {
         return selectQueryWithoutParameters(sql, -1, extractor);
     }
 
@@ -322,10 +320,10 @@ public class QueryFactory {
      * Query has no parameters.
      * Each ResultSet row is represented as java object (properties of said object).
      */
-    public <O> NamedQuery<Void, O> selectQueryWithoutParameters(
+    public <R> Query<Void, R> selectQueryWithoutParameters(
             String sql,
             int queryTimeoutSeconds,
-            NamedExtractor<O> extractor
+            NamedExtractor<R> extractor
     ) {
         if (sql == null) {
             throw new NullPointerException("sql is null");
@@ -333,8 +331,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedQueryImpl<>(QueryType.EXECUTE_QUERY, processed._1, queryTimeoutSeconds, null, extractor, processed._2);
+        return new NoParamsNamedQuery<>(QueryType.SELECT, sql, queryTimeoutSeconds, extractor);
     }
 
 }

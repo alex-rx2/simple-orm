@@ -11,5 +11,6 @@ open module simple.orm.jdbc.wrap {
 
     exports simple.orm.jdbc.common;
     exports simple.orm.jdbc.common.builders;
+    exports simple.orm.jdbc.common.map;
 
 }

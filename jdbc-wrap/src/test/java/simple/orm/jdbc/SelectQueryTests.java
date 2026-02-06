@@ -1,5 +1,6 @@
 package simple.orm.jdbc;
 
+import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -8,13 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import simple.orm.jdbc.common.BasicTypes;
 import simple.orm.jdbc.common.InjectorsExtractors;
-import simple.orm.jdbc.common.QueryFactory;
 import simple.orm.jdbc.param.ParameterType;
 import simple.orm.jdbc.param.ParameterTypeImpl;
-import simple.orm.jdbc.query.IndexedNamedQuery;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedIndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.QueryFactory;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -54,7 +52,7 @@ public class SelectQueryTests extends BaseH2Test {
     }
 
     @BeforeEach
-    void setUpEach() throws SQLException {
+    void beforeTest() throws SQLException {
         seedSomeData();
     }
 
@@ -109,7 +107,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.hasNext)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -127,7 +125,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.exactlySingleRow)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -146,7 +144,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.extractAll)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -165,7 +163,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test closed throw JdbcException
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -188,7 +186,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.hasNext)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -207,7 +205,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.exactlySingleRow)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -227,7 +225,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test (with result.extractAll)
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
                     InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
                     InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
@@ -248,11 +246,11 @@ public class SelectQueryTests extends BaseH2Test {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void testSelectIndexed() throws SQLException {
+    public void testSelectIndexedIndexed() throws SQLException {
         // test 1
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -284,7 +282,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 2
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQuery(
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     """
                     SELECT col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -314,17 +312,17 @@ public class SelectQueryTests extends BaseH2Test {
     }
 
     @Test
-    public void testSelectNamed() throws SQLException {
+    public void testSelectNamedNamed() throws SQLException {
         // test 1, extraction by index
         {
             Connection conn = database.connect(10);
-            NamedQuery<HasId, NamedRow2> query = QFACTORY.selectQuery(
+            Query<HasId, NamedRow2> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
                      WHERE id=:id\
                     """,
-                    InjectorsExtractors.namedInjector(HasId.class)
+                    InjectorsExtractors.<HasId>namedInjector()
                             .param("id", BasicTypes.INTEGER)
                             .build(),
                     InjectorsExtractors.namedExtractorByIndex(NamedRow2.class)
@@ -354,13 +352,13 @@ public class SelectQueryTests extends BaseH2Test {
         // test 2, extraction by label (some labels not matching property names)
         {
             Connection conn = database.connect(10);
-            NamedQuery<HasId, NamedRow2> query = QFACTORY.selectQuery(
+            Query<HasId, NamedRow2> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
                      WHERE id=:someid\
                     """,
-                    InjectorsExtractors.namedInjector(HasId.class)
+                    InjectorsExtractors.<HasId>namedInjector()
                             .param("someid", BasicTypes.INTEGER, "id")
                             .build(),
                     InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
@@ -393,7 +391,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 1, extraction by index
         {
             Connection conn = database.connect(10);
-            IndexedNamedQuery<NamedRow2> query = QFACTORY.selectQuery(
+            Query<Seq<Object>, NamedRow2> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -429,7 +427,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 2, extraction by label (some labels not matching property names)
         {
             Connection conn = database.connect(10);
-            IndexedNamedQuery<NamedRow2> query = QFACTORY.selectQuery(
+            Query<Seq<Object>, NamedRow2> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -467,13 +465,13 @@ public class SelectQueryTests extends BaseH2Test {
         // test 1
         {
             Connection conn = database.connect(10);
-            NamedIndexedQuery<HasId> query = QFACTORY.selectQuery(
+            Query<HasId, Seq<Object>> query = QFACTORY.selectQuery(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
                      WHERE id=:id\
                     """,
-                    InjectorsExtractors.namedInjector(HasId.class)
+                    InjectorsExtractors.<HasId>namedInjector()
                             .param("id", BasicTypes.INTEGER)
                             .build(),
                     InjectorsExtractors.indexedExtractor()
@@ -499,13 +497,13 @@ public class SelectQueryTests extends BaseH2Test {
         // test 2
         {
             Connection conn = database.connect(10);
-            NamedIndexedQuery<NamedRow1> query = QFACTORY.selectQuery(
+            Query<NamedRow1, Seq<Object>> query = QFACTORY.selectQuery(
                     """
                     SELECT col_date, col_time, col_timestamp, col_d, col_nu\
                      FROM table_one\
                      WHERE id=:someid AND col_str1=:str1 AND col_str2=:str2\
                     """,
-                    InjectorsExtractors.namedInjector(NamedRow1.class)
+                    InjectorsExtractors.<NamedRow1>namedInjector()
                             .param("someid", BasicTypes.INTEGER, "id")
                             .param("str2", BasicTypes.VARCHAR)
                             .param("str1", BasicTypes.VARCHAR)
@@ -538,7 +536,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 1
         {
             Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.selectQueryWithoutParameters(
+            Query<Void, Seq<Object>> query = QFACTORY.selectQueryWithoutParameters(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -567,7 +565,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 2, extraction by index
         {
             Connection conn = database.connect(10);
-            NamedQuery<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
+            Query<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -600,7 +598,7 @@ public class SelectQueryTests extends BaseH2Test {
         // test 3, extraction by label (some labels not matching property names)
         {
             Connection conn = database.connect(10);
-            NamedQuery<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
+            Query<Void, NamedRow2> query = QFACTORY.selectQueryWithoutParameters(
                     """
                     SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
@@ -618,6 +616,71 @@ public class SelectQueryTests extends BaseH2Test {
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query);
+            NamedRow2 row = result.exactlySingleRow();
+            assertThat(row).isNotNull();
+            assertThat(row.id).isEqualTo(2);
+            assertThat(row.doublePrecision).isEqualTo(-10.1d);
+            assertThat(row.num).isEqualTo(new BigDecimal("-100.0010000000"));
+            assertThat(row.str1).isEqualTo("n1");
+            assertThat(row.getStr2()).isEqualTo("n2");
+            assertThat(row.date).isEqualTo("2025-10-24");
+            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
+        }
+    }
+
+    @Test
+    public void testExecuteAnyQuery() throws SQLException {
+        // test indexed indexed query
+        {
+            Connection conn = database.connect(10);
+            Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
+                    """
+                    SELECT id, col_str1, col_str2\
+                     FROM table_one\
+                     WHERE id>? AND col_str1<>?\
+                    """,
+                    InjectorsExtractors.indexedInjector()
+                            .params(BasicTypes.INTEGER, BasicTypes.VARCHAR)
+                            .build(),
+                    InjectorsExtractors.indexedExtractor()
+                            .params(INT_STRING_TYPE, BasicTypes.VARCHAR, BasicTypes.VARCHAR)
+                            .build()
+            );
+            Result<Seq<Object>> result = conn.executeAnyQuery(query, List.of(0, "hehehe"));
+            Seq<Seq<Object>> rows = result.extractAll();
+            assertThat(rows).containsExactly(
+                    List.of("1", "p1", "p2"),
+                    List.of("2", "n1", "n2")
+            );
+            assertThat(result.isClosed()).isTrue();
+            conn.close();
+        }
+        // test named named query
+        {
+            Connection conn = database.connect(10);
+            Query<NamedRow1, NamedRow2> query = QFACTORY.selectQuery(
+                    """
+                    SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
+                     FROM table_one\
+                     WHERE id<:someid AND col_str2<>:somestr\
+                    """,
+                    InjectorsExtractors.<NamedRow1>namedInjector()
+                            .param("someid", BasicTypes.INTEGER, "id")
+                            .param("somestr", BasicTypes.VARCHAR, "str2")
+                            .build(),
+                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
+                            .param("id", BasicTypes.INTEGER)
+                            .param("col_str1", BasicTypes.VARCHAR, "str1")
+                            .param("col_str2", BasicTypes.VARCHAR, "str2")
+                            .param("doublePrecision", BasicTypes.DOUBLE)
+                            .param("num", BasicTypes.NUMERIC)
+                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
+                            .param("col_date", BasicTypes.DATE_STRING, "date")
+                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                            .build()
+            );
+            Result<NamedRow2> result = conn.executeSelect(query, new NamedRow1(3, "n2", "p2"));
             NamedRow2 row = result.exactlySingleRow();
             assertThat(row).isNotNull();
             assertThat(row.id).isEqualTo(2);

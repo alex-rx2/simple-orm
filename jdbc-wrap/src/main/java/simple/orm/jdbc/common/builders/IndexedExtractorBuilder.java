@@ -5,7 +5,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.impl.map.IndexedExtractorImpl;
+import simple.orm.jdbc.common.map.IndexedExtractorImpl;
 import simple.orm.jdbc.map.IndexedExtractor;
 import simple.orm.jdbc.map.ParameterGetter;
 import simple.orm.jdbc.param.ParameterJdbcType;

@@ -1,10 +1,5 @@
 package simple.orm.jdbc;
 
-import io.vavr.collection.Seq;
-import simple.orm.jdbc.query.IndexedNamedQuery;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedIndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
 import simple.orm.jdbc.query.Query;
 
 import java.sql.ResultSet;
@@ -51,7 +46,7 @@ public interface Connection extends AutoCloseable {
 
     /**
      * Returns default timeout for query execution.
-     * Default timeout is applyed if {@link Query} doesn't specify its own proper timeout.
+     * Default timeout is applied if {@link Query} doesn't specify its own proper timeout.
      *
      * @return query timeout in seconds.
      */
@@ -61,140 +56,55 @@ public interface Connection extends AutoCloseable {
      * Execute DDL query.
      *
      * @param query DDL query.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @throws JdbcException            a wrap around {@link SQLException}.
+     * @throws IllegalArgumentException if query fail validation.
      */
-    void executeDDLUpdate(Query query);
+    void executeDDLQuery(Query<Void, Void> query);
 
     /**
-     * Execute DML query having no parameters.
-     *
-     * @param query DML query.
-     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    int executeDMLUpdate(Query query);
-
-    /**
-     * Execute DML query with parameters provided as array of object, injected by index.
+     * Execute DML query.
      *
      * @param query  DML query.
-     * @param params query parameters.
+     * @param params query parameters, if any.
+     * @param <P>    type of object used as source of parameters
+     *               (defined by injector, <code>Seq&lt;Object></code> in case of indexed injector).
      * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @throws JdbcException            a wrap around {@link SQLException}.
+     * @throws IllegalArgumentException if query or parameters fail validation.
      */
-    int executeDMLUpdate(IndexedQuery query, Object... params);
+    <P> int executeDMLQuery(Query<P, Integer> query, Object... params);
 
     /**
-     * Execute DML query with parameters provided as sequence of object, injected by index.
-     *
-     * @param query  DML query.
-     * @param params query parameters.
-     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    int executeDMLUpdate(IndexedQuery query, Seq<Object> params);
-
-    /**
-     * Execute DML query with parameters provided as single object, injected as named properties of said object.
-     *
-     * @param query DML query.
-     * @param input object which properties used as parameters for a query.
-     * @param <I>   type of object used as source of parameters.
-     * @return execution result (updated row count) as per {@link Statement#executeUpdate(String)}.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <I> int executeDMLUpdate(NamedQuery<I, Void> query, I input);
-
-    /**
-     * Execute SELECT query with parameters provided as array of object, injected by index.
-     * Output ResultSet rows are extracted into a sequence of objects each.
+     * Execute SELECT query.
      *
      * @param query  SELECT query.
-     * @param params query parameters.
+     * @param params query parameters, if any.
+     * @param <P>    type of object used as source of parameters
+     *               (relative to injector, <code>Seq&lt;Object></code> in case of indexed injector).
+     * @param <R>    type of object used to collect each ResultSet row columns
+     *               (defined by extractor, <code>Seq&lt;Object></code> in case of indexed extractor).
      * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @throws JdbcException            a wrap around {@link SQLException}.
+     * @throws IllegalArgumentException if query or parameters fail validation.
      */
-    Result<Seq<Object>> executeSelect(IndexedQuery query, Object... params);
+    <P, R> Result<R> executeSelect(Query<P, R> query, Object... params);
 
     /**
-     * Execute SELECT query with parameters provided as sequence of object, injected by index.
-     * Output ResultSet rows are extracted into a sequence of objects each.
+     * Execute any supported query.
      *
-     * @param query  SELECT query.
-     * @param params query parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
+     * @param query  a query.
+     * @param params query parameters, if any.
+     * @param <QP>   type of object used as source of parameters
+     *               (defined by injector, <code>Seq&lt;Object></code> in case of indexed injector).
+     * @param <QR>   should <code>Void</code> for DDL queries, <code>Integer</code> for DML queries,
+     *               type of object used to collect each ResultSet row columns for SELECT query
+     *               (defined by extractor, <code>Seq&lt;Object></code> in case of indexed extractor).
+     * @param <ER>   actual result of this method execution, either <code>Void</code> for DDL queries,
+     *               <code>Integer</code> for DML queries or <code>Result&lt;QR></code> for SELECT queries.
+     * @return result of query execution (see execute method for corresponding query type).
+     * @throws JdbcException            a wrap around {@link SQLException}.
+     * @throws IllegalArgumentException if query or parameters fail validation.
      */
-    Result<Seq<Object>> executeSelect(IndexedQuery query, Seq<Object> params);
-
-    /**
-     * Execute SELECT query without parameters.
-     * Output ResultSet rows are extracted into a sequence of objects each.
-     *
-     * @param query SELECT query.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    Result<Seq<Object>> executeSelect(IndexedQuery query);
-
-    /**
-     * Execute SELECT query with parameters provided as single object, injected as named properties of said object.
-     * Output ResultSet rows are mapped into object properties.
-     *
-     * @param query SELECT query.
-     * @param input object which properties used as parameters for a query.
-     * @param <I>   type of object used as source of parameters.
-     * @param <O>   type of object used to collect each ResultSet row parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <I, O> Result<O> executeSelect(NamedQuery<I, O> query, I input);
-
-    /**
-     * Execute SELECT query without parameters.
-     * Output ResultSet rows are mapped into object properties.
-     *
-     * @param query SELECT query.
-     * @param <O>   type of object used to collect each ResultSet row parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <O> Result<O> executeSelect(NamedQuery<Void, O> query);
-
-    /**
-     * Execute SELECT query with parameters provided as sequence of object, injected by index.
-     * Output ResultSet rows are mapped into object properties.
-     *
-     * @param query  SELECT query.
-     * @param params query parameters.
-     * @param <O>    type of object used to collect each ResultSet row parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Object... params);
-
-    /**
-     * Execute SELECT query with parameters provided as sequence of object, injected by index.
-     * Output ResultSet rows are mapped into object properties.
-     *
-     * @param query  SELECT query.
-     * @param params query parameters.
-     * @param <O>    type of object used to collect each ResultSet row parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Seq<Object> params);
-
-    /**
-     * Execute SELECT query with parameters provided as single object, injected as named properties of said object.
-     * Output ResultSet rows are extracted into a sequence of objects each.
-     *
-     * @param query SELECT query.
-     * @param input object which properties used as parameters for a query.
-     * @param <I>   type of object used as source of parameters.
-     * @return {@link Result} object to traverse ResultSet.
-     * @throws JdbcException a wrap around {@link SQLException}.
-     */
-    <I> Result<Seq<Object>> executeSelect(NamedIndexedQuery<I> query, I input);
+    <QP, QR, ER> ER executeAnyQuery(Query<QP, QR> query, Object... params);
 
 }

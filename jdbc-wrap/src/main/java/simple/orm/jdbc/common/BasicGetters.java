@@ -4,14 +4,14 @@ import io.vavr.Function1;
 import io.vavr.collection.Array;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+import simple.orm.jdbc.common.map.ParameterGetterImpl;
 import simple.orm.jdbc.map.ParameterGetter;
-import simple.orm.jdbc.map.ParameterGetterImpl;
 import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.sql.ResultSet;
 
 import static simple.orm.jdbc.common.BasicJdbcTypes.*;
-import static simple.orm.jdbc.map.ParameterGetterImpl.wrapCheckWasNull;
+import static simple.orm.jdbc.common.map.ParameterGetterImpl.wrapCheckWasNull;
 
 /**
  * Default ParameterGetter implementations for {@link BasicJdbcTypes} types.

@@ -1,4 +1,4 @@
-package simple.orm.jdbc.impl.map;
+package simple.orm.jdbc.common.map;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -37,13 +37,13 @@ import java.sql.SQLException;
  */
 public class NamedExtractorImpl<T> implements NamedExtractor<T> {
 
-    private final Class<T> resultClass;
+    protected final Class<T> resultClass;
     // types - seq of (index or label in ResultSet, type, property name)
-    private final Seq<Tuple3<Either<Integer, String>, ParameterType<?, ?>, String>> types;
-    private final Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
+    protected final Seq<Tuple3<Either<Integer, String>, ParameterType<?, ?>, String>> types;
+    protected final Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
     // internal cache of constructor and Method/Field accessors
-    private Constructor<T> constructor;
-    private Map<String, Either<Method, Field>> methodsAndFields;
+    protected Constructor<T> constructor;
+    protected Map<String, Either<Method, Field>> methodsAndFields;
 
     public NamedExtractorImpl(Class<T> resultClass,
                               Map<ParameterJdbcType<?>, ParameterGetter<?>> getters,
@@ -98,12 +98,12 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         return constructResult(values);
     }
 
-    private Seq<Tuple3<Object, String, ParameterType<?, ?>>> doExtractRow(ResultSet rs) {
+    protected Seq<Tuple3<Object, String, ParameterType<?, ?>>> doExtractRow(ResultSet rs) {
         return types.map(t3 -> Tuple.of(extract(rs, t3._1, t3._2), t3._3, t3._2));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Object extract(ResultSet rs, Either<Integer, String> indexOrLabel, ParameterType type) {
+    protected Object extract(ResultSet rs, Either<Integer, String> indexOrLabel, ParameterType type) {
         try {
             ParameterGetter<?> getter = getters.get(type.getParameterJdbcType()).getOrNull();
             Object jdbcValue;
@@ -126,7 +126,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
     }
 
-    private T constructResult(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+    protected T constructResult(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
         checkCachedReflections(values);
         // create object
         T result;
@@ -143,7 +143,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         return result;
     }
 
-    private void checkCachedReflections(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
+    protected void checkCachedReflections(Seq<Tuple3<Object, String, ParameterType<?, ?>>> values) {
         if (constructor == null) {
             try {
                 constructor = resultClass.getConstructor();
@@ -159,7 +159,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
     }
 
-    private Either<Method, Field> findAccessor(String propertyName, Class<?> typeJavaClass) {
+    protected Either<Method, Field> findAccessor(String propertyName, Class<?> typeJavaClass) {
         // try to find setter
         String setter;
         if (propertyName.isEmpty()) {
@@ -189,7 +189,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
     }
 
-    private Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
+    protected Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
         try {
             return aClass.getDeclaredField(field);
         } catch (NoSuchFieldException e) {
@@ -202,7 +202,7 @@ public class NamedExtractorImpl<T> implements NamedExtractor<T> {
         }
     }
 
-    private void injectValue(T result, String propertyName, Object value) {
+    protected void injectValue(T result, String propertyName, Object value) {
         Either<Method, Field> accessor = methodsAndFields.get(propertyName)
                 .getOrElseThrow(() -> new IllegalStateException("no Method or Field accessor found in internal cache for '" + propertyName + "'"));
         if (accessor.isLeft()) {

@@ -1,4 +1,4 @@
-package simple.orm.jdbc.impl.map;
+package simple.orm.jdbc.common.map;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -31,9 +31,10 @@ import java.sql.SQLException;
 public class NamedInjectorImpl<T> implements NamedInjector<T> {
 
     // types - map of ( parameter name in query -> (type, property name) )
-    private final Map<String, Tuple2<ParameterType<?, ?>, String>> types;
-    private final Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
+    protected final Map<String, Tuple2<ParameterType<?, ?>, String>> types;
+    protected final Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
     // internal cache of Class and Method/Field objects to access properties
+    // TODO cache all accessors for each class
     protected Class<T> sourceClass;
     protected Map<String, Either<Method, Field>> methodsAndFields;
 
@@ -70,7 +71,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         doInjectParameters(stmt, values);
     }
 
-    private Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> extractValues(T source, NamedParametersMap parametersMap) {
+    protected Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> extractValues(T source, NamedParametersMap parametersMap) {
         // parameters - seq of (index, type, property name)
         Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params =
                 parametersMap.getParameters()
@@ -85,7 +86,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private void checkCachedReflections(Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params, Class<?> aClass) {
+    protected void checkCachedReflections(Seq<Tuple3<Integer, ParameterType<?, ?>, String>> params, Class<?> aClass) {
         if (sourceClass != aClass) {
             methodsAndFields = null;
         }
@@ -97,7 +98,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
     }
 
-    private Either<Method, Field> findAccessor(int index, String propertyName, Class<?> typeJavaClass) {
+    protected Either<Method, Field> findAccessor(int index, String propertyName, Class<?> typeJavaClass) {
         // try to find getter
         String getter;
         if (propertyName.isEmpty()) {
@@ -132,7 +133,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
     }
 
-    private Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
+    protected Field findField(Class<?> aClass, String field) throws NoSuchFieldException {
         try {
             return aClass.getDeclaredField(field);
         } catch (NoSuchFieldException e) {
@@ -145,7 +146,7 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
     }
 
-    private Object extractValue(T source, String propertyName) {
+    protected Object extractValue(T source, String propertyName) {
         Either<Method, Field> accessor = methodsAndFields.get(propertyName)
                 .getOrElseThrow(() -> new IllegalStateException("no Method or Field accessor found in internal cache for '" + propertyName + "'"));
         if (accessor.isLeft()) {
@@ -165,12 +166,12 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
     }
 
-    private void doInjectParameters(PreparedStatement stmt, Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> values) {
+    protected void doInjectParameters(PreparedStatement stmt, Seq<Tuple3<Integer, ParameterType<?, ?>, Object>> values) {
         values.forEach(t3 -> inject(stmt, t3._1, t3._2, t3._3));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void inject(PreparedStatement stmt, int index, ParameterType type, Object value) throws JdbcException {
+    protected void inject(PreparedStatement stmt, int index, ParameterType type, Object value) throws JdbcException {
         try {
             if (value == null) {
                 stmt.setNull(index, type.getJDBCType().getVendorTypeNumber());

@@ -1,4 +1,4 @@
-package simple.orm.jdbc.impl.map;
+package simple.orm.jdbc.common.map;
 
 import io.vavr.Tuple;
 import io.vavr.collection.Array;
@@ -19,8 +19,8 @@ import java.util.Objects;
  */
 public class IndexedInjectorImpl implements IndexedInjector {
 
-    private final Seq<ParameterType<?, ?>> types;
-    private final Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
+    protected final Seq<ParameterType<?, ?>> types;
+    protected final Map<ParameterJdbcType<?>, ParameterSetter<?>> setters;
 
     public IndexedInjectorImpl(Map<ParameterJdbcType<?>, ParameterSetter<?>> setters, Seq<ParameterType<?, ?>> types) {
         if (types == null) {
@@ -55,14 +55,14 @@ public class IndexedInjectorImpl implements IndexedInjector {
         doInjectParameters(stmt, params);
     }
 
-    private void doInjectParameters(PreparedStatement stmt, Seq<Object> params) {
+    protected void doInjectParameters(PreparedStatement stmt, Seq<Object> params) {
         types.zipWithIndex((pt, idx) -> Tuple.of(idx + 1, pt))
                 .zipWith(params, (t2, p) -> Tuple.of(t2._1, t2._2, p))
                 .forEach(t3 -> inject(stmt, t3._1, t3._2, t3._3));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void inject(PreparedStatement stmt, int index, ParameterType type, Object value) throws JdbcException {
+    protected void inject(PreparedStatement stmt, int index, ParameterType type, Object value) throws JdbcException {
         try {
             if (value == null) {
                 stmt.setNull(index, type.getJDBCType().getVendorTypeNumber());

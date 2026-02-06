@@ -1,11 +1,10 @@
-package simple.orm.jdbc.common;
+package simple.orm.jdbc.query;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.query.NamedParametersMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

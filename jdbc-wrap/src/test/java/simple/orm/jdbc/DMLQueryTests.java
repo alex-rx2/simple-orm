@@ -9,10 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import simple.orm.jdbc.common.BasicTypes;
 import simple.orm.jdbc.common.InjectorsExtractors;
-import simple.orm.jdbc.common.QueryFactory;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
 import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.QueryFactory;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -50,7 +48,7 @@ public class DMLQueryTests extends BaseH2Test {
     }
 
     @BeforeEach
-    void setUpEach() throws SQLException {
+    void beforeTest() throws SQLException {
         seedSomeData();
     }
 
@@ -111,19 +109,21 @@ public class DMLQueryTests extends BaseH2Test {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);
-            IndexedQuery query = QFACTORY.iudQuery(
+            Query<Seq<Object>, Integer> query = QFACTORY.iudQuery(
                     "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    InjectorsExtractors.indexedInjector().params(
-                            BasicTypes.INTEGER,
-                            BasicTypes.TINYINT, BasicTypes.VARCHAR,
-                            BasicTypes.SMALLINT, BasicTypes.VARCHAR,
-                            BasicTypes.BIGINT, BasicTypes.VARCHAR,
-                            BasicTypes.FLOAT, BasicTypes.VARCHAR,
-                            BasicTypes.DOUBLE, BasicTypes.VARCHAR,
-                            BasicTypes.NUMERIC, BasicTypes.VARCHAR
-                    ).build()
+                    InjectorsExtractors.indexedInjector()
+                            .params(
+                                    BasicTypes.INTEGER,
+                                    BasicTypes.TINYINT, BasicTypes.VARCHAR,
+                                    BasicTypes.SMALLINT, BasicTypes.VARCHAR,
+                                    BasicTypes.BIGINT, BasicTypes.VARCHAR,
+                                    BasicTypes.FLOAT, BasicTypes.VARCHAR,
+                                    BasicTypes.DOUBLE, BasicTypes.VARCHAR,
+                                    BasicTypes.NUMERIC, BasicTypes.VARCHAR
+                            )
+                            .build()
             );
-            conn.executeDMLUpdate(query,
+            int result = conn.executeDMLQuery(query,
                     3,
                     33, "test1-1",
                     -33, "test1-2",
@@ -132,23 +132,26 @@ public class DMLQueryTests extends BaseH2Test {
                     -33.33d, "test1-5",
                     new BigDecimal("12345678901234567890.0987654321"), "test1-6"
             );
+            assertThat(result).isEqualTo(1);
             conn.close();
         }
         // verify
         {
             Seq<String> columns = List.empty();
             try (java.sql.Connection conn = directConnect()) {
-                ResultSet rs = conn.createStatement().executeQuery("" +
-                        "SELECT concat_ws(','," +
-                        "  id," +
-                        "  to_char(col_ti),col_s1," +
-                        "  to_char(col_si),col_s2," +
-                        "  to_char(col_bi),col_s3," +
-                        "  to_char(col_r),col_s4," +
-                        "  to_char(col_d),col_s5," +
-                        "  to_char(col_nu),col_s6" +
-                        ")" +
-                        "\nFROM table_one ORDER BY id"
+                ResultSet rs = conn.createStatement().executeQuery(
+                        """
+                        SELECT concat_ws(',',\
+                          id,\
+                          to_char(col_ti),col_s1,\
+                          to_char(col_si),col_s2,\
+                          to_char(col_bi),col_s3,\
+                          to_char(col_r),col_s4,\
+                          to_char(col_d),col_s5,\
+                          to_char(col_nu),col_s6\
+                        )\
+                        FROM table_one ORDER BY id\
+                        """
                 );
                 while (rs.next()) {
                     columns = columns.append(rs.getString(1));
@@ -168,7 +171,7 @@ public class DMLQueryTests extends BaseH2Test {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);
-            NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
+            Query<NamedRow2, Integer> query = QFACTORY.iudQuery(
                     """
                     INSERT INTO table_one\
                      VALUES (:id, :tiny, :s1, :small, :s2, :big, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
@@ -189,12 +192,13 @@ public class DMLQueryTests extends BaseH2Test {
                             .param("s6", BasicTypes.VARCHAR)
                             .build()
             );
-            conn.executeDMLUpdate(query,
+            int result = conn.executeDMLQuery(query,
                     new NamedRow2(5,
                             55, 55, 555555555555555555L, -5.5f, 6.6, new BigDecimal("777.777"),
                             "t2-1", "t2-2", "t2-3", "t2-4", "t2-5", "t2-6"
                     )
             );
+            assertThat(result).isEqualTo(1);
             conn.close();
         }
         // verify
@@ -212,7 +216,7 @@ public class DMLQueryTests extends BaseH2Test {
                           to_char(col_d),col_s5,\
                           to_char(col_nu),col_s6\
                          )\
-                         FROM table_one ORDER BY id
+                         FROM table_one ORDER BY id\
                         """
                 );
                 while (rs.next()) {
@@ -233,7 +237,7 @@ public class DMLQueryTests extends BaseH2Test {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);
-            NamedQuery<NamedRow2, Void> query = QFACTORY.iudQuery(
+            Query<NamedRow2, Integer> query = QFACTORY.iudQuery(
                     """
                     INSERT INTO table_one\
                      VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
@@ -254,12 +258,13 @@ public class DMLQueryTests extends BaseH2Test {
                             .param("s6", BasicTypes.VARCHAR)
                             .build()
             );
-            conn.executeDMLUpdate(query,
+            int result = conn.executeDMLQuery(query,
                     new NamedRow2(5,
                             55, 55, 555555555555555555L, -5.5f, 6.6, new BigDecimal("777.777"),
                             "t2-1", "t2-2", "t2-3", "t2-4", "t2-5", "t2-6"
                     )
             );
+            assertThat(result).isEqualTo(1);
             conn.close();
         }
         // verify
@@ -277,7 +282,7 @@ public class DMLQueryTests extends BaseH2Test {
                           to_char(col_d),col_s5,\
                           to_char(col_nu),col_s6\
                          )\
-                         FROM table_one ORDER BY id
+                         FROM table_one ORDER BY id\
                         """
                 );
                 while (rs.next()) {
@@ -298,8 +303,9 @@ public class DMLQueryTests extends BaseH2Test {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);
-            Query query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1");
-            conn.executeDMLUpdate(query);
+            Query<Void, Integer> query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1");
+            int result = conn.executeDMLQuery(query);
+            assertThat(result).isEqualTo(1);
             conn.close();
         }
         // verify
@@ -317,7 +323,7 @@ public class DMLQueryTests extends BaseH2Test {
                           to_char(col_d),col_s5,\
                           to_char(col_nu),col_s6\
                          )\
-                         FROM table_one ORDER BY id
+                         FROM table_one ORDER BY id\
                         """
                 );
                 while (rs.next()) {
@@ -327,6 +333,79 @@ public class DMLQueryTests extends BaseH2Test {
             assertThat(columns).containsExactly(
                     // 10.10 -> 10.1 and numeric fills 0 to all fractional digits
                     "1,10,p1,10,p2,10,p3,10.1,p4,10.1,p5,10.1000000000,p6"
+            );
+        }
+    }
+
+    @Test
+    public void executeAnyQuery() throws SQLException {
+        // test
+        {
+            simple.orm.jdbc.Connection conn = database.connect(10);
+            // insert
+            Query<Seq<Object>, Integer> query1 = QFACTORY.iudQuery(
+                    "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    InjectorsExtractors.indexedInjector()
+                            .params(
+                                    BasicTypes.INTEGER,
+                                    BasicTypes.TINYINT, BasicTypes.VARCHAR,
+                                    BasicTypes.SMALLINT, BasicTypes.VARCHAR,
+                                    BasicTypes.BIGINT, BasicTypes.VARCHAR,
+                                    BasicTypes.FLOAT, BasicTypes.VARCHAR,
+                                    BasicTypes.DOUBLE, BasicTypes.VARCHAR,
+                                    BasicTypes.NUMERIC, BasicTypes.VARCHAR
+                            )
+                            .build()
+            );
+            int result1 = conn.executeAnyQuery(query1,
+                    3,
+                    33, "test1-1",
+                    -33, "test1-2",
+                    8888888888888888888L, "test1-3",
+                    33.33f, "test1-4",
+                    -33.33d, "test1-5",
+                    new BigDecimal("12345678901234567890.0987654321"), "test1-6"
+            );
+            assertThat(result1).isEqualTo(1);
+            // update
+            Query<HasId, Integer> query2 = QFACTORY.iudQuery(
+                    "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>:id",
+                    InjectorsExtractors.<HasId>namedInjector()
+                            .param("id", BasicTypes.INTEGER)
+                            .build()
+            );
+            int result2 = conn.executeAnyQuery(query2, new HasId(1));
+            assertThat(result2).isEqualTo(2);
+            // close connection
+            conn.close();
+        }
+        // verify
+        {
+            Seq<String> columns = List.empty();
+            try (java.sql.Connection conn = directConnect()) {
+                ResultSet rs = conn.createStatement().executeQuery(
+                        """
+                        SELECT concat_ws(',',\
+                          id,\
+                          to_char(col_ti),col_s1,\
+                          to_char(col_si),col_s2,\
+                          to_char(col_bi),col_s3,\
+                          to_char(col_r),col_s4,\
+                          to_char(col_d),col_s5,\
+                          to_char(col_nu),col_s6\
+                        )\
+                        FROM table_one ORDER BY id\
+                        """
+                );
+                while (rs.next()) {
+                    columns = columns.append(rs.getString(1));
+                }
+            }
+            assertThat(columns).containsExactly(
+                    // 10.10 -> 10.1 and numeric fills 0 to all fractional digits
+                    "1,10,p1,10,p2,10,p3,10.1,p4,10.1,p5,10.1000000000,p6",
+                    "2,0,n1,-20,n2,-10,n3,-10.1,n4,-10.1,n5,-10.1000000000,n6",
+                    "3,43,test1-1,-43,test1-2,8888888888888888888,test1-3,33.33,test1-4,-33.33,test1-5,12345678901234567890.0987654321,test1-6"
             );
         }
     }
@@ -398,6 +477,14 @@ public class DMLQueryTests extends BaseH2Test {
 
         public String getS6() {
             return s6;
+        }
+    }
+
+    private static class HasId {
+        protected Integer id;
+
+        public HasId(Integer id) {
+            this.id = id;
         }
     }
 

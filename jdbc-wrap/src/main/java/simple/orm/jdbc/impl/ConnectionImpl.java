@@ -1,16 +1,16 @@
 package simple.orm.jdbc.impl;
 
-import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.Connection;
 import simple.orm.jdbc.DatabaseAccessPoint;
 import simple.orm.jdbc.JdbcException;
 import simple.orm.jdbc.Result;
-import simple.orm.jdbc.query.IndexedNamedQuery;
-import simple.orm.jdbc.query.IndexedQuery;
-import simple.orm.jdbc.query.NamedIndexedQuery;
-import simple.orm.jdbc.query.NamedQuery;
+import simple.orm.jdbc.query.HasIndexedExtractor;
+import simple.orm.jdbc.query.HasIndexedInjector;
+import simple.orm.jdbc.query.HasNamedExtractor;
+import simple.orm.jdbc.query.HasNamedInjector;
 import simple.orm.jdbc.query.Query;
+import simple.orm.jdbc.query.QueryType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -138,7 +138,8 @@ public class ConnectionImpl implements Connection {
     }
 
     @Override
-    public void executeDDLUpdate(Query query) {
+    public void executeDDLQuery(Query<Void, Void> query) {
+        validate(query, QueryType.DDL, true, false, true);
         try {
             obtainSimpleStatement(getTimeoutFor(query)).executeUpdate(query.getSQLQuery());
         } catch (SQLException e) {
@@ -147,170 +148,129 @@ public class ConnectionImpl implements Connection {
     }
 
     @Override
-    public int executeDMLUpdate(Query query) {
+    public <P> int executeDMLQuery(Query<P, Integer> query, Object... params) {
+        validate(query, QueryType.DML, false, false, true);
         try {
-            return obtainSimpleStatement(getTimeoutFor(query)).executeUpdate(query.getSQLQuery());
+            Statement stmt = obtainStatementForQuery(query);
+            injectParameters(query, stmt, params);
+            return executeUpdate(query, stmt);
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
     }
 
     @Override
-    public int executeDMLUpdate(IndexedQuery query, Object... params) {
-        return executeDMLUpdate(query, List.of(params));
-    }
-
-    @Override
-    public int executeDMLUpdate(IndexedQuery query, Seq<Object> params) {
+    public <P, R> Result<R> executeSelect(Query<P, R> query, Object... params) {
+        validate(query, QueryType.SELECT, false, true, false);
         if (params == null) {
             throw new NullPointerException("params is null");
         }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
-        }
         try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, params);
-            return stmt.executeUpdate();
+            Statement stmt = obtainStatementForQuery(query);
+            injectParameters(query, stmt, params);
+            ResultSet rs = executeQuery(query, stmt);
+            return extractResult(query, rs);
         } catch (SQLException e) {
             throw new JdbcException(e);
         }
     }
 
     @Override
-    public <I> int executeDMLUpdate(NamedQuery<I, Void> query, I input) {
-        if (input == null) {
-            throw new NullPointerException("input is null");
-        }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
-        }
-        try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, input, query.getParametersMap());
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+    @SuppressWarnings("unchecked")
+    public <QP, QR, ER> ER executeAnyQuery(Query<QP, QR> query, Object... params) {
+        return switch (query.getType()) {
+            case DDL -> {
+                if (params.length > 0) {
+                    throw new IllegalArgumentException("no params expected for DDL query");
+                }
+                executeDDLQuery((Query<Void, Void>) query);
+                yield null;
+            }
+            case DML -> {
+                int result = executeDMLQuery((Query<?, Integer>) query, params);
+                yield (ER) (Integer) result;
+            }
+            case SELECT -> (ER) executeSelect(query, params);
+        };
+    }
+
+    private <P, R> Statement obtainStatementForQuery(Query<P, R> query) {
+        if (query instanceof HasIndexedInjector || query instanceof HasNamedInjector<?>) {
+            return obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
+        } else {
+            return obtainSimpleStatement(getTimeoutFor(query));
         }
     }
 
-    @Override
-    public Result<Seq<Object>> executeSelect(IndexedQuery query, Object... params) {
-        return executeSelect(query, List.of(params));
-    }
-
-    @Override
-    public Result<Seq<Object>> executeSelect(IndexedQuery query, Seq<Object> params) {
-        if (params == null) {
-            throw new NullPointerException("params is null");
-        }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
-        }
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
-        }
-        try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, params);
-            return resultFactory.indexed(this, stmt.executeQuery(), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+    @SuppressWarnings("unchecked")
+    private <P, R> void injectParameters(Query<P, R> query, Statement stmt, Object[] params) {
+        if (stmt instanceof PreparedStatement pstmt) {
+            if (query instanceof HasIndexedInjector) {
+                if (params.length == 1 && params[0] instanceof Seq<?>) {
+                    ((HasIndexedInjector) query).getInjector().injectParameters(pstmt, (Seq<Object>) params[0]);
+                } else {
+                    ((HasIndexedInjector) query).getInjector().injectParameters(pstmt, params);
+                }
+            } else {
+                HasNamedInjector<Object> hasNamedInjector = (HasNamedInjector<Object>) query;
+                if (params.length != 1) {
+                    throw new IllegalArgumentException("params should contain exactly one object for NamedInjector");
+                }
+                hasNamedInjector.getInjector().injectParameters(pstmt, params[0], hasNamedInjector.getParametersMap());
+            }
+        } else {
+            if (params.length > 0) {
+                throw new IllegalArgumentException("no params expected for a query without injectors");
+            }
         }
     }
 
-    @Override
-    public Result<Seq<Object>> executeSelect(IndexedQuery query) {
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
-        }
-        try {
-            Statement stmt = obtainSimpleStatement(getTimeoutFor(query));
-            return resultFactory.indexed(this, stmt.executeQuery(query.getSQLQuery()), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+    @SuppressWarnings("unchecked")
+    private <R, P> Result<R> extractResult(Query<P, R> query, ResultSet rs) {
+        if (query instanceof HasIndexedExtractor) {
+            return (Result<R>) resultFactory.indexed(this, rs, ((HasIndexedExtractor) query).getExtractor());
+        } else {
+            return resultFactory.named(this, rs, ((HasNamedExtractor<R>) query).getExtractor());
         }
     }
 
-    @Override
-    public <I, O> Result<O> executeSelect(NamedQuery<I, O> query, I input) {
-        if (input == null) {
-            throw new NullPointerException("input is null");
-        }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
-        }
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
-        }
-        try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, input, query.getParametersMap());
-            return resultFactory.named(this, stmt.executeQuery(), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+    private <P, R> int executeUpdate(Query<P, R> query, Statement stmt) throws SQLException {
+        if (stmt instanceof PreparedStatement pstmt) {
+            return pstmt.executeUpdate();
+        } else {
+            return stmt.executeUpdate(query.getSQLQuery());
         }
     }
 
-    @Override
-    public <O> Result<O> executeSelect(NamedQuery<Void, O> query) {
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
-        }
-        try {
-            Statement stmt = obtainSimpleStatement(getTimeoutFor(query));
-            return resultFactory.named(this, stmt.executeQuery(query.getSQLQuery()), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+    private static <P, R> ResultSet executeQuery(Query<P, R> query, Statement stmt) throws SQLException {
+        if (stmt instanceof PreparedStatement) {
+            return ((PreparedStatement) stmt).executeQuery();
+        } else {
+            return stmt.executeQuery(query.getSQLQuery());
         }
     }
 
-    @Override
-    public <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Object... params) {
-        return executeSelect(query, List.of(params));
-    }
-
-    @Override
-    public <O> Result<O> executeSelect(IndexedNamedQuery<O> query, Seq<Object> params) {
-        if (params == null) {
-            throw new NullPointerException("params is null");
+    private void validate(Query<?, ?> query,
+                          QueryType type,
+                          boolean requireNoInjector,
+                          boolean requireAnyExtractor,
+                          boolean requireNoExtractor
+    ) {
+        if (query.getType() != type) {
+            throw new IllegalArgumentException("wrong query type: " + query.getType());
         }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
+        if (requireNoInjector && (query instanceof HasIndexedInjector || query instanceof HasNamedInjector<?>)) {
+            throw new IllegalArgumentException("query should have no injector");
         }
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
+        if (requireAnyExtractor && !(query instanceof HasIndexedExtractor || query instanceof HasNamedExtractor<?>)) {
+            throw new IllegalArgumentException("query has no extractor");
         }
-        try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, params);
-            return resultFactory.named(this, stmt.executeQuery(), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
+        if (requireNoExtractor && (query instanceof HasIndexedExtractor || query instanceof HasNamedExtractor<?>)) {
+            throw new IllegalArgumentException("query should have no extractor");
         }
     }
 
-    @Override
-    public <I> Result<Seq<Object>> executeSelect(NamedIndexedQuery<I> query, I input) {
-        if (input == null) {
-            throw new NullPointerException("input is null");
-        }
-        if (query.getInjector() == null) {
-            throw new NullPointerException("query.injector is null");
-        }
-        if (query.getExtractor() == null) {
-            throw new NullPointerException("query.extractor is null");
-        }
-        try {
-            PreparedStatement stmt = obtainPreparedStatement(query.getSQLQuery(), getTimeoutFor(query));
-            query.getInjector().injectParameters(stmt, input, query.getParametersMap());
-            return resultFactory.indexed(this, stmt.executeQuery(), query.getExtractor());
-        } catch (SQLException e) {
-            throw new JdbcException(e);
-        }
-    }
-
-    private int getTimeoutFor(Query query) {
+    private int getTimeoutFor(Query<?, ?> query) {
         int queryTimeout = query.getQueryTimeout();
         return queryTimeout < 0 ? defaultTimeout : queryTimeout;
     }

@@ -5,7 +5,8 @@ package simple.orm.jdbc.query;
  */
 public enum QueryType {
 
-    EXECUTE_UPDATE,
-    EXECUTE_QUERY
+    DDL,
+    DML,
+    SELECT
 
 }

@@ -1,4 +1,4 @@
-package simple.orm.jdbc.impl.map;
+package simple.orm.jdbc.common.map;
 
 import io.vavr.Tuple;
 import io.vavr.collection.Map;
@@ -18,8 +18,8 @@ import java.util.Objects;
  */
 public class IndexedExtractorImpl implements IndexedExtractor {
 
-    private final Seq<ParameterType<?, ?>> types;
-    private final Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
+    protected final Seq<ParameterType<?, ?>> types;
+    protected final Map<ParameterJdbcType<?>, ParameterGetter<?>> getters;
 
     public IndexedExtractorImpl(Map<ParameterJdbcType<?>, ParameterGetter<?>> getters, Seq<ParameterType<?, ?>> types) {
         if (types == null) {
@@ -43,7 +43,7 @@ public class IndexedExtractorImpl implements IndexedExtractor {
         return doExtractRow(rs);
     }
 
-    private Seq<Object> doExtractRow(ResultSet rs) {
+    protected Seq<Object> doExtractRow(ResultSet rs) {
         return types.zipWithIndex((t, i) -> Tuple.of(t, i + 1))
                 .map(t2 -> extract(rs, t2._2, t2._1));
     }

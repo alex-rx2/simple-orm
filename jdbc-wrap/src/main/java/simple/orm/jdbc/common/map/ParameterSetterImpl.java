@@ -1,6 +1,7 @@
-package simple.orm.jdbc.map;
+package simple.orm.jdbc.common.map;
 
 import simple.orm.jdbc.JdbcException;
+import simple.orm.jdbc.map.ParameterSetter;
 import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.sql.PreparedStatement;

@@ -4,8 +4,8 @@ import io.vavr.Function1;
 import io.vavr.collection.Array;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+import simple.orm.jdbc.common.map.ParameterSetterImpl;
 import simple.orm.jdbc.map.ParameterSetter;
-import simple.orm.jdbc.map.ParameterSetterImpl;
 import simple.orm.jdbc.param.ParameterJdbcType;
 
 import java.sql.PreparedStatement;

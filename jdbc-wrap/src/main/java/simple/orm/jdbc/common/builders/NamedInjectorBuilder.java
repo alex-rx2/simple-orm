@@ -6,7 +6,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.impl.map.NamedInjectorImpl;
+import simple.orm.jdbc.common.map.NamedInjectorImpl;
 import simple.orm.jdbc.map.NamedInjector;
 import simple.orm.jdbc.map.ParameterSetter;
 import simple.orm.jdbc.param.ParameterJdbcType;

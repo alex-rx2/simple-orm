@@ -1,10 +1,9 @@
-package simple.orm.jdbc.common;
+package simple.orm.jdbc.query;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import simple.orm.jdbc.query.NamedParametersMap;
 
 /**
  * {@link DefaultNPProcessor} algorithm implementation. Made as separate class for ease of algorithm state maintenance.
