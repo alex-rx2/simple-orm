@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>simple.orm</groupId>
+        <artifactId>simple-orm-parent</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>simple-orm-mapping</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>simple.orm</groupId>
+            <artifactId>simple-orm-util</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>simple.orm</groupId>
+            <artifactId>simple-orm-jdbc-wrap</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+
+    <properties>
+    </properties>
+
+
+</project>

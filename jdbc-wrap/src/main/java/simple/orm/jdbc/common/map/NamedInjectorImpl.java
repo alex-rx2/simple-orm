@@ -28,6 +28,7 @@ import java.sql.SQLException;
  *
  * @param <T> {@inheritDoc}
  */
+@Deprecated
 public class NamedInjectorImpl<T> implements NamedInjector<T> {
 
     // types - map of ( parameter name in query -> (type, property name) )
@@ -47,6 +48,11 @@ public class NamedInjectorImpl<T> implements NamedInjector<T> {
         }
         this.types = types;
         this.setters = setters;
+    }
+
+    @Override
+    public void injectParameters(PreparedStatement stmt, T source) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

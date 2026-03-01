@@ -14,6 +14,7 @@ import simple.orm.jdbc.param.ParameterType;
  *
  * @param <T> class of object extracted as each ResultSet row.
  */
+@Deprecated
 public class NamedExtractorByLabelBuilder<T> extends NamedExtractorBuilder<T, NamedExtractorByLabelBuilder<T>> {
 
     public static <T> NamedExtractorByLabelBuilder<T> builder() {

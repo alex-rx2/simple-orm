@@ -15,6 +15,7 @@ import static simple.orm.jdbc.common.BasicJdbcTypes.*;
 /**
  * Default ParameterSetter implementations for {@link BasicJdbcTypes} types.
  */
+@Deprecated
 public final class BasicSetters {
     private BasicSetters() {
     }

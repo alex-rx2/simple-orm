@@ -35,6 +35,7 @@ import java.sql.SQLException;
  *
  * @param <T> {@inheritDoc}
  */
+@Deprecated
 public class NamedExtractorImpl<T> implements NamedExtractor<T> {
 
     protected final Class<T> resultClass;

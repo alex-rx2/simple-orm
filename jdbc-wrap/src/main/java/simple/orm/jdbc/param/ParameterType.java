@@ -11,6 +11,7 @@ import java.sql.JDBCType;
  * @param <Jdbc> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
  * @param <Java> class implementing parameter in java (in custom business objects, etc.).
  */
+@Deprecated
 public interface ParameterType<Jdbc, Java> {
 
     /**

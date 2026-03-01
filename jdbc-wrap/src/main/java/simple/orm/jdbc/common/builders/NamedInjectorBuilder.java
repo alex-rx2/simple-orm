@@ -19,6 +19,7 @@ import java.util.Objects;
  *
  * @param <T> class of object used as source of parameters' values for query.
  */
+@Deprecated
 public class NamedInjectorBuilder<T> {
 
     public static <T> NamedInjectorBuilder<T> builder() {

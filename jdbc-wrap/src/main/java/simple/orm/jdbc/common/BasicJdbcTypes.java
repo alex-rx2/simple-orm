@@ -13,10 +13,12 @@ import java.sql.Timestamp;
  * <br>
  * It is recommended to have separate types collection for each RDBMS.
  */
+@Deprecated
 public final class BasicJdbcTypes {
     private BasicJdbcTypes() {
     }
 
+    // todo binary, varbinary, longvarbinary?
     // bit/boolean
     public static final ParameterJdbcType<Boolean> BIT = ParameterJdbcType.of(JDBCType.BIT, Boolean.class);
     public static final ParameterJdbcType<Boolean> BOOLEAN = ParameterJdbcType.of(JDBCType.BOOLEAN, Boolean.class);

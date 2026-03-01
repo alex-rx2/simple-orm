@@ -12,6 +12,7 @@
     <modules>
         <module>jdbc-wrap</module>
         <module>util</module>
+        <module>mapping</module>
         <!--<module>xxx</module>-->
     </modules>
 
@@ -128,6 +129,7 @@
                     <tempDir>surefire-tmp</tempDir>
                     <!--<useFile>false</useFile>-->
                     <!--<testFailureIgnore>true</testFailureIgnore>-->
+                    <argLine>-Xshare:off -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>
                 </configuration>
             </plugin>
         </plugins>

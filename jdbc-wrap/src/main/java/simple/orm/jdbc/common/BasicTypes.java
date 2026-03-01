@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 /**
  * Most basic types for usage as in/out parameters of queries.
  */
+@Deprecated
 public final class BasicTypes {
     private BasicTypes() {
     }

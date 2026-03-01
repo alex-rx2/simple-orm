@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests of DML queries.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class DMLQueryTests extends BaseH2Test {
+public class DMLQueryTest extends BaseH2Test {
 
     private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
 

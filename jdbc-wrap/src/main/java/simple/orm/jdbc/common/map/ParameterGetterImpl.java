@@ -10,6 +10,7 @@ import java.sql.SQLException;
 /**
  * {@link ParameterGetter} implementation.
  */
+@Deprecated
 public class ParameterGetterImpl<T> implements ParameterGetter<T> {
 
     public interface GetterIdx<T> {

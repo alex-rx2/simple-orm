@@ -17,6 +17,7 @@ import java.util.Objects;
 /**
  * {@link IndexedInjector} implementation.
  */
+@Deprecated
 public class IndexedInjectorImpl implements IndexedInjector {
 
     protected final Seq<ParameterType<?, ?>> types;
@@ -37,22 +38,22 @@ public class IndexedInjectorImpl implements IndexedInjector {
     }
 
     @Override
-    public void injectParameters(PreparedStatement stmt, Object... params) {
-        injectParameters(stmt, Array.of(params));
+    public void injectParameters(PreparedStatement stmt, Object... values) {
+        injectParameters(stmt, Array.of(values));
     }
 
     @Override
-    public void injectParameters(PreparedStatement stmt, Seq<Object> params) {
+    public void injectParameters(PreparedStatement stmt, Seq<Object> values) {
         if (stmt == null) {
             throw new NullPointerException("stmt is null");
         }
-        if (params == null) {
-            throw new NullPointerException("params is null");
+        if (values == null) {
+            throw new NullPointerException("values is null");
         }
-        if (types.size() != params.size()) {
-            throw new IllegalArgumentException(types.size() + " parameter(s) expected, but " + params.size() + " provided");
+        if (types.size() != values.size()) {
+            throw new IllegalArgumentException(types.size() + " parameter(s) expected, but " + values.size() + " provided");
         }
-        doInjectParameters(stmt, params);
+        doInjectParameters(stmt, values);
     }
 
     protected void doInjectParameters(PreparedStatement stmt, Seq<Object> params) {

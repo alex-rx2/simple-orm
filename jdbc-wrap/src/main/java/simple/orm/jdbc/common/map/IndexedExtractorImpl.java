@@ -16,6 +16,7 @@ import java.util.Objects;
 /**
  * {@link IndexedExtractor} implementation.
  */
+@Deprecated
 public class IndexedExtractorImpl implements IndexedExtractor {
 
     protected final Seq<ParameterType<?, ?>> types;

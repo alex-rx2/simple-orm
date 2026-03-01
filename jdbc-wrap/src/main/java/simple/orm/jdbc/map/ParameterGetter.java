@@ -9,6 +9,7 @@ import java.sql.SQLException;
 /**
  * Interface for getter of a single column from ResultSet.
  */
+@Deprecated
 public interface ParameterGetter<T> {
 
     /**

@@ -15,18 +15,18 @@ public interface IndexedInjector {
      * Injects parameters into {@link PreparedStatement}.
      *
      * @param stmt   {@link PreparedStatement}.
-     * @param params parameters to inject.
+     * @param values parameters to inject.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
-    void injectParameters(PreparedStatement stmt, Object... params);
+    void injectParameters(PreparedStatement stmt, Object... values);
 
     /**
      * Injects parameters into {@link PreparedStatement}.
      *
      * @param stmt   {@link PreparedStatement}.
-     * @param params parameters to inject.
+     * @param values parameters to inject.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
-    void injectParameters(PreparedStatement stmt, Seq<Object> params);
+    void injectParameters(PreparedStatement stmt, Seq<Object> values);
 
 }

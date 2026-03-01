@@ -14,6 +14,7 @@ import java.util.Objects;
 /**
  * Base class for {@link NamedExtractor} builders.
  */
+@Deprecated
 abstract class NamedExtractorBuilder<T, SELF> {
 
     protected Class<T> resultClass;

@@ -5,6 +5,7 @@ import java.sql.JDBCType;
 /**
  * {@link ParameterType} implementation without mappers.
  */
+@Deprecated
 public abstract class AbstractParameterImplType<Jdbc, Java> implements ParameterType<Jdbc, Java> {
 
     protected final JDBCType jdbcType;

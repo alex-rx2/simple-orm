@@ -9,6 +9,7 @@ import java.util.Objects;
  * +
  * {@link ParameterJdbcType} implementation.
  */
+@Deprecated
 public class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc> {
 
     protected JDBCType jdbcType;
@@ -46,9 +47,8 @@ public class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc> {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ParameterJdbcType))
+        if (!(o instanceof ParameterJdbcType<?> that))
             return false;
-        ParameterJdbcType<?> that = (ParameterJdbcType<?>) o;
         return jdbcType == that.getJDBCType()
                 && jdbcClass == that.getJDBCTypeClass()
                 ;
@@ -61,9 +61,6 @@ public class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc> {
 
     @Override
     public String toString() {
-        return "ParameterJdbcTypeImpl(" +
-                "jdbcType=" + jdbcType + "," +
-                "jdbcClass=" + jdbcClass.getName() +
-                ")";
+        return "JdbcType(" + jdbcType + "->" + jdbcClass.getName() + ")";
     }
 }

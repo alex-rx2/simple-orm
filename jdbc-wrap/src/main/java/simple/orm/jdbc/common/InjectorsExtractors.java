@@ -12,6 +12,7 @@ import static simple.orm.jdbc.common.BasicSetters.DEFAULT_SETTERS_MAP;
 /**
  * Utility class providing single point access to builders.
  */
+@Deprecated
 public final class InjectorsExtractors {
 
     public static IndexedInjectorBuilder indexedInjector() {

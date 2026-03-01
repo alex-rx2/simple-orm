@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.*;
  * Tests of SELECT queries.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SelectQueryTests extends BaseH2Test {
+public class SelectQueryTest extends BaseH2Test {
 
     private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
 

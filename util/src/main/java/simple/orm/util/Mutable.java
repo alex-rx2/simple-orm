@@ -3,7 +3,7 @@ package simple.orm.util;
 import io.vavr.Function1;
 
 /**
- * A wrap around immutable object to "make it mutable". This version is thrad-unsafe.
+ * A wrap around immutable object to "make it mutable". This version is not thread-safe.
  * <br>
  * Common usage scenario is to declare a field of a class as <code>Mutable&lt;Immutable></code>
  * and use this wrap to modify the field.

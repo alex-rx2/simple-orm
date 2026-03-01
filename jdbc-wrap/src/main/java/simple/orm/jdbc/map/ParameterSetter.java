@@ -9,6 +9,7 @@ import java.sql.SQLException;
 /**
  * Interface for setter of a single defined (non-null) parameter of PreparedStatement.
  */
+@Deprecated
 public interface ParameterSetter<T> {
 
     /**

@@ -8,6 +8,7 @@ import java.util.Objects;
 /**
  * {@link ParameterType} implementation.
  */
+@Deprecated
 public class ParameterTypeImpl<Jdbc, Java> extends AbstractParameterImplType<Jdbc, Java> {
 
     protected Function1<Jdbc, Java> jdbcToJava;
@@ -44,9 +45,8 @@ public class ParameterTypeImpl<Jdbc, Java> extends AbstractParameterImplType<Jdb
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ParameterTypeImpl))
+        if (!(o instanceof ParameterTypeImpl<?, ?> that))
             return false;
-        ParameterTypeImpl<?, ?> that = (ParameterTypeImpl<?, ?>) o;
         return this.jdbcType == that.jdbcType
                 && this.jdbcClass == that.jdbcClass
                 && this.javaClass == that.javaClass

@@ -9,6 +9,7 @@ import java.sql.JDBCType;
  *
  * @param <Jdbc> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
  */
+@Deprecated
 public interface ParameterJdbcType<Jdbc> {
 
     /**

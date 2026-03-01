@@ -21,6 +21,16 @@ public interface NamedInjector<T> {
      * @param parametersMap mapping of parameter names from original query into parameter indexes in statement.
      * @throws JdbcException a wrap around {@link SQLException}.
      */
+    @Deprecated
     void injectParameters(PreparedStatement stmt, T source, NamedParametersMap parametersMap);
+
+    /**
+     * Injects parameters into {@link PreparedStatement}.
+     *
+     * @param stmt          {@link PreparedStatement}.
+     * @param source        object with properties to be injected as parameters.
+     * @throws JdbcException a wrap around {@link SQLException}.
+     */
+    void injectParameters(PreparedStatement stmt, T source);
 
 }

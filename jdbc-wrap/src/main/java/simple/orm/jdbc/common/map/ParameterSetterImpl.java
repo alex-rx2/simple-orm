@@ -10,6 +10,7 @@ import java.sql.SQLException;
 /**
  * Implementation of {@link ParameterSetter}.
  */
+@Deprecated
 public class ParameterSetterImpl<T> implements ParameterSetter<T> {
 
     public interface Setter<T> {

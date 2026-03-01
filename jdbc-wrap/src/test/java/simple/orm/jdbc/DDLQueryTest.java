@@ -5,7 +5,6 @@ import io.vavr.Tuple4;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests of DDL queries.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class DDLQueryTests extends BaseH2Test {
+public class DDLQueryTest extends BaseH2Test {
 
     private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
 

@@ -16,6 +16,7 @@ import java.util.Objects;
 /**
  * Builder for {@link IndexedInjector}.
  */
+@Deprecated
 public class IndexedInjectorBuilder {
 
     public static IndexedInjectorBuilder builder() {

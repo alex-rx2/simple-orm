@@ -16,6 +16,7 @@ import static simple.orm.jdbc.common.map.ParameterGetterImpl.wrapCheckWasNull;
 /**
  * Default ParameterGetter implementations for {@link BasicJdbcTypes} types.
  */
+@Deprecated
 public final class BasicGetters {
     private BasicGetters() {
     }

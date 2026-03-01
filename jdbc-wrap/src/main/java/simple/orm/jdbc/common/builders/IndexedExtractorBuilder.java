@@ -16,6 +16,7 @@ import java.util.Objects;
 /**
  * Builder for {@link IndexedExtractor}.
  */
+@Deprecated
 public class IndexedExtractorBuilder {
 
     public static IndexedExtractorBuilder builder() {
