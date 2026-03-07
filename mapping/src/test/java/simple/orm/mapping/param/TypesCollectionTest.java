@@ -1,10 +1,8 @@
-package simple.orm.mapping.type;
+package simple.orm.mapping.param;
 
 import io.vavr.Tuple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.mapping.param.ParameterJdbcType;
-import simple.orm.mapping.param.TypesCollection;
 
 import java.sql.JDBCType;
 
@@ -125,6 +123,73 @@ public class TypesCollectionTest {
         // replace
         assertThatCode(()->types.replaceType("INT", typeInt))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void testCaseInsensitive() {
+        TypesCollection types = TypesCollection.empty()
+                .addType("int",typeInt)
+                .addType("str",typeString)
+                .caseInsensitive();
+        // add
+        assertThatCode(()->types.addType("INT", typeInt))
+                .isInstanceOf(IllegalArgumentException.class);
+        // replace
+        assertThatCode(()->types.replaceType("INT", typeInt))
+                .doesNotThrowAnyException();
+        // find
+        assertThat(types.findType("int")).isSameAs(typeInt);
+        assertThat(types.findType("INT")).isSameAs(typeInt);
+        assertThat(types.findType("InT")).isSameAs(typeInt);
+        assertThat(types.findType("str")).isSameAs(typeString);
+        assertThat(types.findType("STR")).isSameAs(typeString);
+        assertThat(types.findType("StR")).isSameAs(typeString);
+    }
+
+    @Test
+    public void testCaseSwitching() {
+        // case-sensitive by default
+        final TypesCollection types = TypesCollection.empty()
+                .addType("int",typeInt)
+                .addType("STR",typeString);
+        assertThat(types.isCaseSensitive()).isTrue();
+        assertThat(types.findType("int")).isSameAs(typeInt);
+        assertThat(types.findType("INT")).isNull();
+        assertThat(types.findType("InT")).isNull();
+        assertThat(types.findType("str")).isNull();
+        assertThat(types.findType("STR")).isSameAs(typeString);
+        assertThat(types.findType("StR")).isNull();
+        assertThat(types.caseSensitive()).isSameAs(types);
+        // make case-insensitive
+        final TypesCollection types2 = types.caseInsensitive();
+        assertThat(types2.isCaseSensitive()).isFalse();
+        assertThat(types2.findType("int")).isSameAs(typeInt);
+        assertThat(types2.findType("INT")).isSameAs(typeInt);
+        assertThat(types2.findType("InT")).isSameAs(typeInt);
+        assertThat(types2.findType("STR")).isSameAs(typeString);
+        assertThat(types2.findType("str")).isSameAs(typeString);
+        assertThat(types2.findType("StR")).isSameAs(typeString);
+        assertThat(types2.caseInsensitive()).isSameAs(types2);
+        // make case-sensitive again
+        final TypesCollection types3 = types.caseSensitive();
+        assertThat(types3.isCaseSensitive()).isTrue();
+        assertThat(types3.findType("int")).isSameAs(typeInt);
+        assertThat(types3.findType("INT")).isNull();
+        assertThat(types3.findType("InT")).isNull();
+        assertThat(types3.findType("str")).isNull();
+        assertThat(types3.findType("STR")).isSameAs(typeString);
+        assertThat(types3.findType("StR")).isNull();
+        assertThat(types3.caseSensitive()).isSameAs(types3);
+        // make case-insensitive again
+        final TypesCollection types4 = types.caseInsensitive();
+        assertThat(types4.isCaseSensitive()).isFalse();
+        assertThat(types4.findType("int")).isSameAs(typeInt);
+        assertThat(types4.findType("INT")).isSameAs(typeInt);
+        assertThat(types4.findType("InT")).isSameAs(typeInt);
+        assertThat(types4.findType("STR")).isSameAs(typeString);
+        assertThat(types4.findType("str")).isSameAs(typeString);
+        assertThat(types4.findType("StR")).isSameAs(typeString);
+        assertThat(types4.caseInsensitive()).isSameAs(types4);
     }
 
 }

@@ -6,11 +6,13 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Traversable;
-import simple.orm.mapping.type.MappersCollection;
+import io.vavr.collection.TreeMap;
 import simple.orm.mapping.param.ParameterJdbcType;
+import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 
 import java.sql.JDBCType;
+import java.util.Comparator;
 import java.util.Objects;
 
 import static simple.orm.mapping.impl.MappersCollectionUtil.*;
@@ -20,18 +22,28 @@ import static simple.orm.mapping.impl.MappersCollectionUtil.*;
  */
 public class MappersCollectionImpl implements MappersCollection {
 
+    private final boolean caseSensitive;
     private final Map<String, List<TypeMapperReg>> byName;
     private final Map<ParameterJdbcType<?>, List<TypeMapperReg>> byType;
 
-    public MappersCollectionImpl() {
-        this(HashMap.empty(), HashMap.empty());
+    public MappersCollectionImpl(boolean caseSensitive) {
+        this(caseSensitive, HashMap.empty(), HashMap.empty(), false);
     }
 
-    public MappersCollectionImpl(Map<String, List<TypeMapperReg>> byName,
-                                 Map<ParameterJdbcType<?>, List<TypeMapperReg>> byType
-    ) {
-        this.byName = byName;
+    public MappersCollectionImpl(boolean caseSensitive,
+                                 Map<String, List<TypeMapperReg>> byName,
+                                 Map<ParameterJdbcType<?>, List<TypeMapperReg>> byType,
+                                 boolean rebuildByName) {
+        this.caseSensitive = caseSensitive;
         this.byType = byType;
+        if (rebuildByName) {
+            this.byName = byName.values().foldLeft(
+                    (Map<String, List<TypeMapperReg>>) TreeMap.<String, List<TypeMapperReg>>empty(comparator(caseSensitive)),
+                    (map, regs) -> regs.foldLeft(map, MappersCollectionUtil::addByName)
+            );
+        } else {
+            this.byName = byName;
+        }
     }
 
     @Override
@@ -55,11 +67,11 @@ public class MappersCollectionImpl implements MappersCollection {
 
     private MappersCollection addMapper(TypeMapperReg mapper) {
         if (byName.get(mapper.name())
-                .map(types -> types.exists(mappersEqualPredicate(mapper)))
+                .map(types -> types.exists(mappersEqualPredicate(caseSensitive, mapper)))
                 .getOrElse(Boolean.FALSE)) {
             throw new IllegalArgumentException("same mapper is already registered");
         }
-        return new MappersCollectionImpl(addByName(byName, mapper), addByType(byType, mapper));
+        return new MappersCollectionImpl(caseSensitive, addByName(byName, mapper), addByType(byType, mapper), false);
     }
 
     @Override
@@ -83,11 +95,16 @@ public class MappersCollectionImpl implements MappersCollection {
 
     private MappersCollection replaceMapper(TypeMapperReg mapper) {
         if (!byName.get(mapper.name())
-                .map(types -> types.exists(mappersEqualPredicate(mapper)))
+                .map(types -> types.exists(mappersEqualPredicate(caseSensitive, mapper)))
                 .getOrElse(Boolean.FALSE)) {
             throw new IllegalArgumentException("nothing to replace, no same mapper registered");
         }
-        return new MappersCollectionImpl(replaceByName(byName, mapper), replaceByType(byType, mapper));
+        return new MappersCollectionImpl(
+                caseSensitive,
+                replaceByName(caseSensitive, byName, mapper),
+                replaceByType(caseSensitive, byType, mapper),
+                false
+        );
     }
 
     @Override
@@ -144,6 +161,25 @@ public class MappersCollectionImpl implements MappersCollection {
 
     private Tuple3<String, TypeMapper<?, ?>, String> tupelize(TypeMapperReg reg) {
         return Tuple.of(reg.name(), reg.mapper(), reg.tag());
+    }
+
+    @Override
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    @Override
+    public MappersCollection caseSensitive() {
+        return caseSensitive ? this : new MappersCollectionImpl(true, byName, byType, true);
+    }
+
+    @Override
+    public MappersCollection caseInsensitive() {
+        return caseSensitive ? new MappersCollectionImpl(false, byName, byType, true) : this;
+    }
+
+    private static Comparator<String> comparator(boolean caseSensitive) {
+        return caseSensitive ? String::compareTo : String.CASE_INSENSITIVE_ORDER;
     }
 
 }

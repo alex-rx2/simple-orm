@@ -53,16 +53,44 @@ public interface TypesCollection {
     Traversable<Tuple2<String, ParameterJdbcType<?>>> allTypes();
 
     /**
-     * Factory method to create new empty collection.
+     * Returns <code>true</code> if name comparison is performed in a case-sensitive way.
+     * <br>
+     * E.g. if type is registered under "SomeName" name, it can be found only under this exact name, and not "somename".
+     *
+     * @return <code>true</code> if name comparison is performed in a case-sensitive way.
+     */
+    boolean isCaseSensitive();
+
+    /**
+     * Returns a case-sensitive variant of this collection.
+     * <br>
+     * E.g. if type is registered under "SomeName" name, it can be found only under this exact name, and not "somename".
+     *
+     * @return a case-sensitive variant of this collection (or self if already case-sensitive).
+     */
+    TypesCollection caseSensitive();
+
+    /**
+     * Returns a case-insensitive variant of this collection.
+     * <br>
+     * E.g. if type is registered under "SomeName" name,
+     * it can also be found under "somename" or "SOMENAME" names (and all other variants).
+     *
+     * @return a case-insensitive variant of this collection (or self if already case-insensitive).
+     */
+    TypesCollection caseInsensitive();
+
+    /**
+     * Factory method to create new empty collection (it will be case-sensitive).
      *
      * @return new empty collection.
      */
     static TypesCollection empty() {
-        return new TypesCollectionImpl();
+        return new TypesCollectionImpl(true);
     }
 
     /**
-     * Factory method to create a new collection of specified types.
+     * Factory method to create a new collection of specified types (it will be case-sensitive).
      *
      * @param types types to be added to collection.
      * @return new collection containing specified types.

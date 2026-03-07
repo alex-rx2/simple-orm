@@ -216,7 +216,7 @@ public class MapperCollectionTest {
                 .containsExactlyInAnyOrder(mapperIntStr);
         assertThat(mappers.findMappers(null, Mockito.<ParameterJdbcType<String>>mock(), String.class, null)).isEmpty();
         // no name or type
-        assertThatCode(()->mappers.findMappers((String) null, null, String.class, "str"))
+        assertThatCode(() -> mappers.findMappers((String) null, null, String.class, "str"))
                 .isInstanceOf(IllegalArgumentException.class);
         // JDBCType
         assertThat(mappers.findMappers(JDBCType.INTEGER, null, null, null))
@@ -285,6 +285,164 @@ public class MapperCollectionTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatCode(() -> mappers.replaceMapper("strMapper", mapperIntStr, "str"))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void testCaseInsensitive() {
+        TypeMapper<Integer, Integer> mapperIntInt2 =
+                typeInt.mappedTo(Integer.class, Function1.identity(), Function1.identity());
+        TypeMapper<Integer, String> mapperIntStr2 =
+                typeInt.mappedTo(String.class, Integer::valueOf, String::valueOf);
+        TypeMapper<String, String> mapperStrStr2 =
+                typeString.mappedTo(String.class, Function1.identity(), Function1.identity());
+        MappersCollection mappers = MappersCollection.empty()
+                .addMapper("intMapper", mapperIntInt, null)
+                .addMapper("intMapper", mapperIntStr, null)
+                .addMapper("strMapper", mapperStrStr, null)
+                .caseInsensitive();
+        assertThat(mappers.allMappers())
+                .containsExactlyInAnyOrder(
+                        Tuple.of("intMapper", mapperIntInt, null),
+                        Tuple.of("intMapper", mapperIntStr, null),
+                        Tuple.of("strMapper", mapperStrStr, null)
+                );
+        // add
+        assertThatCode(() -> mappers.addMapper("INTmapper", mapperIntInt2))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatCode(() -> mappers.addMapper("intMAPPER", mapperIntInt2))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatCode(() -> mappers.addMapper("STRMAPPER", mapperStrStr2))
+                .isInstanceOf(IllegalArgumentException.class);
+        // replace
+        MappersCollection mappers2 = mappers
+                .replaceMapper("INTmapper", mapperIntInt2, null)
+                .replaceMapper("intMAPPER", mapperIntStr2, null)
+                .replaceMapper("STRMAPPER", mapperStrStr2, null);
+        assertThat(mappers2.allMappers())
+                .containsExactlyInAnyOrder(
+                        Tuple.of("INTmapper", mapperIntInt2, null),
+                        Tuple.of("intMAPPER", mapperIntStr2, null),
+                        Tuple.of("STRMAPPER", mapperStrStr2, null)
+                );
+        // find
+        assertThat(mappers2.findMappers("intmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt2, mapperIntStr2);
+        assertThat(mappers2.findMappers("INTMAPPER", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt2, mapperIntStr2);
+        assertThat(mappers2.findMappers("STRmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr2);
+        assertThat(mappers2.findMappers("strMAPPER", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr2);
+        // check tag is still case-sensitive
+        MappersCollection mappers3 = mappers
+                .addMapper("intmapper", mapperIntInt, "tag")
+                .addMapper("INTMAPPER", mapperIntStr, "TAG")
+                .addMapper("strmapper", mapperStrStr, "tAg");
+        // find with tag
+        assertThat(mappers3.findMappers("intMAPPER", null, null, "tag"))
+                .containsExactlyInAnyOrder(mapperIntInt);
+        assertThat(mappers3.findMappers("intMAPPER", null, null, "tAg"))
+                .isEmpty();
+        assertThat(mappers3.findMappers("INTmapper", null, null, "TAG"))
+                .containsExactlyInAnyOrder(mapperIntStr);
+        assertThat(mappers3.findMappers("INTmapper", null, null, "tAg"))
+                .isEmpty();
+        assertThat(mappers3.findMappers("StrMapper", null, null, "tAg"))
+                .containsExactlyInAnyOrder(mapperStrStr);
+        assertThat(mappers3.findMappers("StrMapper", null, null, "TaG"))
+                .isEmpty();
+    }
+
+    @Test
+    public void testCaseSwitching() {
+        // case-sensitive by default
+        TypeMapper<Integer, Integer> mapperIntInt2 =
+                typeInt.mappedTo(Integer.class, Function1.identity(), Function1.identity());
+        TypeMapper<String, String> mapperStrStr2 =
+                typeString.mappedTo(String.class, Function1.identity(), Function1.identity());
+        MappersCollection mappers = MappersCollection.empty()
+                .addMapper("intMapper", mapperIntInt, null)
+                .addMapper("strMapper", mapperStrStr, null)
+                .addMapper("INTmapper", mapperIntInt2, null)
+                .addMapper("STRmapper", mapperStrStr2, null);
+        assertThat(mappers.isCaseSensitive()).isTrue();
+        assertThat(mappers.findMappers("intMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt);
+        assertThat(mappers.findMappers("INTmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt2);
+        assertThat(mappers.findMappers("intmapper", null, null, null))
+                .isEmpty();
+        assertThat(mappers.findMappers("INTMAPPER", null, null, null))
+                .isEmpty();
+        assertThat(mappers.findMappers("strMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr);
+        assertThat(mappers.findMappers("STRmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr2);
+        assertThat(mappers.findMappers("StrMapper", null, null, null))
+                .isEmpty();
+        assertThat(mappers.findMappers("sTrMaPpEr", null, null, null))
+                .isEmpty();
+        assertThat(mappers.caseSensitive()).isSameAs(mappers);
+        // make case-insensitive
+        MappersCollection mappers2 = mappers.caseInsensitive();
+        assertThat(mappers2.isCaseSensitive()).isFalse();
+        assertThat(mappers2.findMappers("intMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers2.findMappers("INTmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers2.findMappers("intmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers2.findMappers("INTMAPPER", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers2.findMappers("strMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers2.findMappers("STRmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers2.findMappers("StrMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers2.findMappers("sTrMaPpEr", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers2.caseInsensitive()).isSameAs(mappers2);
+        // make case-sensitive again
+        MappersCollection mappers3 = mappers2.caseSensitive();
+        assertThat(mappers3.isCaseSensitive()).isTrue();
+        assertThat(mappers3.findMappers("intMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt);
+        assertThat(mappers3.findMappers("INTmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt2);
+        assertThat(mappers3.findMappers("intmapper", null, null, null))
+                .isEmpty();
+        assertThat(mappers3.findMappers("INTMAPPER", null, null, null))
+                .isEmpty();
+        assertThat(mappers3.findMappers("strMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr);
+        assertThat(mappers3.findMappers("STRmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr2);
+        assertThat(mappers3.findMappers("StrMapper", null, null, null))
+                .isEmpty();
+        assertThat(mappers3.findMappers("sTrMaPpEr", null, null, null))
+                .isEmpty();
+        assertThat(mappers3.caseSensitive()).isSameAs(mappers3);
+        // make case-insensitive again
+        MappersCollection mappers4 = mappers3.caseInsensitive();
+        assertThat(mappers4.isCaseSensitive()).isFalse();
+        assertThat(mappers4.findMappers("intMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers4.findMappers("INTmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers4.findMappers("intmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers4.findMappers("INTMAPPER", null, null, null))
+                .containsExactlyInAnyOrder(mapperIntInt, mapperIntInt2);
+        assertThat(mappers4.findMappers("strMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers4.findMappers("STRmapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers4.findMappers("StrMapper", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers4.findMappers("sTrMaPpEr", null, null, null))
+                .containsExactlyInAnyOrder(mapperStrStr, mapperStrStr2);
+        assertThat(mappers4.caseInsensitive()).isSameAs(mappers4);
     }
 
 }

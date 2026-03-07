@@ -4,6 +4,7 @@ import simple.orm.jdbc.JdbcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * {@link ParameterGetter} implementation.
@@ -20,7 +21,7 @@ public class ParameterGetterImpl<T> implements ParameterGetter<T> {
 
     public static <T> T wrapCheckWasNull(ResultSet rs, int index, GetterIdx<T> getter, T nullValue) throws SQLException {
         T value = getter.getValue(rs, index);
-        if (value == nullValue && rs.wasNull()) {
+        if (Objects.equals(value, nullValue) && rs.wasNull()) {
             return null;
         } else {
             return value;
@@ -29,7 +30,7 @@ public class ParameterGetterImpl<T> implements ParameterGetter<T> {
 
     public static <T> T wrapCheckWasNull(ResultSet rs, String label, GetterLabel<T> getter, T nullValue) throws SQLException {
         T value = getter.getValue(rs, label);
-        if (value == nullValue && rs.wasNull()) {
+        if (Objects.equals(value, nullValue) && rs.wasNull()) {
             return null;
         } else {
             return value;

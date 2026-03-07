@@ -13,6 +13,7 @@
         <module>jdbc-wrap</module>
         <module>util</module>
         <module>mapping</module>
+        <module>db-h2</module>
         <!--<module>xxx</module>-->
     </modules>
 
@@ -105,6 +106,7 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--TODO remove later? move to integration tests module-->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

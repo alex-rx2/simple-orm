@@ -4,24 +4,31 @@ import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Traversable;
-import simple.orm.mapping.param.TypesCollection;
+import io.vavr.collection.TreeMap;
 import simple.orm.mapping.param.ParameterJdbcType;
+import simple.orm.mapping.param.TypesCollection;
 
 import java.sql.JDBCType;
+import java.util.Comparator;
 
 /**
  * Implementation of {@link TypesCollection}.
  */
 public class TypesCollectionImpl implements TypesCollection {
 
+    private final boolean caseSensitive;
     private final Map<String, ParameterJdbcType<?>> types;
 
-    public TypesCollectionImpl() {
-        this(HashMap.empty());
+    public TypesCollectionImpl(boolean caseSensitive) {
+        this(caseSensitive, HashMap.empty());
     }
 
-    public TypesCollectionImpl(Map<String, ParameterJdbcType<?>> types) {
-        this.types = types;
+    public TypesCollectionImpl(boolean caseSensitive, Map<String, ParameterJdbcType<?>> types) {
+        this.caseSensitive = caseSensitive;
+        this.types = TreeMap.<String, ParameterJdbcType<?>>empty(comparator(caseSensitive)).merge(types);
+        if (this.types.size() != types.size()) {
+            throw new IllegalArgumentException("types contains duplicate keys (caseSensitive=" + caseSensitive + ")");
+        }
     }
 
     @Override
@@ -35,7 +42,7 @@ public class TypesCollectionImpl implements TypesCollection {
         if (types.containsKey(name)) {
             throw new IllegalArgumentException("type with the name '" + name + "' already exists");
         }
-        return new TypesCollectionImpl(types.put(name, type));
+        return new TypesCollectionImpl(caseSensitive, types.put(name, type));
     }
 
     @Override
@@ -49,7 +56,7 @@ public class TypesCollectionImpl implements TypesCollection {
         if (!types.containsKey(name)) {
             throw new IllegalArgumentException("type with the name '" + name + "' doesn't exist");
         }
-        return new TypesCollectionImpl(types.put(name, type));
+        return new TypesCollectionImpl(caseSensitive, types.put(name, type));
     }
 
     @Override
@@ -72,6 +79,25 @@ public class TypesCollectionImpl implements TypesCollection {
     @Override
     public Traversable<Tuple2<String, ParameterJdbcType<?>>> allTypes() {
         return types.iterator();
+    }
+
+    @Override
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    @Override
+    public TypesCollection caseSensitive() {
+        return caseSensitive ? this : new TypesCollectionImpl(true, types);
+    }
+
+    @Override
+    public TypesCollection caseInsensitive() {
+        return caseSensitive ? new TypesCollectionImpl(false, types) : this;
+    }
+
+    private static Comparator<String> comparator(boolean caseSensitive) {
+        return caseSensitive ? String::compareTo : String.CASE_INSENSITIVE_ORDER;
     }
 
 }

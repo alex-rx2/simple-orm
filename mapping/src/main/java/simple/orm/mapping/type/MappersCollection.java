@@ -106,12 +106,46 @@ public interface MappersCollection {
     Traversable<Tuple3<String, TypeMapper<?, ?>, String>> allMappers();
 
     /**
+     * Returns <code>true</code> if name comparison is performed in a case-sensitive way.
+     * <br>
+     * E.g. if mapper is registered under "SomeName" name, it can be found only under this exact name, and not "somename".
+     * <br>
+     * Note: tags are always case-sensitive.
+     *
+     * @return <code>true</code> if name comparison is performed in a case-sensitive way.
+     */
+    boolean isCaseSensitive();
+
+    /**
+     * Returns a case-sensitive variant of this collection.
+     * <br>
+     * E.g. if mapper is registered under "SomeName" name, it can be found only under this exact name, and not "somename".
+     * <br>
+     * Note: tags are always case-sensitive.
+     *
+     * @return a case-sensitive variant of this collection (or self if already case-sensitive).
+     */
+    MappersCollection caseSensitive();
+
+    /**
+     * Returns a case-insensitive variant of this collection.
+     * <br>
+     * E.g. if mapper is registered under "SomeName" name,
+     * it can also be found under "somename" or "SOMENAME" names (and all other variants).
+     * <br>
+     * Note: tags are always case-sensitive.
+     *
+     * @return a case-insensitive variant of this collection (or self if already case-insensitive).
+     */
+    MappersCollection caseInsensitive();
+
+    /**
      * Factory method to create new empty collection.
      *
      * @return new empty collection.
      */
     static MappersCollection empty() {
-        return new MappersCollectionImpl();
+        return new MappersCollectionImpl(true);
     }
 
     /**

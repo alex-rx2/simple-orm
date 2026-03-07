@@ -1,11 +1,9 @@
-package simple.orm.mapping.type;
+package simple.orm.mapping.param;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
-import simple.orm.mapping.param.ParameterGetter;
-import simple.orm.mapping.param.ParameterJdbcType;
-import simple.orm.mapping.param.ParameterSetter;
+import simple.orm.mapping.type.TypeMapper;
 
 import java.sql.JDBCType;
 
