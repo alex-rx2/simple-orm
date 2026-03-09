@@ -1,4 +1,4 @@
-package simple.orm.jdbc;
+package simple.orm;
 
 import java.sql.Connection;
 import java.sql.SQLException;

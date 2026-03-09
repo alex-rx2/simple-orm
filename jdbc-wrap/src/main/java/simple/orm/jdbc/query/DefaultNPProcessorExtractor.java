@@ -6,7 +6,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 
 /**
- * {@link DefaultNPProcessor} algorithm implementation. Made as separate class for ease of algorithm state maintenance.
+ * Will be reused later.
  */
 @Deprecated
 public final class DefaultNPProcessorExtractor {

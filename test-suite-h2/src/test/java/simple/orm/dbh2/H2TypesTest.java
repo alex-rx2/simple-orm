@@ -1,10 +1,12 @@
-package simple.orm.h2;
+package simple.orm.dbh2;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import simple.orm.BaseH2Test;
+import simple.orm.h2.H2Types;
 import simple.orm.mapping.param.ParameterJdbcType;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -13,7 +15,6 @@ import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

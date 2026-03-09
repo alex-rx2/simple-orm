@@ -1,6 +1,5 @@
 package simple.orm.jdbc.query;
 
-import io.vavr.Tuple2;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.impl.query.BasicQuery;
 import simple.orm.jdbc.impl.query.IndexedIndexedQuery;
@@ -19,39 +18,19 @@ import simple.orm.jdbc.map.NamedInjector;
 /**
  * Simple factory to create queries.
  * <br>
- * For default factory {@link #defaultFactory()} named parameters in SQL query
+ * For default factory {@link #instance()} named parameters in SQL query
  * are strings of format <nobr><code>:[a-zA-Z0-9_]+</code></nobr> that are not inside comments or SQL string literals.
  * Said parameters are collected and replaced inside query with <code>?</code>.
  */
-@Deprecated
 public class QueryFactory {
 
-    /**
-     * Interface for utility class that extracts named parameters from SQL query replacing them with ? in the query.
-     */
-    public interface NamedParametersProcessor {
-        /**
-         * This method extracts named parameters from SQL query, replacing them with ? in the query.
-         *
-         * @param sql SQL query.
-         * @return {@link Tuple2} of processed query and extracted named parameters.
-         */
-        Tuple2<String, NamedParametersMap> process(String sql);
+    private static final QueryFactory QUERY_FACTORY = new QueryFactory();
+
+    public static QueryFactory instance() {
+        return QUERY_FACTORY;
     }
 
-    private static final QueryFactory defaultFactory = new QueryFactory(new DefaultNPProcessor());
-
-    public static QueryFactory defaultFactory() {
-        return defaultFactory;
-    }
-
-    private final NamedParametersProcessor namedParametersProcessor;
-
-    public QueryFactory(NamedParametersProcessor extractor) {
-        if (extractor == null) {
-            throw new NullPointerException("extractor is null");
-        }
-        this.namedParametersProcessor = extractor;
+    public QueryFactory() {
     }
 
     /**
@@ -123,8 +102,7 @@ public class QueryFactory {
         if (injector == null) {
             throw new NullPointerException("injector is null");
         }
-        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedParamsNoResultSetQuery<>(QueryType.DML, processed._1, queryTimeoutSeconds, injector, processed._2);
+        return new NamedParamsNoResultSetQuery<>(QueryType.DML, sql, queryTimeoutSeconds, injector);
     }
 
     /**
@@ -210,8 +188,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedNamedQuery<>(QueryType.SELECT, processed._1, queryTimeoutSeconds, injector, processed._2, extractor);
+        return new NamedNamedQuery<>(QueryType.SELECT, sql, queryTimeoutSeconds, injector, extractor);
     }
 
     /**
@@ -275,8 +252,7 @@ public class QueryFactory {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
         }
-        Tuple2<String, NamedParametersMap> processed = namedParametersProcessor.process(sql);
-        return new NamedIndexedQuery<>(QueryType.SELECT, processed._1, queryTimeoutSeconds, injector, processed._2, extractor);
+        return new NamedIndexedQuery<>(QueryType.SELECT, sql, queryTimeoutSeconds, injector, extractor);
     }
 
     /**

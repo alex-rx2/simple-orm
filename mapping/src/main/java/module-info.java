@@ -7,6 +7,8 @@ open module simple.orm.mapping {
 
     exports simple.orm.mapping.param;
     exports simple.orm.mapping.type;
+    exports simple.orm.mapping.indexed;
+    exports simple.orm.mapping.named;
     exports simple.orm.mapping.builder;
 
 }

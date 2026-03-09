@@ -7,10 +7,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.common.BasicTypes;
-import simple.orm.jdbc.common.InjectorsExtractors;
+import simple.orm.BaseH2Test;
+import simple.orm.h2.H2Mappers;
 import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryFactory;
+import simple.orm.mapping.builder.InjectorsExtractors;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -26,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DMLQueryTest extends BaseH2Test {
 
-    private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
+    private static final QueryFactory QFACTORY = QueryFactory.instance();
 
     private DatabaseAccessPoint database;
 
@@ -111,15 +112,15 @@ public class DMLQueryTest extends BaseH2Test {
             simple.orm.jdbc.Connection conn = database.connect(10);
             Query<Seq<Object>, Integer> query = QFACTORY.iudQuery(
                     "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    InjectorsExtractors.indexedInjector()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
                             .params(
-                                    BasicTypes.INTEGER,
-                                    BasicTypes.TINYINT, BasicTypes.VARCHAR,
-                                    BasicTypes.SMALLINT, BasicTypes.VARCHAR,
-                                    BasicTypes.BIGINT, BasicTypes.VARCHAR,
-                                    BasicTypes.FLOAT, BasicTypes.VARCHAR,
-                                    BasicTypes.DOUBLE, BasicTypes.VARCHAR,
-                                    BasicTypes.NUMERIC, BasicTypes.VARCHAR
+                                    H2Mappers.INT,
+                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
+                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
+                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
+                                    H2Mappers.REAL, H2Mappers.VARCHAR,
+                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
+                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
                             )
                             .build()
             );
@@ -138,7 +139,7 @@ public class DMLQueryTest extends BaseH2Test {
         // verify
         {
             Seq<String> columns = List.empty();
-            try (java.sql.Connection conn = directConnect()) {
+            try (Connection conn = directConnect()) {
                 ResultSet rs = conn.createStatement().executeQuery(
                         """
                         SELECT concat_ws(',',\
@@ -174,22 +175,22 @@ public class DMLQueryTest extends BaseH2Test {
             Query<NamedRow2, Integer> query = QFACTORY.iudQuery(
                     """
                     INSERT INTO table_one\
-                     VALUES (:id, :tiny, :s1, :small, :s2, :big, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    InjectorsExtractors.<NamedRow2>namedInjector()
-                            .param("id", BasicTypes.INTEGER)
-                            .param("tiny", BasicTypes.TINYINT)
-                            .param("s1", BasicTypes.VARCHAR)
-                            .param("small", BasicTypes.SMALLINT)
-                            .param("s2", BasicTypes.VARCHAR)
-                            .param("big", BasicTypes.BIGINT)
-                            .param("s3", BasicTypes.VARCHAR)
-                            .param("real", BasicTypes.REAL)
-                            .param("s4", BasicTypes.VARCHAR)
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("s5", BasicTypes.VARCHAR)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("s6", BasicTypes.VARCHAR)
+                    InjectorsExtractors.<NamedRow2>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
+                            .param("tiny", H2Mappers.TINYINT_I)
+                            .param("s1", H2Mappers.VARCHAR)
+                            .param("small", H2Mappers.SMALLINT_I)
+                            .param("s2", H2Mappers.VARCHAR)
+                            .param("big", H2Mappers.BIGINT)
+                            .param("s3", H2Mappers.VARCHAR)
+                            .param("real", H2Mappers.REAL)
+                            .param("s4", H2Mappers.VARCHAR)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("s5", H2Mappers.VARCHAR)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("s6", H2Mappers.VARCHAR)
                             .build()
             );
             int result = conn.executeDMLQuery(query,
@@ -204,73 +205,7 @@ public class DMLQueryTest extends BaseH2Test {
         // verify
         {
             Seq<String> columns = List.empty();
-            try (java.sql.Connection conn = directConnect()) {
-                ResultSet rs = conn.createStatement().executeQuery(
-                        """
-                        SELECT concat_ws(',',\
-                          id,\
-                          to_char(col_ti),col_s1,\
-                          to_char(col_si),col_s2,\
-                          to_char(col_bi),col_s3,\
-                          to_char(col_r),col_s4,\
-                          to_char(col_d),col_s5,\
-                          to_char(col_nu),col_s6\
-                         )\
-                         FROM table_one ORDER BY id\
-                        """
-                );
-                while (rs.next()) {
-                    columns = columns.append(rs.getString(1));
-                }
-            }
-            assertThat(columns).containsExactly(
-                    // 10.10 -> 10.1 and numeric fills 0 to all fractional digits
-                    "1,10,p1,10,p2,10,p3,10.1,p4,10.1,p5,10.1000000000,p6",
-                    "2,-10,n1,-10,n2,-10,n3,-10.1,n4,-10.1,n5,-10.1000000000,n6",
-                    "5,55,t2-1,55,t2-2,555555555555555555,t2-3,-5.5,t2-4,6.6,t2-5,777.7770000000,t2-6"
-            );
-        }
-    }
-
-    @Test
-    public void testInsertNamedPartiallyOtherPropNames() throws SQLException {
-        // test
-        {
-            simple.orm.jdbc.Connection conn = database.connect(10);
-            Query<NamedRow2, Integer> query = QFACTORY.iudQuery(
-                    """
-                    INSERT INTO table_one\
-                     VALUES (:111, :222, :333, :aaa, :bbb, :___, :s3, :real, :s4, :doublePrecision, :s5, :num, :s6)
-                    """,
-                    InjectorsExtractors.<NamedRow2>namedInjector()
-                            .param("111", BasicTypes.INTEGER, "id")
-                            .param("222", BasicTypes.TINYINT, "tiny")
-                            .param("333", BasicTypes.VARCHAR, "s1")
-                            .param("aaa", BasicTypes.SMALLINT, "small")
-                            .param("bbb", BasicTypes.VARCHAR, "s2")
-                            .param("___", BasicTypes.BIGINT, "big")
-                            .param("s3", BasicTypes.VARCHAR)
-                            .param("real", BasicTypes.REAL)
-                            .param("s4", BasicTypes.VARCHAR)
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("s5", BasicTypes.VARCHAR)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("s6", BasicTypes.VARCHAR)
-                            .build()
-            );
-            int result = conn.executeDMLQuery(query,
-                    new NamedRow2(5,
-                            55, 55, 555555555555555555L, -5.5f, 6.6, new BigDecimal("777.777"),
-                            "t2-1", "t2-2", "t2-3", "t2-4", "t2-5", "t2-6"
-                    )
-            );
-            assertThat(result).isEqualTo(1);
-            conn.close();
-        }
-        // verify
-        {
-            Seq<String> columns = List.empty();
-            try (java.sql.Connection conn = directConnect()) {
+            try (Connection conn = directConnect()) {
                 ResultSet rs = conn.createStatement().executeQuery(
                         """
                         SELECT concat_ws(',',\
@@ -311,7 +246,7 @@ public class DMLQueryTest extends BaseH2Test {
         // verify
         {
             Seq<String> columns = List.empty();
-            try (java.sql.Connection conn = directConnect()) {
+            try (Connection conn = directConnect()) {
                 ResultSet rs = conn.createStatement().executeQuery(
                         """
                         SELECT concat_ws(',',\
@@ -345,15 +280,15 @@ public class DMLQueryTest extends BaseH2Test {
             // insert
             Query<Seq<Object>, Integer> query1 = QFACTORY.iudQuery(
                     "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    InjectorsExtractors.indexedInjector()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
                             .params(
-                                    BasicTypes.INTEGER,
-                                    BasicTypes.TINYINT, BasicTypes.VARCHAR,
-                                    BasicTypes.SMALLINT, BasicTypes.VARCHAR,
-                                    BasicTypes.BIGINT, BasicTypes.VARCHAR,
-                                    BasicTypes.FLOAT, BasicTypes.VARCHAR,
-                                    BasicTypes.DOUBLE, BasicTypes.VARCHAR,
-                                    BasicTypes.NUMERIC, BasicTypes.VARCHAR
+                                    H2Mappers.INT,
+                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
+                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
+                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
+                                    H2Mappers.REAL, H2Mappers.VARCHAR,
+                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
+                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
                             )
                             .build()
             );
@@ -369,9 +304,9 @@ public class DMLQueryTest extends BaseH2Test {
             assertThat(result1).isEqualTo(1);
             // update
             Query<HasId, Integer> query2 = QFACTORY.iudQuery(
-                    "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>:id",
-                    InjectorsExtractors.<HasId>namedInjector()
-                            .param("id", BasicTypes.INTEGER)
+                    "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>?",
+                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
                             .build()
             );
             int result2 = conn.executeAnyQuery(query2, new HasId(1));
@@ -382,7 +317,7 @@ public class DMLQueryTest extends BaseH2Test {
         // verify
         {
             Seq<String> columns = List.empty();
-            try (java.sql.Connection conn = directConnect()) {
+            try (Connection conn = directConnect()) {
                 ResultSet rs = conn.createStatement().executeQuery(
                         """
                         SELECT concat_ws(',',\

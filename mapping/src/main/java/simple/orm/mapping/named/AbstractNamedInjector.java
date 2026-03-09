@@ -69,11 +69,6 @@ public abstract class AbstractNamedInjector<T> implements NamedInjector<T> {
     }
 
     @Override
-    public void injectParameters(PreparedStatement stmt, T source, NamedParametersMap parametersMap) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void injectParameters(PreparedStatement stmt, T source) {
         if (stmt == null) {
             throw new NullPointerException("stmt is null");

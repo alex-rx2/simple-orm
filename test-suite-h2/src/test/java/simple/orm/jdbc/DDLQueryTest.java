@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import simple.orm.BaseH2Test;
 import simple.orm.jdbc.query.QueryFactory;
 
 import java.sql.ResultSet;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DDLQueryTest extends BaseH2Test {
 
-    private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
+    private static final QueryFactory QFACTORY = QueryFactory.instance();
 
     private DatabaseAccessPoint database;
 

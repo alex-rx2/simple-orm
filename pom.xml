@@ -14,6 +14,7 @@
         <module>util</module>
         <module>mapping</module>
         <module>db-h2</module>
+        <module>test-suite-h2</module>
         <!--<module>xxx</module>-->
     </modules>
 
@@ -104,13 +105,6 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!--TODO remove later? move to integration tests module-->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

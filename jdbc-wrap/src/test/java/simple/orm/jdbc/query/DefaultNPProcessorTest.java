@@ -2,24 +2,17 @@ package simple.orm.jdbc.query;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests on {@link DefaultNPProcessor}.
+ * Tests on {@link DefaultNPProcessorExtractor}.
  */
+@Deprecated
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DefaultNPProcessorTest {
-
-    private DefaultNPProcessor npProcessor;
-
-    @BeforeEach
-    void setUp() {
-        npProcessor = new DefaultNPProcessor(); // it has no state itself
-    }
 
     @Test
     public void testSimpleQuery() {
@@ -31,7 +24,7 @@ public class DefaultNPProcessorTest {
                 "\nSELECT *" +
                 "\nFROM table" +
                 "\nWHERE a=? AND b=?";
-        Tuple2<String, NamedParametersMap> res = npProcessor.process(sql);
+        Tuple2<String, NamedParametersMap> res = new DefaultNPProcessorExtractor(sql).extract();
         String processedSql = res._1;
         NamedParametersMap params = res._2;
         assertThat(processedSql).isEqualTo(expectedSql);
@@ -60,7 +53,7 @@ public class DefaultNPProcessorTest {
                 "\nWHERE a=? --AND b=:bb" +
                 "\n  AND x=?/*" +
                 "\n  AND y=:yy*/";
-        Tuple2<String, NamedParametersMap> res = npProcessor.process(sql);
+        Tuple2<String, NamedParametersMap> res = new DefaultNPProcessorExtractor(sql).extract();
         String processedSql = res._1;
         NamedParametersMap params = res._2;
         assertThat(processedSql).isEqualTo(expectedSql);
@@ -87,7 +80,7 @@ public class DefaultNPProcessorTest {
                 "\n  AND c=? AND d=\":dd\"" +
                 "\n  AND e=?''e AND f=\"'\"?" +
                 "\n  AND g=:?\"g\" AND h=:'h'':hh'";
-        Tuple2<String, NamedParametersMap> res = npProcessor.process(sql);
+        Tuple2<String, NamedParametersMap> res = new DefaultNPProcessorExtractor(sql).extract();
         String processedSql = res._1;
         NamedParametersMap params = res._2;
         assertThat(processedSql).isEqualTo(expectedSql);

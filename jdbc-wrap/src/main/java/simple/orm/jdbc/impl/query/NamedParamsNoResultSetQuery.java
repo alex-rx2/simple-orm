@@ -2,7 +2,6 @@ package simple.orm.jdbc.impl.query;
 
 import simple.orm.jdbc.map.NamedInjector;
 import simple.orm.jdbc.query.HasNamedInjector;
-import simple.orm.jdbc.query.NamedParametersMap;
 import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryType;
 
@@ -17,13 +16,10 @@ import java.sql.ResultSet;
 public class NamedParamsNoResultSetQuery<P, T> extends BasicQuery<P, T> implements HasNamedInjector<P> {
 
     private final NamedInjector<P> injector;
-    private final NamedParametersMap parametersMap;
 
-    public NamedParamsNoResultSetQuery(QueryType queryType, String sql, int queryTimeoutSec,
-                                       NamedInjector<P> injector, NamedParametersMap parametersMap) {
+    public NamedParamsNoResultSetQuery(QueryType queryType, String sql, int queryTimeoutSec, NamedInjector<P> injector) {
         super(queryType, sql, queryTimeoutSec);
         this.injector = injector;
-        this.parametersMap = parametersMap;
     }
 
     @Override
@@ -31,8 +27,4 @@ public class NamedParamsNoResultSetQuery<P, T> extends BasicQuery<P, T> implemen
         return injector;
     }
 
-    @Override
-    public NamedParametersMap getParametersMap() {
-        return parametersMap;
-    }
 }

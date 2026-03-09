@@ -123,9 +123,6 @@ public class ResultImpl<T> implements Result<T> {
         while (hasNextRow()) {
             res = res.append(nextRow());
         }
-        if (shouldAutoClose) {
-            close();
-        }
         return res;
     }
 
@@ -137,9 +134,6 @@ public class ResultImpl<T> implements Result<T> {
         final T res = hasNextRow() ? nextRow() : null;
         if (hasNextRow()) {
             throw new IllegalStateException("has more than one row");
-        }
-        if (shouldAutoClose) {
-            close();
         }
         return res;
     }

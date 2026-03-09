@@ -17,10 +17,4 @@ public interface HasNamedInjector<T> {
      */
     NamedInjector<T> getInjector();
 
-    /**
-     * Returns mapping of query parameters (name->index) for injector.
-     *
-     * @return mapping of query parameters.
-     */
-    NamedParametersMap getParametersMap();
 }

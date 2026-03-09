@@ -7,20 +7,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import simple.orm.jdbc.common.BasicTypes;
-import simple.orm.jdbc.common.InjectorsExtractors;
-import simple.orm.jdbc.param.ParameterType;
-import simple.orm.jdbc.param.ParameterTypeImpl;
+import simple.orm.BaseH2Test;
+import simple.orm.h2.H2Mappers;
+import simple.orm.h2.H2Types;
 import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryFactory;
+import simple.orm.mapping.builder.InjectorsExtractors;
+import simple.orm.mapping.type.SimpleTypeMapper;
+import simple.orm.mapping.type.TypeMapper;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SelectQueryTest extends BaseH2Test {
 
-    private static final QueryFactory QFACTORY = QueryFactory.defaultFactory();
+    private static final QueryFactory QFACTORY = QueryFactory.instance();
 
     private DatabaseAccessPoint database;
 
@@ -67,7 +68,7 @@ public class SelectQueryTest extends BaseH2Test {
                       col_nu NUMERIC(30,10) NULL,\
                       col_str2 VARCHAR(256) NULL,\
                       col_date DATE NULL,\
-                      col_time TIME NULL,\
+                      col_time TIME(9) NULL,\
                       col_timestamp TIMESTAMP(9) NULL\
                     )\
                     """);
@@ -103,22 +104,22 @@ public class SelectQueryTest extends BaseH2Test {
     }
 
     @Test
-    public void testEmptySelect() throws SQLException {
+    public void testEmptySelect() {
         // test (with result.hasNext)
         {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             assertThat(result.isClosed()).isFalse();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isTrue();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isTrue();
             conn.close();
         }
@@ -127,17 +128,17 @@ public class SelectQueryTest extends BaseH2Test {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             assertThat(result.isClosed()).isFalse();
             assertThat(result.exactlySingleRow()).isNull();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isTrue();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isTrue();
             conn.close();
         }
@@ -146,17 +147,17 @@ public class SelectQueryTest extends BaseH2Test {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             assertThat(result.isClosed()).isFalse();
             assertThat(result.extractAll()).isEmpty();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isTrue();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isTrue();
             conn.close();
         }
@@ -165,40 +166,40 @@ public class SelectQueryTest extends BaseH2Test {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             assertThat(result.isClosed()).isFalse();
             result.close();
             assertThat(result.isClosed()).isTrue();
-            assertThatCode(() -> result.hasNextRow()).isInstanceOf(JdbcException.class);
-            assertThatCode(() -> result.nextRow()).isInstanceOf(JdbcException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(JdbcException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(JdbcException.class);
+            assertThatCode(result::hasNextRow).isInstanceOf(JdbcException.class);
+            assertThatCode(result::nextRow).isInstanceOf(JdbcException.class);
+            assertThatCode(result::extractAll).isInstanceOf(JdbcException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(JdbcException.class);
             assertThat(result.isClosed()).isTrue();
             conn.close();
         }
     }
 
     @Test
-    public void testEmptySelectShouldAutoCloseFalse() throws SQLException {
+    public void testEmptySelectShouldAutoCloseFalse() {
         // test (with result.hasNext)
         {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             result.setShouldBeClosedAutomatically(false);
             assertThat(result.isClosed()).isFalse();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isFalse();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isFalse();
             conn.close();
         }
@@ -207,8 +208,8 @@ public class SelectQueryTest extends BaseH2Test {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             result.setShouldBeClosedAutomatically(false);
@@ -216,9 +217,9 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(result.exactlySingleRow()).isNull();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isFalse();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isFalse();
             conn.close();
         }
@@ -227,8 +228,8 @@ public class SelectQueryTest extends BaseH2Test {
             Connection conn = database.connect(10);
             Query<Seq<Object>, Seq<Object>> query = QFACTORY.selectQuery(
                     "SELECT id FROM table_one WHERE id=?",
-                    InjectorsExtractors.indexedInjector().param(BasicTypes.INTEGER).build(),
-                    InjectorsExtractors.indexedExtractor().param(BasicTypes.INTEGER).build()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection()).param(H2Mappers.INT).build(),
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection()).param(H2Mappers.INT).build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, 222);
             result.setShouldBeClosedAutomatically(false);
@@ -236,17 +237,16 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(result.extractAll()).isEmpty();
             assertThat(result.hasNextRow()).isFalse();
             assertThat(result.isClosed()).isFalse();
-            assertThatCode(() -> result.nextRow()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.extractAll()).isInstanceOf(IllegalStateException.class);
-            assertThatCode(() -> result.exactlySingleRow()).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::nextRow).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::extractAll).isInstanceOf(IllegalStateException.class);
+            assertThatCode(result::exactlySingleRow).isInstanceOf(IllegalStateException.class);
             assertThat(result.isClosed()).isFalse();
             conn.close();
         }
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void testSelectIndexedIndexed() throws SQLException {
+    public void testSelectIndexedIndexed() {
         // test 1
         {
             Connection conn = database.connect(10);
@@ -256,14 +256,14 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=?\
                     """,
-                    InjectorsExtractors.indexedInjector()
-                            .params(INT_STRING_TYPE)
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
+                            .params(INT_STRING_MAPPER)
                             .build(),
-                    InjectorsExtractors.indexedExtractor()
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
                             .params(
-                                    INT_STRING_TYPE,
-                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC, BasicTypes.VARCHAR, BasicTypes.VARCHAR,
-                                    BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL
+                                    INT_STRING_MAPPER,
+                                    H2Mappers.DOUBLE, H2Mappers.NUMERIC, H2Mappers.VARCHAR, H2Mappers.VARCHAR,
+                                    H2Mappers.DATE, H2Mappers.TIME, H2Mappers.TIMESTAMP
                             )
                             .build()
             );
@@ -272,9 +272,9 @@ public class SelectQueryTest extends BaseH2Test {
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
                     "1", 10.1d, new BigDecimal("100.0010000000"), "p1", "p2",
-                    new Date(100, 0, 31),
-                    new Time(12, 30, 56), // nano part supported by h2 is rounded (up)
-                    new Timestamp(101, 1, 13, 10, 20, 30, 0)
+                    LocalDate.of(2000, 1, 31),
+                    LocalTime.of(12, 30, 55, 555666777),
+                    LocalDateTime.of(2001, 2, 13, 10, 20, 30, 0)
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
@@ -288,23 +288,23 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=? AND col_d=? AND col_nu=? AND col_str1=? AND col_str2=?\
                     """,
-                    InjectorsExtractors.indexedInjector()
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
                             .params(
-                                    INT_STRING_TYPE,
-                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC, BasicTypes.VARCHAR, BasicTypes.VARCHAR
+                                    INT_STRING_MAPPER,
+                                    H2Mappers.DOUBLE, H2Mappers.NUMERIC, H2Mappers.VARCHAR, H2Mappers.VARCHAR
                             )
                             .build(),
-                    InjectorsExtractors.indexedExtractor()
-                            .params(BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL)
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
+                            .params(H2Mappers.DATE, H2Mappers.TIME, H2Mappers.TIMESTAMP)
                             .build()
             );
             Result<Seq<Object>> result = conn.executeSelect(query, "2", -10.1d, new BigDecimal("-100.0010000000"), "n1", "n2");
             assertThat(result.hasNextRow()).isTrue();
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
-                    new Date(125, 9, 24),
-                    new Time(13, 20, 0), // nano part supported by h2 is rounded (down this time)
-                    new Timestamp(125, 9, 24, 13, 20, 30, 123123123)
+                    LocalDate.of(2025, 10, 24),
+                    LocalTime.of(13, 20, 0, 111),
+                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123)
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
@@ -312,7 +312,7 @@ public class SelectQueryTest extends BaseH2Test {
     }
 
     @Test
-    public void testSelectNamedNamed() throws SQLException {
+    public void testSelectNamedNamed() {
         // test 1, extraction by index
         {
             Connection conn = database.connect(10);
@@ -320,20 +320,20 @@ public class SelectQueryTest extends BaseH2Test {
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
-                     WHERE id=:id\
+                     WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector()
-                            .param("id", BasicTypes.INTEGER)
+                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
                             .build(),
-                    InjectorsExtractors.namedExtractorByIndex(NamedRow2.class)
-                            .param(BasicTypes.INTEGER, "id")
-                            .param(BasicTypes.DOUBLE, "doublePrecision")
-                            .param(BasicTypes.NUMERIC, "num")
-                            .param(BasicTypes.VARCHAR, "str1")
-                            .param(BasicTypes.VARCHAR, "str2")
-                            .param(BasicTypes.DATE_STRING, "date")
-                            .param(BasicTypes.TIME_STRING, "time")
-                            .param(BasicTypes.TIMESTAMP_STRING, "timestamp")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", H2Mappers.VARCHAR)
+                            .param("str2", H2Mappers.VARCHAR)
+                            .param("date", H2Mappers.DATE_STR)
+                            .param("time", H2Mappers.TIME_STR)
+                            .param("timestamp", H2Mappers.TIMESTAMP_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, new HasId(1));
@@ -345,8 +345,8 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("p1");
             assertThat(row.getStr2()).isEqualTo("p2");
             assertThat(row.date).isEqualTo("2000-01-31");
-            assertThat(row.time).isEqualTo("12:30:56"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
-            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30.0");
+            assertThat(row.time).isEqualTo("12:30:55.555666777");
+            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30");
             conn.close();
         }
         // test 2, extraction by label (some labels not matching property names)
@@ -356,20 +356,20 @@ public class SelectQueryTest extends BaseH2Test {
                     """
                     SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
-                     WHERE id=:someid\
+                     WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector()
-                            .param("someid", BasicTypes.INTEGER, "id")
+                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
                             .build(),
-                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
-                            .param("id", BasicTypes.INTEGER)
-                            .param("col_str1", BasicTypes.VARCHAR, "str1")
-                            .param("col_str2", BasicTypes.VARCHAR, "str2")
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
-                            .param("col_date", BasicTypes.DATE_STRING, "date")
-                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", "col_str1", H2Mappers.VARCHAR)
+                            .param("str2", "col_str2", H2Mappers.VARCHAR)
+                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param("date", "col_date", H2Mappers.DATE_STR)
+                            .param("time", "col_time", H2Mappers.TIME_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, new HasId(2));
@@ -381,13 +381,13 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("n1");
             assertThat(row.getStr2()).isEqualTo("n2");
             assertThat(row.date).isEqualTo("2025-10-24");
-            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.time).isEqualTo("13:20:00.000000111");
             assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
         }
     }
 
     @Test
-    public void testSelectIndexedNamed() throws SQLException {
+    public void testSelectIndexedNamed() {
         // test 1, extraction by index
         {
             Connection conn = database.connect(10);
@@ -397,18 +397,18 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=?\
                     """,
-                    InjectorsExtractors.indexedInjector()
-                            .param(INT_STRING_TYPE)
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
+                            .param(INT_STRING_MAPPER)
                             .build(),
-                    InjectorsExtractors.namedExtractorByIndex(NamedRow2.class)
-                            .param(BasicTypes.INTEGER, "id")
-                            .param(BasicTypes.DOUBLE, "doublePrecision")
-                            .param(BasicTypes.NUMERIC, "num")
-                            .param(BasicTypes.VARCHAR, "str1")
-                            .param(BasicTypes.VARCHAR, "str2")
-                            .param(BasicTypes.DATE_STRING, "date")
-                            .param(BasicTypes.TIME_STRING, "time")
-                            .param(BasicTypes.TIMESTAMP_STRING, "timestamp")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", H2Mappers.VARCHAR)
+                            .param("str2", H2Mappers.VARCHAR)
+                            .param("date", H2Mappers.DATE_STR)
+                            .param("time", H2Mappers.TIME_STR)
+                            .param("timestamp", H2Mappers.TIMESTAMP_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, "1");
@@ -420,8 +420,8 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("p1");
             assertThat(row.getStr2()).isEqualTo("p2");
             assertThat(row.date).isEqualTo("2000-01-31");
-            assertThat(row.time).isEqualTo("12:30:56"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
-            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30.0");
+            assertThat(row.time).isEqualTo("12:30:55.555666777");
+            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30");
             conn.close();
         }
         // test 2, extraction by label (some labels not matching property names)
@@ -433,16 +433,16 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=? AND col_str1=? AND col_str2=?\
                     """,
-                    InjectorsExtractors.indexedInjector()
-                            .params(BasicTypes.INTEGER, BasicTypes.VARCHAR, BasicTypes.VARCHAR)
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
+                            .params(H2Mappers.INT, H2Mappers.VARCHAR, H2Mappers.VARCHAR)
                             .build(),
-                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
-                            .param("id", BasicTypes.INTEGER)
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
-                            .param("col_date", BasicTypes.DATE_STRING, "date")
-                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param("date", "col_date", H2Mappers.DATE_STR)
+                            .param("time", "col_time", H2Mappers.TIME_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, 2, "n1", "n2");
@@ -454,14 +454,13 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isNull();
             assertThat(row.getStr2()).isNull();
             assertThat(row.date).isEqualTo("2025-10-24");
-            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.time).isEqualTo("13:20:00.000000111");
             assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
         }
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void testSelectNamedIndexed() throws SQLException {
+    public void testSelectNamedIndexed() {
         // test 1
         {
             Connection conn = database.connect(10);
@@ -469,16 +468,16 @@ public class SelectQueryTest extends BaseH2Test {
                     """
                     SELECT id, col_d, col_nu, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
-                     WHERE id=:id\
+                     WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector()
-                            .param("id", BasicTypes.INTEGER)
+                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
                             .build(),
-                    InjectorsExtractors.indexedExtractor()
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
                             .params(
-                                    INT_STRING_TYPE,
-                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC, BasicTypes.VARCHAR, BasicTypes.VARCHAR,
-                                    BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL
+                                    INT_STRING_MAPPER,
+                                    H2Mappers.DOUBLE, H2Mappers.NUMERIC, H2Mappers.VARCHAR, H2Mappers.VARCHAR,
+                                    H2Mappers.DATE, H2Mappers.TIME, H2Mappers.TIMESTAMP
                             )
                             .build()
             );
@@ -487,9 +486,9 @@ public class SelectQueryTest extends BaseH2Test {
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
                     "1", 10.1d, new BigDecimal("100.0010000000"), "p1", "p2",
-                    new Date(100, 0, 31),
-                    new Time(12, 30, 56), // nano part supported by h2 is rounded (up)
-                    new Timestamp(101, 1, 13, 10, 20, 30, 0)
+                    LocalDate.of(2000, 1, 31),
+                    LocalTime.of(12, 30, 55, 555666777),
+                    LocalDateTime.of(2001, 2, 13, 10, 20, 30, 0)
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
@@ -501,17 +500,17 @@ public class SelectQueryTest extends BaseH2Test {
                     """
                     SELECT col_date, col_time, col_timestamp, col_d, col_nu\
                      FROM table_one\
-                     WHERE id=:someid AND col_str1=:str1 AND col_str2=:str2\
+                     WHERE id=? AND col_str1=? AND col_str2=?\
                     """,
-                    InjectorsExtractors.<NamedRow1>namedInjector()
-                            .param("someid", BasicTypes.INTEGER, "id")
-                            .param("str2", BasicTypes.VARCHAR)
-                            .param("str1", BasicTypes.VARCHAR)
+                    InjectorsExtractors.<NamedRow1>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
+                            .param("str1", H2Mappers.VARCHAR)
+                            .param("str2", H2Mappers.VARCHAR)
                             .build(),
-                    InjectorsExtractors.indexedExtractor()
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
                             .params(
-                                    BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL,
-                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC
+                                    H2Mappers.DATE, H2Mappers.TIME, H2Mappers.TIMESTAMP,
+                                    H2Mappers.DOUBLE, H2Mappers.NUMERIC
                             )
                             .build()
             );
@@ -519,9 +518,9 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(result.hasNextRow()).isTrue();
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
-                    new Date(125, 9, 24),
-                    new Time(13, 20, 0), // nano part supported by h2 is rounded (down this time)
-                    new Timestamp(125, 9, 24, 13, 20, 30, 123123123),
+                    LocalDate.of(2025, 10, 24),
+                    LocalTime.of(13, 20, 0, 111),
+                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123),
                     -10.1d,
                     new BigDecimal("-100.0010000000")
             );
@@ -531,8 +530,7 @@ public class SelectQueryTest extends BaseH2Test {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void testSelectWithoutParameters() throws SQLException {
+    public void testSelectWithoutParameters() {
         // test 1
         {
             Connection conn = database.connect(10);
@@ -542,11 +540,11 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=1\
                     """,
-                    InjectorsExtractors.indexedExtractor()
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
                             .params(
-                                    INT_STRING_TYPE,
-                                    BasicTypes.DOUBLE, BasicTypes.NUMERIC, BasicTypes.VARCHAR, BasicTypes.VARCHAR,
-                                    BasicTypes.DATE_SQL, BasicTypes.TIME_SQL, BasicTypes.TIMESTAMP_SQL
+                                    INT_STRING_MAPPER,
+                                    H2Mappers.DOUBLE, H2Mappers.NUMERIC, H2Mappers.VARCHAR, H2Mappers.VARCHAR,
+                                    H2Mappers.DATE, H2Mappers.TIME, H2Mappers.TIMESTAMP
                             )
                             .build()
             );
@@ -555,9 +553,9 @@ public class SelectQueryTest extends BaseH2Test {
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
                     "1", 10.1d, new BigDecimal("100.0010000000"), "p1", "p2",
-                    new Date(100, 0, 31),
-                    new Time(12, 30, 56), // nano part supported by h2 is rounded (up)
-                    new Timestamp(101, 1, 13, 10, 20, 30, 0)
+                    LocalDate.of(2000, 1, 31),
+                    LocalTime.of(12, 30, 55, 555666777),
+                    LocalDateTime.of(2001, 2, 13, 10, 20, 30, 0)
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
@@ -571,15 +569,15 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=1\
                     """,
-                    InjectorsExtractors.namedExtractorByIndex(NamedRow2.class)
-                            .param(BasicTypes.INTEGER, "id")
-                            .param(BasicTypes.DOUBLE, "doublePrecision")
-                            .param(BasicTypes.NUMERIC, "num")
-                            .param(BasicTypes.VARCHAR, "str1")
-                            .param(BasicTypes.VARCHAR, "str2")
-                            .param(BasicTypes.DATE_STRING, "date")
-                            .param(BasicTypes.TIME_STRING, "time")
-                            .param(BasicTypes.TIMESTAMP_STRING, "timestamp")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", H2Mappers.VARCHAR)
+                            .param("str2", H2Mappers.VARCHAR)
+                            .param("date", H2Mappers.DATE_STR)
+                            .param("time", H2Mappers.TIME_STR)
+                            .param("timestamp", H2Mappers.TIMESTAMP_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query);
@@ -591,8 +589,8 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("p1");
             assertThat(row.getStr2()).isEqualTo("p2");
             assertThat(row.date).isEqualTo("2000-01-31");
-            assertThat(row.time).isEqualTo("12:30:56"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
-            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30.0");
+            assertThat(row.time).isEqualTo("12:30:55.555666777");
+            assertThat(row.timestamp).isEqualTo("2001-02-13 10:20:30");
             conn.close();
         }
         // test 3, extraction by label (some labels not matching property names)
@@ -604,15 +602,15 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=2\
                     """,
-                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
-                            .param("id", BasicTypes.INTEGER)
-                            .param("col_str1", BasicTypes.VARCHAR, "str1")
-                            .param("col_str2", BasicTypes.VARCHAR, "str2")
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
-                            .param("col_date", BasicTypes.DATE_STRING, "date")
-                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", "col_str1", H2Mappers.VARCHAR)
+                            .param("str2", "col_str2", H2Mappers.VARCHAR)
+                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param("date", "col_date", H2Mappers.DATE_STR)
+                            .param("time", "col_time", H2Mappers.TIME_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query);
@@ -624,13 +622,13 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("n1");
             assertThat(row.getStr2()).isEqualTo("n2");
             assertThat(row.date).isEqualTo("2025-10-24");
-            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.time).isEqualTo("13:20:00.000000111");
             assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
         }
     }
 
     @Test
-    public void testExecuteAnyQuery() throws SQLException {
+    public void testExecuteAnyQuery() {
         // test indexed indexed query
         {
             Connection conn = database.connect(10);
@@ -640,11 +638,11 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id>? AND col_str1<>?\
                     """,
-                    InjectorsExtractors.indexedInjector()
-                            .params(BasicTypes.INTEGER, BasicTypes.VARCHAR)
+                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
+                            .params(H2Mappers.INT, H2Mappers.VARCHAR)
                             .build(),
-                    InjectorsExtractors.indexedExtractor()
-                            .params(INT_STRING_TYPE, BasicTypes.VARCHAR, BasicTypes.VARCHAR)
+                    InjectorsExtractors.indexedExtractor(H2Mappers.collection())
+                            .params(INT_STRING_MAPPER, H2Mappers.VARCHAR, H2Mappers.VARCHAR)
                             .build()
             );
             Result<Seq<Object>> result = conn.executeAnyQuery(query, List.of(0, "hehehe"));
@@ -663,21 +661,21 @@ public class SelectQueryTest extends BaseH2Test {
                     """
                     SELECT id, col_d AS doublePrecision, col_nu AS num, col_str1, col_str2, col_date, col_time, col_timestamp\
                      FROM table_one\
-                     WHERE id<:someid AND col_str2<>:somestr\
+                     WHERE id<? AND col_str2<>?\
                     """,
-                    InjectorsExtractors.<NamedRow1>namedInjector()
-                            .param("someid", BasicTypes.INTEGER, "id")
-                            .param("somestr", BasicTypes.VARCHAR, "str2")
+                    InjectorsExtractors.<NamedRow1>namedInjector(H2Mappers.collection())
+                            .param("id", H2Mappers.INT)
+                            .param("str2", H2Mappers.VARCHAR)
                             .build(),
-                    InjectorsExtractors.namedExtractorByLabel(NamedRow2.class)
-                            .param("id", BasicTypes.INTEGER)
-                            .param("col_str1", BasicTypes.VARCHAR, "str1")
-                            .param("col_str2", BasicTypes.VARCHAR, "str2")
-                            .param("doublePrecision", BasicTypes.DOUBLE)
-                            .param("num", BasicTypes.NUMERIC)
-                            .param("col_timestamp", BasicTypes.TIMESTAMP_STRING, "timestamp")
-                            .param("col_date", BasicTypes.DATE_STRING, "date")
-                            .param("col_time", BasicTypes.TIME_STRING, "time")
+                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                            .param("id", H2Mappers.INT)
+                            .param("doublePrecision", H2Mappers.DOUBLE)
+                            .param("num", H2Mappers.NUMERIC)
+                            .param("str1", "col_str1", H2Mappers.VARCHAR)
+                            .param("str2", "col_str2", H2Mappers.VARCHAR)
+                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param("date", "col_date", H2Mappers.DATE_STR)
+                            .param("time", "col_time", H2Mappers.TIME_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, new NamedRow1(3, "n2", "p2"));
@@ -689,13 +687,14 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(row.str1).isEqualTo("n1");
             assertThat(row.getStr2()).isEqualTo("n2");
             assertThat(row.date).isEqualTo("2025-10-24");
-            assertThat(row.time).isEqualTo("13:20:00"); // as it is extracted through java.sql.Date and then converted to String, nano is rounded on extraction
+            assertThat(row.time).isEqualTo("13:20:00.000000111");
             assertThat(row.timestamp).isEqualTo("2025-10-24 13:20:30.123123123");
         }
     }
 
-    private static final ParameterType<Integer, String> INT_STRING_TYPE = new ParameterTypeImpl<>(
-            JDBCType.INTEGER, Integer.class, String.class,
+    private static final TypeMapper<Integer, String> INT_STRING_MAPPER = new SimpleTypeMapper<>(
+            H2Types.INTEGER,
+            String.class,
             Integer::valueOf,
             Object::toString
     );

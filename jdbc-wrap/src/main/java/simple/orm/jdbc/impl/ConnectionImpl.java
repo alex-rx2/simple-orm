@@ -115,16 +115,14 @@ public class ConnectionImpl implements Connection {
                 currentResultSet.close();
                 currentResultSet = null;
             }
-            if (currentStatement instanceof PreparedStatement) {
-                if (lastPreparedQuery == sql) {
-                    // use == not equals for speed and cause in most cases query will be exactly same not other equal string
-                    // same query, statement can be reused, clear parameters
-                    ((PreparedStatement) currentStatement).clearParameters();
-                } else {
-                    currentStatement.close();
-                    currentStatement = null;
-                    lastPreparedQuery = null;
-                }
+            // use == not equals for speed and cause in most cases query will be exactly same not other equal string
+            // same query, statement can be reused, clear parameters
+            if (currentStatement instanceof PreparedStatement && lastPreparedQuery == sql) {
+                ((PreparedStatement) currentStatement).clearParameters();
+            } else if (currentStatement != null) {
+                currentStatement.close();
+                currentStatement = null;
+                lastPreparedQuery = null;
             }
             if (currentStatement == null) {
                 currentStatement = jdbcConnection.prepareStatement(sql);
@@ -169,6 +167,7 @@ public class ConnectionImpl implements Connection {
             Statement stmt = obtainStatementForQuery(query);
             injectParameters(query, stmt, params);
             ResultSet rs = executeQuery(query, stmt);
+            currentResultSet = rs;
             return extractResult(query, rs);
         } catch (SQLException e) {
             throw new JdbcException(e);
@@ -216,7 +215,7 @@ public class ConnectionImpl implements Connection {
                 if (params.length != 1) {
                     throw new IllegalArgumentException("params should contain exactly one object for NamedInjector");
                 }
-                hasNamedInjector.getInjector().injectParameters(pstmt, params[0], hasNamedInjector.getParametersMap());
+                hasNamedInjector.getInjector().injectParameters(pstmt, params[0]);
             }
         } else {
             if (params.length > 0) {

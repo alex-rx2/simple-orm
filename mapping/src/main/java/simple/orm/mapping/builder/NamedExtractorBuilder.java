@@ -20,20 +20,29 @@ import simple.orm.util.Mutable;
  */
 public class NamedExtractorBuilder<T> {
 
-    public static <T> NamedExtractorBuilder<T> builder(Class<T> tagerClass,
-                                                       MappersFinder mappersFinder,
+    public static <T> NamedExtractorBuilder<T> builder(MappersFinder mappersFinder,
                                                        ReflectionsFinder reflectionsFinder) {
         return new NamedExtractorBuilder<T>()
-                .targetClass(tagerClass)
                 .withCustomMappersFinder(mappersFinder)
                 .withCustomReflectionsFinder(reflectionsFinder);
     }
 
-    public static <T> NamedExtractorBuilder<T> builder(Class<T> tagerClass, MappersCollection mappers) {
+    public static <T> NamedExtractorBuilder<T> builder(MappersCollection mappers) {
         return new NamedExtractorBuilder<T>()
-                .targetClass(tagerClass)
                 .withDefaultMappersFinder(mappers)
                 .withDefaultReflectionsFinder();
+    }
+
+    public static <T> NamedExtractorBuilder<T> builder(MappersFinder mappersFinder,
+                                                       ReflectionsFinder reflectionsFinder,
+                                                       Class<T> tagerClass) {
+        return NamedExtractorBuilder.<T>builder(mappersFinder, reflectionsFinder)
+                .targetClass(tagerClass);
+    }
+
+    public static <T> NamedExtractorBuilder<T> builder(MappersCollection mappers, Class<T> tagerClass) {
+        return NamedExtractorBuilder.<T>builder(mappers)
+                .targetClass(tagerClass);
     }
 
     protected MappersFinder mappersFinder;
