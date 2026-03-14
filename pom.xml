@@ -16,7 +16,6 @@
         <module>db-h2</module>
         <module>test-suite-h2</module>
         <module>query-loader</module>
-        <!--<module>xxx</module>-->
     </modules>
 
     <properties>
@@ -24,7 +23,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- self version -->
-        <revision>0.1</revision>
+        <revision>0.5</revision>
         <!-- library versions -->
         <vavr.version>0.11.0</vavr.version>
         <!--<slf4j.version>2.0.17</slf4j.version>-->
