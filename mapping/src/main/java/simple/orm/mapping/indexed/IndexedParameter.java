@@ -3,6 +3,8 @@ package simple.orm.mapping.indexed;
 import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.type.TypeMapper;
 
+import java.util.Objects;
+
 /**
  * Parameter information for {@link IndexedExtractorImpl} and {@link IndexedInjectorImpl}.
  */
@@ -30,6 +32,21 @@ public class IndexedParameter {
             throw new NullPointerException("info is null");
         }
         return new IndexedParameter(index, null, info);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof IndexedParameter that)) {
+            return false;
+        }
+        return this.index == that.index
+                && Objects.equals(this.mapper, that.mapper)
+                && Objects.equals(this.info, that.info);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index, mapper, info);
     }
 
 }

@@ -99,7 +99,8 @@ public class SelectQueryTest extends BaseH2Test {
                       '2025-10-24',\
                       '13:20:00.000000111',\
                       '2025-10-24 13:20:30.123123123'\
-                    )""");
+                    )\
+                    """);
         }
     }
 
@@ -322,7 +323,7 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build(),
                     InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
@@ -358,7 +359,7 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build(),
                     InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
@@ -470,7 +471,7 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=?\
                     """,
-                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build(),
                     InjectorsExtractors.indexedExtractor(H2Mappers.collection())
@@ -502,7 +503,7 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=? AND col_str1=? AND col_str2=?\
                     """,
-                    InjectorsExtractors.<NamedRow1>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), NamedRow1.class)
                             .param("id", H2Mappers.INT)
                             .param("str1", H2Mappers.VARCHAR)
                             .param("str2", H2Mappers.VARCHAR)
@@ -663,7 +664,7 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id<? AND col_str2<>?\
                     """,
-                    InjectorsExtractors.<NamedRow1>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), NamedRow1.class)
                             .param("id", H2Mappers.INT)
                             .param("str2", H2Mappers.VARCHAR)
                             .build(),

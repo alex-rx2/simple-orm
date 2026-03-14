@@ -35,14 +35,14 @@ public class NamedExtractorBuilder<T> {
 
     public static <T> NamedExtractorBuilder<T> builder(MappersFinder mappersFinder,
                                                        ReflectionsFinder reflectionsFinder,
-                                                       Class<T> tagerClass) {
+                                                       Class<T> targetClass) {
         return NamedExtractorBuilder.<T>builder(mappersFinder, reflectionsFinder)
-                .targetClass(tagerClass);
+                .targetClass(targetClass);
     }
 
-    public static <T> NamedExtractorBuilder<T> builder(MappersCollection mappers, Class<T> tagerClass) {
+    public static <T> NamedExtractorBuilder<T> builder(MappersCollection mappers, Class<T> targetClass) {
         return NamedExtractorBuilder.<T>builder(mappers)
-                .targetClass(tagerClass);
+                .targetClass(targetClass);
     }
 
     protected MappersFinder mappersFinder;

@@ -5,24 +5,26 @@ import simple.orm.mapping.impl.ParameterJdbcTypeImpl;
 import simple.orm.mapping.type.SimpleTypeMapper;
 import simple.orm.mapping.type.TypeMapper;
 
-import java.sql.JDBCType;
+import java.sql.SQLType;
 
 /**
  * Type metadata for JDBC (query or result) parameter.
  * <br>
- * Note: {@link ParameterJdbcType} should be considered equal based on {@link #getJDBCType()}
+ * Note: {@link ParameterJdbcType} should be considered equal based on {@link #getSQLType()}
  * and {@link #getJDBCTypeClass()} alone. Getter and setter should not play any role.
+ * <br>
+ * Note: it is generally recommended to use {@link java.sql.JDBCType} types when possible.
  *
  * @param <Jdbc> class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
  */
 public interface ParameterJdbcType<Jdbc> {
 
     /**
-     * Returns {@link JDBCType} type of parameter.
+     * Returns {@link SQLType} type of parameter.
      *
-     * @return {@link JDBCType} type of parameter.
+     * @return {@link SQLType} type of parameter.
      */
-    JDBCType getJDBCType();
+    SQLType getSQLType();
 
     /**
      * Returns class implementing parameter value in JDBC (used to inject parameters or extracting it from result set).
@@ -74,12 +76,12 @@ public interface ParameterJdbcType<Jdbc> {
     /**
      * Factory method to create {@link ParameterJdbcType}.
      */
-    static <Jdbc> ParameterJdbcType<Jdbc> of(JDBCType jdbcType,
+    static <Jdbc> ParameterJdbcType<Jdbc> of(SQLType sqlType,
                                              Class<Jdbc> jdbcClass,
                                              ParameterGetter<Jdbc> getter,
                                              ParameterSetter<Jdbc> setter
     ) {
-        return new ParameterJdbcTypeImpl<>(jdbcType, jdbcClass, getter, setter);
+        return new ParameterJdbcTypeImpl<>(sqlType, jdbcClass, getter, setter);
     }
 
 }

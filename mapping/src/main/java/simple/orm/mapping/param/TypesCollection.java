@@ -4,7 +4,7 @@ import io.vavr.Tuple2;
 import io.vavr.collection.Traversable;
 import simple.orm.mapping.impl.TypesCollectionImpl;
 
-import java.sql.JDBCType;
+import java.sql.SQLType;
 
 /**
  * Immutable collection of named {@link ParameterJdbcType}s, allowing to use them by name.
@@ -40,10 +40,10 @@ public interface TypesCollection {
     /**
      * Find types by JDBC SQL type.
      *
-     * @param jdbcType JDBC SQL type.
+     * @param sqlType JDBC SQL type.
      * @return the type registered with this name or <code>null</code> if no such type found.
      */
-    Traversable<Tuple2<String, ParameterJdbcType<?>>> findTypes(JDBCType jdbcType);
+    Traversable<Tuple2<String, ParameterJdbcType<?>>> findTypes(SQLType sqlType);
 
     /**
      * Returns all the registered types with their respective names.

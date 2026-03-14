@@ -3,6 +3,8 @@ package simple.orm.mapping.named;
 import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.type.TypeMapper;
 
+import java.util.Objects;
+
 /**
  * Parameter information for {@link NamedExtractorImpl} and {@link NamedInjectorImpl}.
  */
@@ -88,6 +90,23 @@ public class NamedParameter {
             throw new NullPointerException("info is null");
         }
         return new NamedParameter(null, label, name, null, info);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof NamedParameter that)) {
+            return false;
+        }
+        return Objects.equals(this.index, that.index)
+                && Objects.equals(this.label, that.label)
+                && Objects.equals(this.name, that.name)
+                && Objects.equals(this.mapper, that.mapper)
+                && Objects.equals(this.info, that.info);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index, label, name, mapper, info);
     }
 
 }

@@ -4,7 +4,7 @@ import simple.orm.mapping.param.ParameterGetter;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.param.ParameterSetter;
 
-import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.Objects;
 
 /**
@@ -12,18 +12,18 @@ import java.util.Objects;
  */
 public final class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc> {
 
-    private final JDBCType jdbcType;
+    private final SQLType sqlType;
     private final Class<Jdbc> jdbcClass;
     private final ParameterGetter<Jdbc> getter;
     private final ParameterSetter<Jdbc> setter;
 
-    public ParameterJdbcTypeImpl(JDBCType jdbcType,
+    public ParameterJdbcTypeImpl(SQLType sqlType,
                                  Class<Jdbc> jdbcClass,
                                  ParameterGetter<Jdbc> getter,
                                  ParameterSetter<Jdbc> setter
     ) {
-        if (jdbcType == null) {
-            throw new NullPointerException("jdbcType is null");
+        if (sqlType == null) {
+            throw new NullPointerException("sqlType is null");
         }
         if (jdbcClass == null) {
             throw new NullPointerException("jdbcClass is null");
@@ -34,15 +34,15 @@ public final class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc
         if (setter == null) {
             throw new NullPointerException("setter is null");
         }
-        this.jdbcType = jdbcType;
+        this.sqlType = sqlType;
         this.jdbcClass = jdbcClass;
         this.getter = getter;
         this.setter = setter;
     }
 
     @Override
-    public JDBCType getJDBCType() {
-        return jdbcType;
+    public SQLType getSQLType() {
+        return sqlType;
     }
 
     @Override
@@ -66,19 +66,19 @@ public final class ParameterJdbcTypeImpl<Jdbc> implements ParameterJdbcType<Jdbc
             return true;
         if (!(o instanceof ParameterJdbcType<?> that))
             return false;
-        return jdbcType == that.getJDBCType()
+        return sqlType == that.getSQLType()
                 && jdbcClass == that.getJDBCTypeClass()
                 ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jdbcType, jdbcClass);
+        return Objects.hash(sqlType, jdbcClass);
     }
 
     @Override
     public String toString() {
-        return "JdbcType(" + jdbcType + "->" + jdbcClass.getName() + ")";
+        return "JdbcType(" + sqlType + "->" + jdbcClass.getName() + ")";
     }
 
 }

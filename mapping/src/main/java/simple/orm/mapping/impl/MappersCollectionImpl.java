@@ -11,7 +11,6 @@ import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 
-import java.sql.JDBCType;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -139,19 +138,15 @@ public class MappersCollectionImpl implements MappersCollection {
     }
 
     @Override
-    public Traversable<TypeMapper<?, ?>> findMappers(JDBCType jdbcType,
+    public Traversable<TypeMapper<?, ?>> findMappers(int sqlType,
                                                      String name,
                                                      Class<?> javaType,
                                                      String tag
     ) {
-        if (jdbcType != null) {
-            return byType.keySet()
-                    .filter(type -> type.getJDBCType() == jdbcType)
-                    .flatMap(type -> findMappers(name, type, javaType, tag))
-                    .toList();
-        } else {
-            throw new NullPointerException("jdbcType is null");
-        }
+        return byType.keySet()
+                .filter(type -> Objects.equals(type.getSQLType().getVendorTypeNumber(), sqlType))
+                .flatMap(type -> findMappers(name, type, javaType, tag))
+                .toList();
     }
 
     @Override

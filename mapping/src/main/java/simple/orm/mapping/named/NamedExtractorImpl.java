@@ -40,15 +40,20 @@ public class NamedExtractorImpl<T> extends AbstractNamedExtractor<T> {
     }
 
     @Override
-    protected ObjectConstructor<?> buildObjectConstructor(Class<?> targetClass, Map<String, Object> values) {
+    protected ObjectConstructor<?> buildObjectConstructor(Class<?> targetClass) {
         final Constructor<?> constructor = reflectionsFinder.findDefaultConstructor(targetClass);
-        return ObjectConstructor.of(targetClass, () -> createNew(constructor));
+        return ObjectConstructor.of(targetClass, (values) -> createNew(constructor, values));
     }
 
     @SuppressWarnings("unchecked")
-    protected <X> X createNew(Constructor<?> constructor) {
+    protected <X> ObjectConstructor.CreatedObject<X> createNew(Constructor<?> constructor, Map<String, Object> values) {
         try {
-            return (X) constructor.newInstance();
+            if (values.find(t2 -> t2._2 != null).isDefined()) {
+                return ObjectConstructor.CreatedObject.of((X) constructor.newInstance());
+            } else {
+                // all properties are NULL - create NULL object
+                return ObjectConstructor.CreatedObject.of(null);
+            }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ReflectionsException("failed to instantiate new object through default constructor of " +
                     constructor.getDeclaringClass().getName(), e);

@@ -43,7 +43,7 @@ public interface ReflectionsFinder {
      *
      * @return new default {@link ReflectionsFinder} implementation.
      */
-    default ReflectionsFinder defaultFinder() {
+    static ReflectionsFinder defaultFinder() {
         return new ReflectionsCache();
     }
 

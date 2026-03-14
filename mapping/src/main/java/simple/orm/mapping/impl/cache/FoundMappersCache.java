@@ -14,7 +14,6 @@ import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 import simple.orm.util.Mutable;
 
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -90,13 +89,13 @@ public class FoundMappersCache implements MappersFinder {
 
     private final MappersCollection mappers;
     private final Mutable<Map<Designator, Map<Class<?>, TypeMapper<?, ?>>>> cachedMappers;
-    private final Mutable<Map<Designator, JDBCType>> cachedJDBCTypes;
+    private final Mutable<Map<Designator, Integer>> cachedSQLTypes;
     private final Mutable<Map<String, Integer>> columnIndexes;
 
     public FoundMappersCache(MappersCollection mappers) {
         this.mappers = mappers;
         this.cachedMappers = Mutable.of(HashMap.empty());
-        this.cachedJDBCTypes = Mutable.of(HashMap.empty());
+        this.cachedSQLTypes = Mutable.of(HashMap.empty());
         this.columnIndexes = Mutable.of(HashMap.empty());
     }
 
@@ -175,13 +174,13 @@ public class FoundMappersCache implements MappersFinder {
         TypeMapper<?, ?> mapper = checkMapperCache(designator, javaType);
         boolean cacheHit = mapper != null;
         // if jdbcType not provided - try to use metadata
-        if (mapper == null && jdbcType == null) {
-            JDBCType sqlType = null;
+        if (mapper == null && jdbcType == null && (javaType != null || mapperName != null)) {
+            Integer sqlType = null;
             try {
                 if (stmt != null) {
-                    sqlType = JDBCType.valueOf(stmt.getParameterMetaData().getParameterType(designator.index));
+                    sqlType = stmt.getParameterMetaData().getParameterType(designator.index);
                 } else if (rs != null) {
-                    sqlType = JDBCType.valueOf(findColumnType(designator, rs));
+                    sqlType = findColumnType(designator, rs);
                 }
             } catch (SQLException e) {
                 // ignore
@@ -192,6 +191,7 @@ public class FoundMappersCache implements MappersFinder {
                     throw new ManyMappersFoundException(found.size() + " mappers" +
                             " found for parameter " + designator.toShortString() +
                             " with provided info " + param +
+                            " and metadata SQL type " + sqlType +
                             " and value class " + qnn(valueClass == null ? null : valueClass.getName()));
                 } else if (found.size() == 1) {
                     mapper = found.head();
@@ -262,7 +262,7 @@ public class FoundMappersCache implements MappersFinder {
         return found;
     }
 
-    private Traversable<TypeMapper<?, ?>> findWithParents(JDBCType sqlType,
+    private Traversable<TypeMapper<?, ?>> findWithParents(int sqlType,
                                                           String mapperName,
                                                           Class<?> javaType,
                                                           String mapperTag
@@ -279,7 +279,7 @@ public class FoundMappersCache implements MappersFinder {
         }
     }
 
-    private Traversable<TypeMapper<?, ?>> findOnlyParents(JDBCType sqlType,
+    private Traversable<TypeMapper<?, ?>> findOnlyParents(int sqlType,
                                                           String mapperName,
                                                           Class<?> javaType,
                                                           String mapperTag) {
@@ -382,16 +382,16 @@ public class FoundMappersCache implements MappersFinder {
                         )
                 );
             }
-            if (!cachedJDBCTypes.get().containsKey(designator)) {
-                updateCache(designator, mapper.getJdbcType().getJDBCType());
+            if (!cachedSQLTypes.get().containsKey(designator)) {
+                updateCache(designator, mapper.getJdbcType().getSQLType().getVendorTypeNumber());
             }
         }
     }
 
     @Override
-    public JDBCType findJDBCType(int columnIndex,
-                                 ParamInfo<?, ?> param,
-                                 PreparedStatement stmt
+    public Integer findSQLType(int columnIndex,
+                               ParamInfo<?, ?> param,
+                               PreparedStatement stmt
     ) {
         if (param == null) {
             throw new NullPointerException("param is null");
@@ -399,25 +399,25 @@ public class FoundMappersCache implements MappersFinder {
         if (stmt == null) {
             throw new NullPointerException("stmt is null");
         }
-        return findJDBCType(designator(columnIndex), param, stmt);
+        return findSQLType(designator(columnIndex), param, stmt);
     }
 
-    private JDBCType findJDBCType(Designator designator,
-                                  ParamInfo<?, ?> param,
-                                  PreparedStatement stmt
+    private Integer findSQLType(Designator designator,
+                                ParamInfo<?, ?> param,
+                                PreparedStatement stmt
     ) {
         // check cache
-        JDBCType type = cachedJDBCTypes.get().get(designator).getOrNull();
+        Integer type = cachedSQLTypes.get().get(designator).getOrNull();
         final boolean cacheHit = type != null;
         // check provided info
         if (type == null && param.getJdbcType() != null) {
-            type = param.getJdbcType().getJDBCType();
+            type = param.getJdbcType().getSQLType().getVendorTypeNumber();
         }
         // check JDBC PreparedStatement metadata
         if (type == null) {
             try {
                 int pstmtType = stmt.getParameterMetaData().getParameterType(designator.index);
-                type = JDBCType.valueOf(pstmtType);
+                type = pstmtType;
             } catch (SQLException e) {
                 // ignore
             }
@@ -425,7 +425,7 @@ public class FoundMappersCache implements MappersFinder {
         // try to find mapper
         if (type == null) {
             final TypeMapper<?, ?> mapper = findMapper(designator, param, null, stmt, null);
-            type = mapper.getJdbcType().getJDBCType();
+            type = mapper.getJdbcType().getSQLType().getVendorTypeNumber();
         }
         // update cache
         if (!cacheHit) {
@@ -451,7 +451,7 @@ public class FoundMappersCache implements MappersFinder {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
-                if (label.equals(metaData.getColumnLabel(i))) {
+                if (label.equalsIgnoreCase(metaData.getColumnLabel(i))) {
                     final int index = i;
                     columnIndexes.apply(cache -> cache.put(label, index));
                     return index;
@@ -461,8 +461,8 @@ public class FoundMappersCache implements MappersFinder {
         }
     }
 
-    private void updateCache(Designator designator, JDBCType type) {
-        cachedJDBCTypes.apply(cache -> cache.put(designator, type));
+    private void updateCache(Designator designator, Integer type) {
+        cachedSQLTypes.apply(cache -> cache.put(designator, type));
     }
 
 }

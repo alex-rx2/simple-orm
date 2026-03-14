@@ -21,7 +21,8 @@ import simple.orm.util.Mutable;
  */
 public class NamedInjectorBuilder<T> {
 
-    public static <T> NamedInjectorBuilder<T> builder(MappersFinder mappersFinder, ReflectionsFinder reflectionsFinder) {
+    public static <T> NamedInjectorBuilder<T> builder(MappersFinder mappersFinder,
+                                                      ReflectionsFinder reflectionsFinder) {
         return new NamedInjectorBuilder<T>()
                 .withCustomMappersFinder(mappersFinder)
                 .withCustomReflectionsFinder(reflectionsFinder);
@@ -33,9 +34,22 @@ public class NamedInjectorBuilder<T> {
                 .withDefaultReflectionsFinder();
     }
 
+    public static <T> NamedInjectorBuilder<T> builder(MappersFinder mappersFinder,
+                                                      ReflectionsFinder reflectionsFinder,
+                                                      Class<T> sourceClass) {
+        return NamedInjectorBuilder.<T>builder(mappersFinder, reflectionsFinder)
+                .sourceClass(sourceClass);
+    }
+
+    public static <T> NamedInjectorBuilder<T> builder(MappersCollection mappers, Class<T> sourceClass) {
+        return NamedInjectorBuilder.<T>builder(mappers)
+                .sourceClass(sourceClass);
+    }
+
     protected MappersFinder mappersFinder;
     protected ReflectionsFinder reflectionsFinder;
     protected final Mutable<Seq<NamedParameter>> params;
+    protected Class<T> sourceClass;
     protected final Mutable<Seq<PropertyExtractor<T, ?>>> extractors;
 
     protected NamedInjectorBuilder() {
@@ -90,6 +104,14 @@ public class NamedInjectorBuilder<T> {
         return this;
     }
 
+    public NamedInjectorBuilder<T> sourceClass(Class<T> sourceClass) {
+        if (sourceClass == null) {
+            throw new NullPointerException("sourceClass is null");
+        }
+        this.sourceClass = sourceClass;
+        return this;
+    }
+
     public NamedInjectorBuilder<T> extractor(PropertyExtractor<T, ?> extractor) {
         if (extractor == null) {
             throw new NullPointerException("extractor is null");
@@ -128,13 +150,16 @@ public class NamedInjectorBuilder<T> {
     }
 
     public NamedInjector<T> build() {
+        if (sourceClass == null) {
+            throw new NullPointerException("targetClass is null");
+        }
         if (mappersFinder == null) {
             throw new NullPointerException("mappersFinder is null");
         }
         if (reflectionsFinder == null) {
             throw new NullPointerException("reflectionsFinder is null");
         }
-        return new NamedInjectorImpl<>(mappersFinder, reflectionsFinder, params.get(), extractors.get());
+        return new NamedInjectorImpl<>(mappersFinder, reflectionsFinder, params.get(), sourceClass, extractors.get());
     }
 
 }

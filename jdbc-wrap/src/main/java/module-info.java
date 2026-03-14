@@ -1,4 +1,4 @@
-open module simple.orm.jdbc.wrap {
+open module simple.orm.jdbcwrap {
 
     requires io.vavr;
     requires java.sql;

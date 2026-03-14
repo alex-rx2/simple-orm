@@ -4,11 +4,11 @@ import io.vavr.Function1;
 import io.vavr.collection.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import simple.orm.mapping.NoMapperFoundException;
 import simple.orm.mapping.impl.ParameterJdbcTypeImpl;
 import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.type.MappersCollection;
-import simple.orm.mapping.NoMapperFoundException;
 import simple.orm.mapping.type.SimpleTypeMapper;
 import simple.orm.mapping.type.TypeMapper;
 
@@ -413,7 +413,8 @@ public class FoundMappersCacheTest {
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         // no findMappers will be called without name and jdbcType provided
-        when(mappers.findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull())).thenReturn(List.of(result));
+        when(mappers.findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull()))
+                .thenReturn(List.of(result));
         final PreparedStatement pstmt = mock();
         final ParameterMetaData pmeta = mock();
         when(pstmt.getParameterMetaData()).thenReturn(pmeta);
@@ -422,7 +423,7 @@ public class FoundMappersCacheTest {
         {
             TypeMapper<?, ?> mapper = cache.findMapper(13, ParamInfo.of(null, null, null, null), Integer.class, pstmt);
             assertThat(mapper).isSameAs(result);
-            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull());
+            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull());
             verify(pstmt, times(1)).getParameterMetaData();
             verify(pmeta, times(1)).getParameterType(eq(13));
             verifyNoMoreInteractions(mappers);
@@ -446,7 +447,8 @@ public class FoundMappersCacheTest {
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         // no findMappers will be called without name and jdbcType provided
-        when(mappers.findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull())).thenReturn(List.of(result));
+        when(mappers.findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull()))
+                .thenReturn(List.of(result));
         final ResultSet rs = mock();
         final ResultSetMetaData rsmeta = mock();
         when(rs.getMetaData()).thenReturn(rsmeta);
@@ -455,7 +457,7 @@ public class FoundMappersCacheTest {
         {
             TypeMapper<?, ?> mapper = cache.findMapper(13, ParamInfo.of(null, null, Integer.class, null), rs);
             assertThat(mapper).isSameAs(result);
-            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull());
+            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull());
             verify(rs, times(1)).getMetaData();
             verify(rsmeta, times(1)).getColumnType(eq(13));
             verifyNoMoreInteractions(mappers);
@@ -479,8 +481,10 @@ public class FoundMappersCacheTest {
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         // no findMappers will be called without name and jdbcType provided
-        when(mappers.findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull())).thenReturn(List.empty());
-        when(mappers.findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Number.class), isNull())).thenReturn(List.of(result));
+        when(mappers.findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull()))
+                .thenReturn(List.empty());
+        when(mappers.findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Number.class), isNull()))
+                .thenReturn(List.of(result));
         final PreparedStatement pstmt = mock();
         final ParameterMetaData pmeta = mock();
         when(pstmt.getParameterMetaData()).thenReturn(pmeta);
@@ -489,8 +493,8 @@ public class FoundMappersCacheTest {
         {
             TypeMapper<?, ?> mapper = cache.findMapper(13, ParamInfo.of(null, null, null, null), Integer.class, pstmt);
             assertThat(mapper).isSameAs(result);
-            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Integer.class), isNull());
-            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR), isNull(), eq(Number.class), isNull());
+            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Integer.class), isNull());
+            verify(mappers, times(1)).findMappers(eq(JDBCType.VARCHAR.getVendorTypeNumber()), isNull(), eq(Number.class), isNull());
             verify(pstmt, times(1)).getParameterMetaData();
             verify(pmeta, times(1)).getParameterType(eq(13));
             verifyNoMoreInteractions(mappers);
@@ -508,7 +512,7 @@ public class FoundMappersCacheTest {
     }
 
     @Test
-    public void testFindJDBCType_byName() throws SQLException {
+    public void testFindSQLType_byName() throws SQLException {
         final ParameterJdbcType<Integer> jdbcType = new ParameterJdbcTypeImpl<>(JDBCType.INTEGER, Integer.class, mock(), mock());
         final TypeMapper<Integer, Integer> mapper = new SimpleTypeMapper<>(jdbcType, Integer.class, Function1.identity(), Function1.identity());
         final PreparedStatement pstmt = mock();
@@ -518,28 +522,28 @@ public class FoundMappersCacheTest {
         when(mappers.findMappers(eq("someMapper"), isNull(), isNull(), isNull())).thenReturn(List.of(mapper));
         // find by name
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verify(mappers, times(1)).findMappers(eq("someMapper"), isNull(), isNull(), isNull());
             verify(pstmt, times(2)).getParameterMetaData();  // 1, +1 in findMappers when searching for TypeMapper
             verifyNoMoreInteractions(mappers, pstmt);
         }
         // find by name (from cache now)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoMoreInteractions(mappers, pstmt); // no new interaction, found in cache
         }
         // find by name and types (from cache now)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, Integer.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, Integer.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoMoreInteractions(mappers, pstmt); // no new interaction, found in cache
         }
         // find by name for other column (no cached value)
         {
-            JDBCType type = cache.findJDBCType(11, ParamInfo.of("someMapper", null, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(11, ParamInfo.of("someMapper", null, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verify(mappers, times(2)).findMappers(eq("someMapper"), isNull(), isNull(), isNull()); // +1
             verify(pstmt, times(4)).getParameterMetaData(); // +2
             verifyNoMoreInteractions(mappers, pstmt);
@@ -547,33 +551,33 @@ public class FoundMappersCacheTest {
     }
 
     @Test
-    public void testFindJDBCType_byJdbcType() {
+    public void testFindSQLType_bySQLType() {
         final ParameterJdbcType<Integer> jdbcType = new ParameterJdbcTypeImpl<>(JDBCType.INTEGER, Integer.class, mock(), mock());
         final PreparedStatement pstmt = mock();
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         // find by jdbcType
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, jdbcType, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, jdbcType, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers, pstmt); // ParameterJdbcType actually contains required info, no other calls required
         }
         // find by jdbcType (from cache now, but indistinguishable for us)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, jdbcType, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, jdbcType, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers, pstmt); // ParameterJdbcType actually contains required info, no other calls required
         }
         // find by name and types (from cache now, but indistinguishable for us)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, jdbcType, Integer.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, jdbcType, Integer.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers, pstmt); // ParameterJdbcType actually contains required info, no other calls required
         }
     }
 
     @Test
-    public void testFindJDBCType_byNameJavaTypeTag_inheritance() throws SQLException {
+    public void testFindSQLType_byNameJavaTypeTag_inheritance() throws SQLException {
         final ParameterJdbcType<String> jdbcType = new ParameterJdbcTypeImpl<>(JDBCType.VARCHAR, String.class, mock(), mock());
         final TypeMapper<String, Number> mapper = new SimpleTypeMapper<>(jdbcType, Number.class, Number::toString, Integer::valueOf);
         final PreparedStatement pstmt = mock();
@@ -591,8 +595,8 @@ public class FoundMappersCacheTest {
         ).thenReturn(List.empty());
         // find by name, javaType and tag
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, Integer.class, "tagg"), pstmt);
-            assertThat(type).isEqualTo(JDBCType.VARCHAR);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, Integer.class, "tagg"), pstmt);
+            assertThat(type).isEqualTo(JDBCType.VARCHAR.getVendorTypeNumber());
             verify(mappers, times(1)).findMappers(eq("someMapper"), isNull(), eq(Integer.class), eq("tagg"));
             verify(mappers, times(1)).findMappers(eq("someMapper"), isNull(), eq(Number.class), eq("tagg"));
             verify(pstmt, times(2)).getParameterMetaData(); // 1, +1 called when searching for TypeMapper
@@ -600,21 +604,21 @@ public class FoundMappersCacheTest {
         }
         // find by name, javaType and tag (from cache now)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, Integer.class, "tagg"), pstmt);
-            assertThat(type).isEqualTo(JDBCType.VARCHAR);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, Integer.class, "tagg"), pstmt);
+            assertThat(type).isEqualTo(JDBCType.VARCHAR.getVendorTypeNumber());
             verifyNoMoreInteractions(mappers, pstmt); // no new interaction, found in cache
         }
         // find by name, other javaType and tag (from cache actually, cause of inheritance)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, Double.class, "tagg"), pstmt);
-            assertThat(type).isEqualTo(JDBCType.VARCHAR);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, Double.class, "tagg"), pstmt);
+            assertThat(type).isEqualTo(JDBCType.VARCHAR.getVendorTypeNumber());
             verifyNoMoreInteractions(mappers, pstmt); // no new interaction, found in cache
         }
         // find by name and wrong javaType (traverse all parents/interfaces and find nothing)
         {
-            // have to search with other designator cause JDBCType is cashed per designator
-            // (query can't have different JDBCType for same column/parameter).
-            assertThatCode(() -> cache.findJDBCType(11, ParamInfo.of("someMapper", null, String.class, "tagg"), pstmt))
+            // have to search with other designator cause SQLType is cashed per designator
+            // (query can't have different SQLType for same column/parameter).
+            assertThatCode(() -> cache.findSQLType(11, ParamInfo.of("someMapper", null, String.class, "tagg"), pstmt))
                     .isInstanceOf(NoMapperFoundException.class);
             verify(mappers, times(1)).findMappers(eq("someMapper"), isNull(), eq(String.class), eq("tagg"));
             verify(mappers, times(6)) // String superclass and interfaces: Object, Serializable, Comparable, CharSequence, Constable, ConstantDesc
@@ -630,7 +634,7 @@ public class FoundMappersCacheTest {
     }
 
     @Test
-    public void testFindJDBCType_byPStmtMetadata() throws Exception {
+    public void testFindSQLType_byPStmtMetadata() throws Exception {
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         final PreparedStatement pstmt = mock();
@@ -639,8 +643,8 @@ public class FoundMappersCacheTest {
         when(pmeta.getParameterType(eq(13))).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
         // find by name
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verify(pstmt, times(1)).getParameterMetaData();
             verify(pmeta, times(1)).getParameterType(eq(13));
@@ -649,16 +653,16 @@ public class FoundMappersCacheTest {
         }
         // find by name (from cache now)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, null, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verifyNoMoreInteractions(pstmt);
             verifyNoMoreInteractions(pmeta);
         }
         // find by name and types (from cache anyway)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of("someMapper", null, Integer.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of("someMapper", null, Integer.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verifyNoMoreInteractions(pstmt);
             verifyNoMoreInteractions(pmeta);
@@ -666,7 +670,7 @@ public class FoundMappersCacheTest {
     }
 
     @Test
-    public void testFindJDBCType_byPStmtMetadata_inheritance() throws Exception {
+    public void testFindSQLType_byPStmtMetadata_inheritance() throws Exception {
         final MappersCollection mappers = mock();
         final FoundMappersCache cache = new FoundMappersCache(mappers);
         final PreparedStatement pstmt = mock();
@@ -675,8 +679,8 @@ public class FoundMappersCacheTest {
         when(pmeta.getParameterType(eq(13))).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
         // find by javaType
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, null, Number.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, null, Number.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verify(pstmt, times(1)).getParameterMetaData();
             verify(pmeta, times(1)).getParameterType(eq(13));
@@ -685,16 +689,16 @@ public class FoundMappersCacheTest {
         }
         // find by javaType (from cache now)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, null, Number.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, null, Number.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verifyNoMoreInteractions(pstmt);
             verifyNoMoreInteractions(pmeta);
         }
         // find by child javaType (from cache, with inheritance)
         {
-            JDBCType type = cache.findJDBCType(13, ParamInfo.of(null, null, Integer.class, null), pstmt);
-            assertThat(type).isEqualTo(JDBCType.INTEGER);
+            Integer type = cache.findSQLType(13, ParamInfo.of(null, null, Integer.class, null), pstmt);
+            assertThat(type).isEqualTo(JDBCType.INTEGER.getVendorTypeNumber());
             verifyNoInteractions(mappers); // with JDBC metadata available no MappersCollection calls needed
             verifyNoMoreInteractions(pstmt);
             verifyNoMoreInteractions(pmeta);

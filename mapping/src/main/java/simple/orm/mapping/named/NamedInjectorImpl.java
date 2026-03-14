@@ -21,8 +21,9 @@ public class NamedInjectorImpl<T> extends AbstractNamedInjector<T> {
     public NamedInjectorImpl(MappersFinder mappersFinder,
                              ReflectionsFinder reflectionsFinder,
                              Seq<NamedParameter> parameters,
+                             Class<T> sourceClass,
                              Seq<PropertyExtractor<T, ?>> extractors) {
-        super(mappersFinder, parameters, extractors);
+        super(mappersFinder, parameters, sourceClass, extractors);
         if (reflectionsFinder == null) {
             throw new NullPointerException("reflectionsFinder is null");
         }
@@ -30,11 +31,6 @@ public class NamedInjectorImpl<T> extends AbstractNamedInjector<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected <X> PropertyExtractor<X, ?> buildExtractor(String propName, X source) {
-        return buildExtractor(propName, (Class<X>) source.getClass());
-    }
-
     protected <X> PropertyExtractor<X, ?> buildExtractor(String propName, Class<X> sourceClass) {
         final Either<Method, Field> getter = reflectionsFinder.findGetter(propName, sourceClass);
         return buildExtractor(sourceClass, propName, getter);
@@ -57,6 +53,9 @@ public class NamedInjectorImpl<T> extends AbstractNamedInjector<T> {
     }
 
     protected static <X> Object extract(String paramName, Field field, X x) {
+        if (x == null) {
+            return null;
+        }
         try {
             return field.get(x);
         } catch (IllegalAccessException e) {
@@ -65,6 +64,9 @@ public class NamedInjectorImpl<T> extends AbstractNamedInjector<T> {
     }
 
     protected static <X> Object extract(String paramName, Method method, X x) {
+        if (x == null) {
+            return null;
+        }
         try {
             return method.invoke(x);
         } catch (IllegalAccessException | InvocationTargetException e) {

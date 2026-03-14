@@ -9,6 +9,7 @@ import io.vavr.collection.Traversable;
 import io.vavr.control.Option;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.mapping.builder.MappersFinder;
+import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.param.ParameterGetter;
 import simple.orm.mapping.type.TypeMapper;
 import simple.orm.util.Mutable;
@@ -26,7 +27,7 @@ import static simple.orm.util.StringUtils.qnn;
  * <br>
  * Concrete implementations should build {@link ObjectConstructor}s and {@link PropertyInjector}s on demand
  * by implementing corresponding build methods
- * ({@link #buildObjectConstructor(Class, Map)}, {@link #buildInjector(Class, String)}).
+ * ({@link #buildObjectConstructor(Class)}, {@link #buildInjector(Class, String)}).
  * These methods are called if no external {@link ObjectConstructor} or {@link PropertyInjector} was provided.
  */
 public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
@@ -34,8 +35,10 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
     protected final MappersFinder mappersFinder;
     protected final Seq<NamedParameter> parameters;
     protected final Class<T> targetClass;
+    // provided constructors/injectors
     protected final Map<Class<?>, ObjectConstructor<?>> providedConstructors;
     protected final Map<RefName, PropertyInjector<?, ?>> providedInjectors;
+    // caches of built constructors/injectors
     protected final Mutable<Map<Class<?>, ObjectConstructor<?>>> builtConstructors;
     protected final Mutable<Map<RefName, PropertyInjector<?, ?>>> builtInjectors;
 
@@ -92,11 +95,24 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
     protected Tuple2<String, Object> extractValue(ResultSet rs, NamedParameter param) {
         final Integer index = param.index;
         final String label = param.label;
+        ParamInfo<?, ?> paramInfo = param.info;
+        if (param.mapper == null && paramInfo.getMapperName() == null && paramInfo.getJavaType() == null) {
+            // try to derive javaType from propertyName
+            Class<?> javaType = derivePropertyType(targetClass, param.name);
+            if (javaType != null) {
+                paramInfo = ParamInfo.of(
+                        paramInfo.getMapperName(),
+                        paramInfo.getJdbcType(),
+                        javaType,
+                        paramInfo.getMapperTag()
+                );
+            }
+        }
         final TypeMapper mapper = param.mapper != null ?
                 param.mapper :
                 (index == null ?
-                        mappersFinder.findMapper(label, param.info, rs) :
-                        mappersFinder.findMapper(index, param.info, rs)
+                        mappersFinder.findMapper(label, paramInfo, rs) :
+                        mappersFinder.findMapper(index, paramInfo, rs)
                 );
         final ParameterGetter getter = mapper.getJdbcType().getGetter();
         final Object jdbcValue = index == null ? getter.getValue(rs, label) : getter.getValue(rs, index);
@@ -104,7 +120,7 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
     }
 
     protected Object createObject(Class<?> targetClass, Map<String, Object> values) {
-        final ObjectConstructor<?> constructor = obtainObjectConstructor(targetClass, values);
+        final ObjectConstructor<?> constructor = obtainObjectConstructor(targetClass);
         final ObjectConstructor.CreatedObject<?> createdObject = constructor.createNew(values);
         final Map<String, Object> valuesToInject = values.removeAll(createdObject.consumedProperties);
         if (createdObject.object == null) {
@@ -128,7 +144,7 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
         }
     }
 
-    protected ObjectConstructor<?> obtainObjectConstructor(Class<?> targetClass, Map<String, Object> values) {
+    protected ObjectConstructor<?> obtainObjectConstructor(Class<?> targetClass) {
         // check provided
         Option<ObjectConstructor<?>> constructorOpt = providedConstructors.get(targetClass);
         if (constructorOpt.isDefined()) {
@@ -140,7 +156,7 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
             return constructorOpt.get();
         }
         // build and cache new one
-        ObjectConstructor<?> constructor = buildObjectConstructor(targetClass, values);
+        ObjectConstructor<?> constructor = buildObjectConstructor(targetClass);
         builtConstructors.apply(cache -> cache.put(targetClass, constructor));
         return constructor;
     }
@@ -181,8 +197,34 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
         return injector;
     }
 
-    protected abstract ObjectConstructor<?> buildObjectConstructor(Class<?> targetClass, Map<String, Object> values);
+    protected Class<?> derivePropertyType(Class<?> targetClass, String propName) {
+        int dot = propName.indexOf('.');
+        if (dot == -1) {
+            PropertyInjector<?, ?> injector = obtainInjector(targetClass, propName);
+            return injector.getValueClass();
+        } else {
+            String thisPropName = propName.substring(0, dot);
+            String nextPropName = propName.substring(dot + 1);
+            PropertyInjector<?, ?> injector = obtainInjector(targetClass, thisPropName);
+            return derivePropertyType(injector.getValueClass(), nextPropName);
+        }
+    }
 
+    /**
+     * Abstract method to build {@link ObjectConstructor} on demand.
+     *
+     * @param targetClass type of object to be created.
+     * @return new {@link ObjectConstructor} capable of creating required type of objects.
+     */
+    protected abstract ObjectConstructor<?> buildObjectConstructor(Class<?> targetClass);
+
+    /**
+     * Abstract method to build {@link PropertyInjector} on demand for specified property.
+     *
+     * @param targetClass type of object holding the property.
+     * @param propName    name of the property.
+     * @return new {@link PropertyInjector} for the property.
+     */
     protected abstract PropertyInjector<?, ?> buildInjector(Class<?> targetClass, String propName);
 
     protected static Map<String, Map<String, Object>> groupProperties(Map<String, Object> values) {

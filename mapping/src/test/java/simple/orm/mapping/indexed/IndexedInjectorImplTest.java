@@ -8,8 +8,6 @@ import org.mockito.InOrder;
 import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.impl.cache.FoundMappersCache;
 import simple.orm.mapping.impl.cache.FoundMappersCacheTest;
-import simple.orm.mapping.indexed.IndexedInjectorImpl;
-import simple.orm.mapping.indexed.IndexedParameter;
 import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.param.ParameterGetter;
 import simple.orm.mapping.param.ParameterJdbcType;
@@ -62,11 +60,11 @@ public class IndexedInjectorImplTest {
         doNothing().when(pstmt).setString(eq(3), eq("some string"));
 
         final MappersFinder mappersFinder = mock();
-        when(mappersFinder.findJDBCType(
+        when(mappersFinder.findSQLType(
                 eq(2),
                 same(paramInfo2),
                 same(pstmt)
-        )).thenReturn(JDBCType.VARCHAR);
+        )).thenReturn(JDBCType.VARCHAR.getVendorTypeNumber());
         when(mappersFinder.findMapper(
                 eq(3),
                 same(paramInfo3),
@@ -88,8 +86,8 @@ public class IndexedInjectorImplTest {
         final InOrder inOrder = inOrder(mappersFinder, pstmt);
         // param 1 - TypeMapper is known, only set parameter
         inOrder.verify(pstmt).setInt(eq(1), eq(123));
-        // param 2 - get JDBCType and set null directly (without mapper)
-        inOrder.verify(mappersFinder).findJDBCType(eq(2), same(paramInfo2), same(pstmt));
+        // param 2 - get SQLType and set null directly (without mapper)
+        inOrder.verify(mappersFinder).findSQLType(eq(2), same(paramInfo2), same(pstmt));
         inOrder.verify(pstmt).setNull(eq(2), eq(JDBCType.VARCHAR.getVendorTypeNumber()));
         // param 3 - find mapper, set parameter
         inOrder.verify(mappersFinder).findMapper(eq(3), same(paramInfo3), eq(String.class), same(pstmt));

@@ -2,6 +2,7 @@ package simple.orm.h2;
 
 import io.vavr.Tuple;
 import io.vavr.collection.List;
+import org.h2.api.H2Type;
 import simple.orm.mapping.param.ParameterGetterImpl;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.param.ParameterSetterImpl;
@@ -60,7 +61,7 @@ public final class H2Types {
 
     // VARCHAR_IGNORECASE
     public static final ParameterJdbcType<String> VARCHAR_IGNORECASE = ParameterJdbcType.of(
-            JDBCType.VARCHAR,
+            H2Type.VARCHAR_IGNORECASE,
             String.class,
             new ParameterGetterImpl<>(ResultSet::getString, ResultSet::getString),
             new ParameterSetterImpl<>(PreparedStatement::setString)
@@ -102,13 +103,6 @@ public final class H2Types {
                     PreparedStatement::setBoolean,
                     (stmt, index) -> stmt.setNull(index, JDBCType.BOOLEAN.getVendorTypeNumber())
             )
-    );
-    // this type can be used when BOOLEAN column is NOT NULL (much fewer calls to JDBC API to check wasNull())
-    public static final ParameterJdbcType<Boolean> BOOLEAN_NONNULL = ParameterJdbcType.of(
-            JDBCType.BOOLEAN,
-            Boolean.class,
-            new ParameterGetterImpl<>(ResultSet::getBoolean, ResultSet::getBoolean),
-            new ParameterSetterImpl<>(PreparedStatement::setBoolean)
     );
 
     // TINYINT
@@ -278,20 +272,20 @@ public final class H2Types {
 
     // UUID
     public static final ParameterJdbcType<UUID> UUID = ParameterJdbcType.of(
-            JDBCType.OTHER,
+            H2Type.UUID,
             UUID.class,
             new ParameterGetterImpl<>(
                     (rs, index) -> rs.getObject(index, UUID.class),
                     (rs, label) -> rs.getObject(label, UUID.class)
             ),
             new ParameterSetterImpl<>(
-                    (stmt, index, value) -> stmt.setObject(index, value, JDBCType.OTHER.getVendorTypeNumber())
+                    (stmt, index, value) -> stmt.setObject(index, value, H2Type.UUID)
             )
     );
 
     // ENUM
     public static final ParameterJdbcType<String> ENUM = ParameterJdbcType.of(
-            JDBCType.OTHER,
+            H2Type.ENUM,
             String.class,
             new ParameterGetterImpl<>(ResultSet::getString, ResultSet::getString),
             new ParameterSetterImpl<>(PreparedStatement::setString)
@@ -307,7 +301,6 @@ public final class H2Types {
             Tuple.of(   "VARBINARY",    BINARY_VARYING              ),
             Tuple.of(   "BLOB",         BINARY_LARGE_OBJECT         ),
             Tuple.of(   "BOOLEAN",      BOOLEAN                     ),
-            Tuple.of(   "BOOLEAN_NN",   BOOLEAN_NONNULL             ),
             Tuple.of(   "TINYINT",      TINYINT                     ),
             Tuple.of(   "SMALLINT",     SMALLINT                    ),
             Tuple.of(   "INT",          INTEGER                     ),

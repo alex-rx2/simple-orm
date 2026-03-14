@@ -392,48 +392,6 @@ public class H2TypesTest extends BaseH2Test {
     }
 
     @Test
-    public void testBooleanNonNull() throws SQLException {
-        final ParameterJdbcType<Boolean> type = H2Types.BOOLEAN_NONNULL;
-        try (Connection conn = directConnect()) {
-            // create table
-            {
-                Statement stmt = conn.createStatement();
-                stmt.executeUpdate("CREATE TABLE test_table(id INT AUTO_INCREMENT NOT NULL, col1 BOOLEAN NOT NULL)");
-                stmt.close();
-            }
-            // setter test
-            {
-                PreparedStatement pstmt = conn.prepareStatement("INSERT INTO test_table(col1) VALUES (?)");
-                type.getSetter().setValue(pstmt, 1, true);
-                pstmt.executeUpdate();
-                type.getSetter().setValue(pstmt, 1, false);
-                pstmt.executeUpdate();
-                pstmt.close();
-            }
-            // verify data
-            {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery("SELECT col1 FROM test_table ORDER BY id");
-                assertThat(rs.next()).isTrue();
-                assertThat(rs.getBoolean(1)).isEqualTo(true);
-                assertThat(rs.next()).isTrue();
-                assertThat(rs.getBoolean(1)).isEqualTo(false);
-                assertThat(rs.wasNull()).isFalse();
-                assertThat(rs.next()).isFalse();
-            }
-            // getter test
-            {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery("SELECT col1 FROM test_table ORDER BY id");
-                rs.next();
-                assertThat(type.getGetter().getValue(rs, 1)).isEqualTo(true);
-                rs.next();
-                assertThat(type.getGetter().getValue(rs, 1)).isEqualTo(false);
-            }
-        }
-    }
-
-    @Test
     public void testTinyint() throws SQLException {
         final ParameterJdbcType<Byte> type = H2Types.TINYINT;
         try (Connection conn = directConnect()) {

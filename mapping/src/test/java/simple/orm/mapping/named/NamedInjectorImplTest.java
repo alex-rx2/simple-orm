@@ -100,6 +100,7 @@ public class NamedInjectorImplTest {
                 List.of(NamedParameter.of("fieldInteger", 1, mapperInt),
                         NamedParameter.of("fieldStringOne", 2, mapperString),
                         NamedParameter.of("fieldStringTwo", 3, mapperString)),
+                SomeClassOne.class,
                 List.empty()
         );
 
@@ -167,11 +168,11 @@ public class NamedInjectorImplTest {
                 eq(String.class),
                 same(pstmt)
         )).thenReturn((TypeMapper) mapperString);
-        when(mappersFinder.findJDBCType(
+        when(mappersFinder.findSQLType(
                 eq(3),
                 same(paramInfo3),
                 same(pstmt)
-        )).thenReturn(JDBCType.VARCHAR);
+        )).thenReturn(JDBCType.VARCHAR.getVendorTypeNumber());
 
         final NamedInjectorImpl<SomeClassOne> injector = new NamedInjectorImpl<>(
                 mappersFinder,
@@ -179,6 +180,7 @@ public class NamedInjectorImplTest {
                 List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
                         NamedParameter.of("fieldStringOne", 2, paramInfo2),
                         NamedParameter.of("fieldStringTwo", 3, paramInfo3)),
+                SomeClassOne.class,
                 List.empty()
         );
 
@@ -197,7 +199,7 @@ public class NamedInjectorImplTest {
         inOrder.verify(pstmt).setString(eq(2), eq("some string"));
         // param 3 - null value, no value class
         inOrder.verify(reflectionsFinder).findGetter(eq("fieldStringTwo"), eq(SomeClassOne.class));
-        inOrder.verify(mappersFinder).findJDBCType(eq(3), same(paramInfo3), same(pstmt)); // direct null injection
+        inOrder.verify(mappersFinder).findSQLType(eq(3), same(paramInfo3), same(pstmt)); // direct null injection
         inOrder.verify(pstmt).setNull(eq(3), eq(JDBCType.VARCHAR.getVendorTypeNumber()));
 
         inOrder.verifyNoMoreInteractions();
@@ -257,6 +259,7 @@ public class NamedInjectorImplTest {
                 List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
                         NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
                         NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                SomeClassThree.class,
                 List.empty()
         );
 
@@ -320,7 +323,10 @@ public class NamedInjectorImplTest {
 
         final MappersFinder mappersFinder = mock();
         final ReflectionsFinder reflectionsFinder = mock();
+        when(reflectionsFinder.findGetter(eq("fieldInteger"), eq(SomeClassOne.class))).thenReturn(someClassOne_ref1);
+        when(reflectionsFinder.findGetter(eq("fieldInteger"), eq(SomeClassTwo.class))).thenReturn(someClassTwo_ref1);
         when(reflectionsFinder.findGetter(eq("fieldInteger"), eq(SomeClassThree.class))).thenReturn(someClassThree_ref1);
+        when(reflectionsFinder.findGetter(eq("classOne"), eq(SomeClassTwo.class))).thenReturn(someClassTwo_ref2);
         when(reflectionsFinder.findGetter(eq("classTwo"), eq(SomeClassThree.class))).thenReturn(someClassThree_ref2);
         when(mappersFinder.findMapper(
                 eq(1),
@@ -328,16 +334,16 @@ public class NamedInjectorImplTest {
                 eq(Integer.class),
                 same(pstmt)
         )).thenReturn((TypeMapper) mapperInt);
-        when(mappersFinder.findJDBCType(
+        when(mappersFinder.findSQLType(
                 eq(2),
                 same(paramInfo2),
                 same(pstmt)
-        )).thenReturn(JDBCType.INTEGER);
-        when(mappersFinder.findJDBCType(
+        )).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
+        when(mappersFinder.findSQLType(
                 eq(3),
                 same(paramInfo3),
                 same(pstmt)
-        )).thenReturn(JDBCType.INTEGER);
+        )).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
 
         final NamedInjectorImpl<SomeClassThree> injector = new NamedInjectorImpl<>(
                 mappersFinder,
@@ -345,6 +351,7 @@ public class NamedInjectorImplTest {
                 List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
                         NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
                         NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                SomeClassThree.class,
                 List.empty()
         );
 
@@ -359,10 +366,13 @@ public class NamedInjectorImplTest {
         inOrder.verify(pstmt).setInt(eq(1), eq(123));
         // param 2
         inOrder.verify(reflectionsFinder).findGetter(eq("classTwo"), eq(SomeClassThree.class));
-        inOrder.verify(mappersFinder).findJDBCType(eq(2), same(paramInfo2), same(pstmt));
+        inOrder.verify(reflectionsFinder).findGetter(eq("fieldInteger"), eq(SomeClassTwo.class));
+        inOrder.verify(mappersFinder).findSQLType(eq(2), same(paramInfo2), same(pstmt));
         inOrder.verify(pstmt).setNull(eq(2), eq(JDBCType.INTEGER.getVendorTypeNumber()));
         // param 3
-        inOrder.verify(mappersFinder).findJDBCType(eq(3), same(paramInfo3), same(pstmt));
+        inOrder.verify(reflectionsFinder).findGetter(eq("classOne"), eq(SomeClassTwo.class));
+        inOrder.verify(reflectionsFinder).findGetter(eq("fieldInteger"), eq(SomeClassOne.class));
+        inOrder.verify(mappersFinder).findSQLType(eq(3), same(paramInfo3), same(pstmt));
         inOrder.verify(pstmt).setNull(eq(3), eq(JDBCType.INTEGER.getVendorTypeNumber()));
 
         inOrder.verifyNoMoreInteractions();
@@ -408,6 +418,7 @@ public class NamedInjectorImplTest {
                 List.of(NamedParameter.of("fieldInteger", 1, mapperInt),
                         NamedParameter.of("fieldStringOne", 2, mapperString),
                         NamedParameter.of("fieldStringTwo", 3, mapperString)),
+                SomeClassOne.class,
                 List.of(pe1, pe2, pe3)
         );
 

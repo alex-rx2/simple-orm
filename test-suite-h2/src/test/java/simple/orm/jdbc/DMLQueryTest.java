@@ -177,7 +177,7 @@ public class DMLQueryTest extends BaseH2Test {
                     INSERT INTO table_one\
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    InjectorsExtractors.<NamedRow2>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), NamedRow2.class)
                             .param("id", H2Mappers.INT)
                             .param("tiny", H2Mappers.TINYINT_I)
                             .param("s1", H2Mappers.VARCHAR)
@@ -305,7 +305,7 @@ public class DMLQueryTest extends BaseH2Test {
             // update
             Query<HasId, Integer> query2 = QFACTORY.iudQuery(
                     "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>?",
-                    InjectorsExtractors.<HasId>namedInjector(H2Mappers.collection())
+                    InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build()
             );

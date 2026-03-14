@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -592,6 +593,138 @@ public class NamedExtractorImplTest {
 
         verifyNoMoreInteractions(mappersFinder, reflectionsFinder, rs);
         verifyNoInteractions(setterTypeInt);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testExtractRow_SomeClassThree_paramInfoEmpty_classDerivedReflections() throws SQLException {
+        final ParamInfo<Object, Object> paramInfo1 = ParamInfo.of(null, null, null, null);
+        final ParamInfo<Object, Object> paramInfo2 = ParamInfo.of(null, null, null, null);
+        final ParamInfo<Object, Object> paramInfo3 = ParamInfo.of(null, null, null, null);
+        final ParamInfo<Object, Object> paramInfo4 = ParamInfo.of(null, null, null, null);
+        final ParamInfo<Object, Object> paramInfo5 = ParamInfo.of(null, null, null, null);
+        final ParamInfo<Object, Integer> derivedParamInfo1 = ParamInfo.of(null, null, Integer.class, null);
+        final ParamInfo<Object, Integer> derivedParamInfo2 = ParamInfo.of(null, null, Integer.class, null);
+        final ParamInfo<Object, Integer> derivedParamInfo3 = ParamInfo.of(null, null, Integer.class, null);
+        final ParamInfo<Object, String> derivedParamInfo4 = ParamInfo.of(null, null, String.class, null);
+        final ParamInfo<Object, String> derivedParamInfo5 = ParamInfo.of(null, null, String.class, null);
+
+        final ParameterSetter<Integer> setterTypeInt = mock();
+        final ParameterJdbcType<Integer> typeInt = ParameterJdbcType.of(JDBCType.INTEGER, Integer.class,
+                new ParameterGetterImpl<>(
+                        (rs, index) -> wrapCheckWasNull(rs, index, ResultSet::getInt, 0),
+                        (rs, index) -> wrapCheckWasNull(rs, index, ResultSet::getInt, 0)
+                ),
+                setterTypeInt
+        );
+        final ParameterSetter<String> setterTypeString = mock();
+        final ParameterJdbcType<String> typeString = ParameterJdbcType.of(JDBCType.VARCHAR, String.class,
+                new ParameterGetterImpl<>(ResultSet::getString, ResultSet::getString),
+                setterTypeString
+        );
+        final TypeMapper<Integer, Integer> mapperInt = new SimpleTypeMapper<>(typeInt, Integer.class, Function1.identity(), Function1.identity());
+        final TypeMapper<String, String> mapperString = new SimpleTypeMapper<>(typeString, String.class, Function1.identity(), Function1.identity());
+
+        final ResultSet rs = mock();
+        when(rs.getInt(eq(1))).thenReturn(123);
+        when(rs.getInt(eq(2))).thenReturn(-123);
+        when(rs.getInt(eq(3))).thenReturn(321);
+        when(rs.getString(eq(4))).thenReturn("ONE");
+        when(rs.getString(eq(5))).thenReturn("TWO");
+        final ResultSetMetaData rsMeta = mock();
+        when(rs.getMetaData()).thenReturn(rsMeta);
+        when(rsMeta.getColumnType(eq(1))).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
+        when(rsMeta.getColumnType(eq(2))).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
+        when(rsMeta.getColumnType(eq(3))).thenReturn(JDBCType.INTEGER.getVendorTypeNumber());
+        when(rsMeta.getColumnType(eq(4))).thenReturn(JDBCType.VARCHAR.getVendorTypeNumber());
+        when(rsMeta.getColumnType(eq(5))).thenReturn(JDBCType.VARCHAR.getVendorTypeNumber());
+
+        final MappersFinder mappersFinder = mock();
+        final ReflectionsFinder reflectionsFinder = mock();
+        when(reflectionsFinder.findDefaultConstructor(eq(SomeClassOne.class))).thenReturn((Constructor) someClassOne_con);
+        when(reflectionsFinder.findDefaultConstructor(eq(SomeClassTwo.class))).thenReturn((Constructor) someClassTwo_con);
+        when(reflectionsFinder.findDefaultConstructor(eq(SomeClassThree.class))).thenReturn((Constructor) someClassThree_con);
+        when(reflectionsFinder.findSetter(eq("fieldInteger"), eq(SomeClassOne.class))).thenReturn(someClassOne_ref1);
+        when(reflectionsFinder.findSetter(eq("fieldInteger"), eq(SomeClassTwo.class))).thenReturn(someClassTwo_ref1);
+        when(reflectionsFinder.findSetter(eq("fieldInteger"), eq(SomeClassThree.class))).thenReturn(someClassThree_ref1);
+        when(reflectionsFinder.findSetter(eq("classOne"), eq(SomeClassTwo.class))).thenReturn(someClassTwo_ref2);
+        when(reflectionsFinder.findSetter(eq("classTwo"), eq(SomeClassThree.class))).thenReturn(someClassThree_ref2);
+        when(reflectionsFinder.findSetter(eq("fieldStringOne"), eq(SomeClassOne.class))).thenReturn(someClassOne_ref2);
+        when(reflectionsFinder.findSetter(eq("fieldStringTwo"), eq(SomeClassOne.class))).thenReturn(someClassOne_ref3);
+        when(mappersFinder.findMapper(
+                eq(1),
+                eq(derivedParamInfo1),
+                same(rs)
+        )).thenReturn((TypeMapper) mapperInt);
+        when(mappersFinder.findMapper(
+                eq(2),
+                eq(derivedParamInfo2),
+                same(rs)
+        )).thenReturn((TypeMapper) mapperInt);
+        when(mappersFinder.findMapper(
+                eq(3),
+                eq(derivedParamInfo3),
+                same(rs)
+        )).thenReturn((TypeMapper) mapperInt);
+        when(mappersFinder.findMapper(
+                eq(4),
+                eq(derivedParamInfo4),
+                same(rs)
+        )).thenReturn((TypeMapper) mapperString);
+        when(mappersFinder.findMapper(
+                eq(5),
+                eq(derivedParamInfo5),
+                same(rs)
+        )).thenReturn((TypeMapper) mapperString);
+
+        final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
+                mappersFinder,
+                reflectionsFinder,
+                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
+                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
+                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3),
+                        NamedParameter.of("classTwo.classOne.fieldStringOne", 4, paramInfo4),
+                        NamedParameter.of("classTwo.classOne.fieldStringTwo", 5, paramInfo5)),
+                SomeClassThree.class,
+                List.empty(),
+                List.empty()
+        );
+
+        // do test
+        final SomeClassThree result = extractor.extractRow(rs);
+        assertThat(result).isNotNull();
+        assertThat(result.fieldInteger).isEqualTo(123);
+        assertThat(result.classTwo.fieldInteger).isEqualTo(-123);
+        assertThat(result.classTwo.classOne.fieldInteger).isEqualTo(321);
+        assertThat(result.classTwo.classOne.fieldStringOne).isEqualTo("ONE");
+        assertThat(result.classTwo.classOne.fieldStringTwo).isEqualTo("TWO");
+
+        // verify mocks, can't use InOrder cause props for injections are passed through HashMap
+        // get all values
+        verify(rs).getInt(eq(1));
+        verify(rs).getInt(eq(2));
+        verify(rs).getInt(eq(3));
+        verify(rs).getString(eq(4));
+        verify(rs).getString(eq(5));
+        verify(mappersFinder).findMapper(eq(1), eq(derivedParamInfo1), same(rs));
+        verify(mappersFinder).findMapper(eq(2), eq(derivedParamInfo2), same(rs));
+        verify(mappersFinder).findMapper(eq(3), eq(derivedParamInfo3), same(rs));
+        verify(mappersFinder).findMapper(eq(4), eq(derivedParamInfo4), same(rs));
+        verify(mappersFinder).findMapper(eq(5), eq(derivedParamInfo5), same(rs));
+        // construct object
+        verify(reflectionsFinder).findDefaultConstructor(eq(SomeClassOne.class));
+        verify(reflectionsFinder).findDefaultConstructor(eq(SomeClassTwo.class));
+        verify(reflectionsFinder).findDefaultConstructor(eq(SomeClassThree.class));
+        verify(reflectionsFinder).findSetter(eq("fieldInteger"), eq(SomeClassOne.class));
+        verify(reflectionsFinder).findSetter(eq("fieldInteger"), eq(SomeClassTwo.class));
+        verify(reflectionsFinder).findSetter(eq("fieldInteger"), eq(SomeClassThree.class));
+        verify(reflectionsFinder).findSetter(eq("classOne"), eq(SomeClassTwo.class));
+        verify(reflectionsFinder).findSetter(eq("classTwo"), eq(SomeClassThree.class));
+        verify(reflectionsFinder).findSetter(eq("fieldStringOne"), eq(SomeClassOne.class));
+        verify(reflectionsFinder).findSetter(eq("fieldStringTwo"), eq(SomeClassOne.class));
+
+        verifyNoMoreInteractions(mappersFinder, reflectionsFinder, rs, rsMeta);
+        verifyNoInteractions(setterTypeInt,setterTypeString);
     }
 
     private static class SomeClassOne {

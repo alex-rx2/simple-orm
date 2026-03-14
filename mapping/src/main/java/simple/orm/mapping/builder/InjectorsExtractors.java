@@ -21,6 +21,10 @@ public final class InjectorsExtractors {
         return NamedInjectorBuilder.builder(mappers);
     }
 
+    public static <T> NamedInjectorBuilder<T> namedInjector(MappersCollection mappers, Class<T> sourceClass) {
+        return NamedInjectorBuilder.builder(mappers, sourceClass);
+    }
+
     public static <T> NamedExtractorBuilder<T> namedExtractor(MappersCollection mappers) {
         return NamedExtractorBuilder.builder(mappers);
     }

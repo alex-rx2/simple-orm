@@ -9,7 +9,6 @@ import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.param.ParameterSetter;
 import simple.orm.mapping.type.TypeMapper;
 
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
@@ -67,10 +66,10 @@ public class IndexedInjectorImpl implements IndexedInjector {
         TypeMapper mapper = param.mapper;
         if (value == null && mapper == null) {
             // "manual" null insertion
-            final JDBCType jdbcType = mappersFinder.findJDBCType(index, param.info, stmt);
+            final Integer sqlType = mappersFinder.findSQLType(index, param.info, stmt);
             try {
-                if (jdbcType != null) {
-                    stmt.setNull(index, jdbcType.getVendorTypeNumber());
+                if (sqlType != null) {
+                    stmt.setNull(index, sqlType);
                 } else {
                     stmt.setObject(index, null);
                 }

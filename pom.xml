@@ -15,6 +15,7 @@
         <module>mapping</module>
         <module>db-h2</module>
         <module>test-suite-h2</module>
+        <module>query-loader</module>
         <!--<module>xxx</module>-->
     </modules>
 

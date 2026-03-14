@@ -7,7 +7,6 @@ import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -44,11 +43,12 @@ public interface MappersFinder {
     TypeMapper<?, ?> findMapper(String columnLabel, ParamInfo<?, ?> param, ResultSet rs);
 
     /**
-     * Find {@link JDBCType} for parameter (required for {@link PreparedStatement#setNull(int, int)}).
+     * Find {@link java.sql.SQLType#getVendorTypeNumber()} for parameter
+     * (required for {@link PreparedStatement#setNull(int, int)}).
      *
-     * @return found {@link JDBCType} or <code>null</code>.
+     * @return found type or <code>null</code>.
      */
-    JDBCType findJDBCType(int columnIndex, ParamInfo<?, ?> param, PreparedStatement stmt);
+    Integer findSQLType(int columnIndex, ParamInfo<?, ?> param, PreparedStatement stmt);
 
     /**
      * Factory method for default {@link MappersFinder} implementation.
@@ -56,7 +56,7 @@ public interface MappersFinder {
      * @param mappers {@link MappersCollection} to search in.
      * @return new default {@link MappersFinder} implementation.
      */
-    default MappersFinder defaultFinder(MappersCollection mappers) {
+    static MappersFinder defaultFinder(MappersCollection mappers) {
         if (mappers == null) {
             throw new NullPointerException("mappers is null");
         }

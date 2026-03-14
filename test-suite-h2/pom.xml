@@ -21,7 +21,17 @@
         </dependency>
         <dependency>
             <groupId>simple.orm</groupId>
+            <artifactId>simple-orm-jdbc-wrap</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>simple.orm</groupId>
             <artifactId>simple-orm-mapping</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>simple.orm</groupId>
+            <artifactId>simple-orm-query-loader</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

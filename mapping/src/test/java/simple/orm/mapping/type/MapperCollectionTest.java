@@ -219,17 +219,17 @@ public class MapperCollectionTest {
         assertThatCode(() -> mappers.findMappers((String) null, null, String.class, "str"))
                 .isInstanceOf(IllegalArgumentException.class);
         // JDBCType
-        assertThat(mappers.findMappers(JDBCType.INTEGER, null, null, null))
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, null, null))
                 .containsExactlyInAnyOrder(mapperIntInt, mapperIntStr);
-        assertThat(mappers.findMappers(JDBCType.INTEGER, null, null, "null"))
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, null, "null"))
                 .containsExactlyInAnyOrder(mapperIntInt2, mapperIntStr2);
-        assertThat(mappers.findMappers(JDBCType.INTEGER, null, null, "xxx")).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.INTEGER, "intMapper", null, null))
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, null, "xxx")).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "intMapper", null, null))
                 .containsExactlyInAnyOrder(mapperIntInt, mapperIntStr);
-        assertThat(mappers.findMappers(JDBCType.INTEGER, "strMapper", null, null)).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.VARCHAR, null, String.class, "str"))
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "strMapper", null, null)).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.VARCHAR.getVendorTypeNumber(), null, String.class, "str"))
                 .containsExactlyInAnyOrder(mapperStrStr3);
-        assertThat(mappers.findMappers(JDBCType.VARCHAR, null, String.class, null))
+        assertThat(mappers.findMappers(JDBCType.VARCHAR.getVendorTypeNumber(), null, String.class, null))
                 .containsExactlyInAnyOrder(mapperStrStr);
     }
 
@@ -243,10 +243,10 @@ public class MapperCollectionTest {
         assertThat(mappers.findMappers("intMapper", null, Integer.class, null)).isEmpty();
         assertThat(mappers.findMappers(null, typeInt, Integer.class, null)).isEmpty();
         assertThat(mappers.findMappers("intMapper", typeInt, Integer.class, null)).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.INTEGER, null, null, null)).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.INTEGER, "intMapper", null, null)).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.INTEGER, null, Integer.class, null)).isEmpty();
-        assertThat(mappers.findMappers(JDBCType.INTEGER, "intMapper", Integer.class, null)).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, null, null)).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "intMapper", null, null)).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, Integer.class, null)).isEmpty();
+        assertThat(mappers.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "intMapper", Integer.class, null)).isEmpty();
         // test after adding a mapper
         TypeMapper<Integer, Integer> mapperIntInt2 =
                 typeInt.mappedTo(Integer.class, Function1.identity(), Function1.identity());
@@ -259,13 +259,13 @@ public class MapperCollectionTest {
                 .containsExactly(mapperIntInt2);
         assertThat(mappers2.findMappers("intMapper", typeInt, Integer.class, null))
                 .containsExactly(mapperIntInt2);
-        assertThat(mappers2.findMappers(JDBCType.INTEGER, null, null, null))
+        assertThat(mappers2.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, null, null))
                 .containsExactly(mapperIntInt2);
-        assertThat(mappers2.findMappers(JDBCType.INTEGER, "intMapper", null, null))
+        assertThat(mappers2.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "intMapper", null, null))
                 .containsExactly(mapperIntInt2);
-        assertThat(mappers2.findMappers(JDBCType.INTEGER, null, Integer.class, null))
+        assertThat(mappers2.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), null, Integer.class, null))
                 .containsExactly(mapperIntInt2);
-        assertThat(mappers2.findMappers(JDBCType.INTEGER, "intMapper", Integer.class, null))
+        assertThat(mappers2.findMappers(JDBCType.INTEGER.getVendorTypeNumber(), "intMapper", Integer.class, null))
                 .containsExactly(mapperIntInt2);
     }
 

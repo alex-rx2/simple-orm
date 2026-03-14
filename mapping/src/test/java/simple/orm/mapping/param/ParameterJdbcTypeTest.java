@@ -19,11 +19,11 @@ public class ParameterJdbcTypeTest {
     @Test
     public void testOf() {
         ParameterJdbcType<Integer> type11 = ParameterJdbcType.of(JDBCType.INTEGER, Integer.class, mock(), mock());
-        assertThat(type11.getJDBCType()).isEqualTo(JDBCType.INTEGER);
+        assertThat(type11.getSQLType()).isEqualTo(JDBCType.INTEGER);
         assertThat(type11.getJDBCTypeClass()).isEqualTo(Integer.class);
 
         ParameterJdbcType<Double> type21 = ParameterJdbcType.of(JDBCType.DOUBLE, Double.class, mock(), mock());
-        assertThat(type21.getJDBCType()).isEqualTo(JDBCType.DOUBLE);
+        assertThat(type21.getSQLType()).isEqualTo(JDBCType.DOUBLE);
         assertThat(type21.getJDBCTypeClass()).isEqualTo(Double.class);
     }
 

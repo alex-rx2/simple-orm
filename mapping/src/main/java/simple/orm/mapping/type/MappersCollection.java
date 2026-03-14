@@ -5,7 +5,6 @@ import io.vavr.collection.Traversable;
 import simple.orm.mapping.impl.MappersCollectionImpl;
 import simple.orm.mapping.param.ParameterJdbcType;
 
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -85,18 +84,18 @@ public interface MappersCollection {
 
     /**
      * Auxiliary method to search collection for mappers if {@link ParameterJdbcType} is not provided, but
-     * {@link JDBCType} was obtained through JDBC API (e.g. {@link PreparedStatement} or {@link ResultSet} metadata).
+     * {@link java.sql.SQLType#getVendorTypeNumber()} was obtained through JDBC API
+     * (e.g. {@link PreparedStatement} or {@link ResultSet} metadata).
      * <br>
      * Note: mapper registered without a tag is considered to have <code>tag=null</code>.
      *
-     * @param jdbcType JDBC API SQL type.
+     * @param sqlType  JDBC API SQL type.
      * @param name     desired registration name.
      * @param javaType desired application java type.
      * @param tag      desired registration tag.
      * @return found mappers.
-     * @throws NullPointerException if jdbcType is null.
      */
-    Traversable<TypeMapper<?, ?>> findMappers(JDBCType jdbcType, String name, Class<?> javaType, String tag);
+    Traversable<TypeMapper<?, ?>> findMappers(int sqlType, String name, Class<?> javaType, String tag);
 
     /**
      * Returns all registered mappers.

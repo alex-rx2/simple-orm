@@ -8,8 +8,9 @@ import io.vavr.collection.TreeMap;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.param.TypesCollection;
 
-import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Implementation of {@link TypesCollection}.
@@ -69,11 +70,11 @@ public class TypesCollectionImpl implements TypesCollection {
     }
 
     @Override
-    public Traversable<Tuple2<String, ParameterJdbcType<?>>> findTypes(JDBCType jdbcType) {
-        if (jdbcType == null) {
-            throw new NullPointerException("jdbcType is null");
+    public Traversable<Tuple2<String, ParameterJdbcType<?>>> findTypes(SQLType sqlType) {
+        if (sqlType == null) {
+            throw new NullPointerException("sqlType is null");
         }
-        return types.filter(t2 -> t2._2.getJDBCType() == jdbcType);
+        return types.filter(t2 -> Objects.equals(t2._2.getSQLType(), sqlType)); // todo compare only getVendorTypeNumber() ???
     }
 
     @Override
