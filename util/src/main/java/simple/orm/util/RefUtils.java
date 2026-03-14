@@ -44,12 +44,12 @@ public final class RefUtils {
         );
     }
 
-    private static Predicate<Class<?>> exactlyP(Class<?> exactlyThis, Class<?> orThis) {
-        return aClass -> aClass == exactlyThis || aClass == orThis;
+    private static Predicate<Class<?>> exactlyP(Class<?> exactlyThis, Class<?> orThat) {
+        return aClass -> aClass == exactlyThis || aClass == orThat;
     }
 
-    private static boolean exactly(Class<?> aClass, Class<?> exactlyThis, Class<?> orThis) {
-        return aClass == exactlyThis || aClass == orThis;
+    private static boolean exactly(Class<?> aClass, Class<?> exactlyThis, Class<?> orThat) {
+        return aClass == exactlyThis || aClass == orThat;
     }
 
 }
