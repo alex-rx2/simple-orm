@@ -1,6 +1,8 @@
-package simple.orm.jdbc;
+package simple.orm.repo.query;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
+import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,9 +11,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import simple.orm.BaseH2Test;
 import simple.orm.h2.H2Mappers;
+import simple.orm.h2.H2Types;
+import simple.orm.jdbc.DatabaseAccessPoint;
 import simple.orm.jdbc.query.Query;
-import simple.orm.jdbc.query.QueryFactory;
-import simple.orm.mapping.builder.InjectorsExtractors;
+import simple.orm.jdbc.query.QueryType;
+import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.QueryBuilder;
+import simple.orm.mapping.builder.MappersFinder;
+import simple.orm.mapping.builder.ReflectionsFinder;
+import simple.orm.repo.RepositoryBuilder;
+import simple.orm.repo.SQLLoader;
+import simple.orm.repo.anno.InjectParam;
+import simple.orm.repo.anno.ParameterStrategy;
+import simple.orm.repo.anno.QuerySource;
+import simple.orm.repo.anno.RepoType;
+import simple.orm.repo.anno.SimpleOrmRepo;
+import simple.orm.repo.anno.SimpleQuery;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -27,12 +42,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DMLQueryTest extends BaseH2Test {
 
-    private static final QueryFactory QFACTORY = QueryFactory.instance();
-
     private DatabaseAccessPoint database;
+    private RepositoryBuilder repositoryBuilder;
+    private DMLRepository repository;
 
     @BeforeAll
     void setUp() throws SQLException {
+        final ReflectionsFinder reflectionsFinder = ReflectionsFinder.defaultFinder();
+        repositoryBuilder = RepositoryBuilder.of(
+                TEST_SQL_LOADER,
+                QueryParser.defaultParser(),
+                QueryBuilder.of(
+                        H2Types.collection(),
+                        () -> MappersFinder.defaultFinder(H2Mappers.collection()),
+                        () -> reflectionsFinder
+                )
+        );
+        repository = repositoryBuilder.buildRepository(DMLRepository.class);
         dropAllObjects();
         database = DatabaseAccessPoint.builder()
                 .driverClass(h2DriverClass)
@@ -41,6 +67,7 @@ public class DMLQueryTest extends BaseH2Test {
                 .build();
         createTables();
     }
+
 
     @AfterAll
     void tearDown() throws SQLException {
@@ -109,21 +136,8 @@ public class DMLQueryTest extends BaseH2Test {
     public void testInsertIndexed() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect(10);
-            Query<Seq<Object>, Integer> query = QFACTORY.iudQuery(
-                    "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
-                            .params(
-                                    H2Mappers.INT,
-                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
-                                    H2Mappers.REAL, H2Mappers.VARCHAR,
-                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
-                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
-                            )
-                            .build()
-            );
+            simple.orm.jdbc.Connection conn = database.connect();
+            Query<Seq<Object>, Integer> query = repository.insertIndexed();
             int result = conn.executeDMLQuery(query,
                     3,
                     33, "test1-1",
@@ -171,28 +185,8 @@ public class DMLQueryTest extends BaseH2Test {
     public void testInsertNamed() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect(10);
-            Query<NamedRow2, Integer> query = QFACTORY.iudQuery(
-                    """
-                    INSERT INTO table_one\
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    InjectorsExtractors.namedInjector(H2Mappers.collection(), NamedRow2.class)
-                            .param("id", H2Mappers.INT)
-                            .param("tiny", H2Mappers.TINYINT_I)
-                            .param("s1", H2Mappers.VARCHAR)
-                            .param("small", H2Mappers.SMALLINT_I)
-                            .param("s2", H2Mappers.VARCHAR)
-                            .param("big", H2Mappers.BIGINT)
-                            .param("s3", H2Mappers.VARCHAR)
-                            .param("real", H2Mappers.REAL)
-                            .param("s4", H2Mappers.VARCHAR)
-                            .param("doublePrecision", H2Mappers.DOUBLE)
-                            .param("s5", H2Mappers.VARCHAR)
-                            .param("num", H2Mappers.NUMERIC)
-                            .param("s6", H2Mappers.VARCHAR)
-                            .build()
-            );
+            simple.orm.jdbc.Connection conn = database.connect();
+            Query<NamedRow2, Integer> query = repository.insertNamed();
             int result = conn.executeDMLQuery(query,
                     new NamedRow2(5,
                             55, 55, 555555555555555555L, -5.5f, 6.6, new BigDecimal("777.777"),
@@ -237,8 +231,8 @@ public class DMLQueryTest extends BaseH2Test {
     public void testDeleteWithoutParameters() throws SQLException {
         // test
         {
-            simple.orm.jdbc.Connection conn = database.connect(10);
-            Query<Void, Integer> query = QFACTORY.iudQueryWithoutParameters("DELETE FROM table_one WHERE id>1");
+            simple.orm.jdbc.Connection conn = database.connect();
+            Query<Void, Integer> query = repository.delete();
             int result = conn.executeDMLQuery(query);
             assertThat(result).isEqualTo(1);
             conn.close();
@@ -273,25 +267,12 @@ public class DMLQueryTest extends BaseH2Test {
     }
 
     @Test
-    public void testExecuteAnyQuery() throws SQLException {
+    public void testInsertUpdate() throws SQLException {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);
             // insert
-            Query<Seq<Object>, Integer> query1 = QFACTORY.iudQuery(
-                    "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    InjectorsExtractors.indexedInjector(H2Mappers.collection())
-                            .params(
-                                    H2Mappers.INT,
-                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
-                                    H2Mappers.REAL, H2Mappers.VARCHAR,
-                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
-                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
-                            )
-                            .build()
-            );
+            Query<Seq<Object>, Integer> query1 = repository.insertIndexed();
             int result1 = conn.executeAnyQuery(query1,
                     3,
                     33, "test1-1",
@@ -303,12 +284,7 @@ public class DMLQueryTest extends BaseH2Test {
             );
             assertThat(result1).isEqualTo(1);
             // update
-            Query<HasId, Integer> query2 = QFACTORY.iudQuery(
-                    "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>?",
-                    InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
-                            .param("id", H2Mappers.INT)
-                            .build()
-            );
+            Query<HasId, Integer> query2 = repository.update();
             int result2 = conn.executeAnyQuery(query2, new HasId(1));
             assertThat(result2).isEqualTo(2);
             // close connection
@@ -345,7 +321,68 @@ public class DMLQueryTest extends BaseH2Test {
         }
     }
 
-    private static class NamedRow2 extends NamedRow1 {
+    private static final SQLLoader TEST_SQL_LOADER = new SQLLoader() {
+        private final Map<String, String> queries = HashMap.of(
+                "test://dml/query=insert", "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "test://dml/query=update", "UPDATE table_one SET col_ti=col_ti+10, col_si=col_si-10 WHERE id>?",
+                "test://dml/query=delete", "DELETE FROM table_one WHERE id>1"
+        );
+
+        @Override
+        public String loadFromURI(String uriStr, String charset) {
+            return queries.get(uriStr).get();
+        }
+    };
+
+    @SimpleOrmRepo(type = RepoType.QUERY, timeout = 3)
+    public interface DMLRepository {
+
+        @SimpleQuery(type = QueryType.DML, parameters = ParameterStrategy.PROVIDED)
+        @QuerySource(uri = "test://dml/query=insert")
+        @InjectParam(index = 1, mapper = "int")
+        @InjectParam(index = 2, mapper = "tinyint", tag = "int")
+        @InjectParam(index = 3, mapper = "varchar")
+        @InjectParam(index = 4, mapper = "smallint", tag = "int")
+        @InjectParam(index = 5, mapper = "varchar")
+        @InjectParam(index = 6, mapper = "bigint")
+        @InjectParam(index = 7, mapper = "varchar")
+        @InjectParam(index = 8, mapper = "real")
+        @InjectParam(index = 9, mapper = "varchar")
+        @InjectParam(index = 10, mapper = "double")
+        @InjectParam(index = 11, mapper = "varchar")
+        @InjectParam(index = 12, mapper = "numeric")
+        @InjectParam(index = 13, mapper = "varchar")
+        Query<Seq<Object>, Integer> insertIndexed();
+
+        @SimpleQuery(type = QueryType.DML, parameters = ParameterStrategy.PROVIDED, sourceClass = NamedRow2.class)
+        @QuerySource(uri = "test://dml/query=insert")
+        @InjectParam(prop = "id", mapper = "int")
+        @InjectParam(prop = "tiny", mapper = "tinyint", tag = "int")
+        @InjectParam(prop = "s1", mapper = "varchar")
+        @InjectParam(prop = "small", mapper = "smallint", tag = "int")
+        @InjectParam(prop = "s2", mapper = "varchar")
+        @InjectParam(prop = "big", mapper = "bigint")
+        @InjectParam(prop = "s3", mapper = "varchar")
+        @InjectParam(prop = "real", mapper = "real")
+        @InjectParam(prop = "s4", mapper = "varchar")
+        @InjectParam(prop = "doublePrecision", mapper = "double")
+        @InjectParam(prop = "s5", mapper = "varchar")
+        @InjectParam(prop = "num", mapper = "numeric")
+        @InjectParam(prop = "s6", mapper = "varchar")
+        Query<NamedRow2, Integer> insertNamed();
+
+        @SimpleQuery(type = QueryType.DML, parameters = ParameterStrategy.PROVIDED, sourceClass = HasId.class)
+        @QuerySource(uri = "test://dml/query=update")
+        @InjectParam(prop = "id", jdbc = "INT", java = Integer.class)
+        Query<HasId, Integer> update();
+
+        @SimpleQuery(type = QueryType.DML)
+        @QuerySource(uri = "test://dml/query=delete")
+        Query<Void, Integer> delete();
+
+    }
+
+    public static class NamedRow2 extends NamedRow1 {
         private Integer id;
         private Integer tinyTiny;
         private Integer smallSmall;
@@ -385,7 +422,7 @@ public class DMLQueryTest extends BaseH2Test {
         }
     }
 
-    private static class NamedRow1 {
+    public static class NamedRow1 {
         private String s1;
         private String s2;
         private String s3;
@@ -415,7 +452,7 @@ public class DMLQueryTest extends BaseH2Test {
         }
     }
 
-    private static class HasId {
+    public static class HasId {
         protected Integer id;
 
         public HasId(Integer id) {

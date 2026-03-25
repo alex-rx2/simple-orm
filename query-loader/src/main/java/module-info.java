@@ -6,5 +6,6 @@ open module simple.orm.queryloader {
     requires simple.orm.jdbcwrap;
 
     exports simple.orm.loader;
+    exports simple.orm.loader.builder;
 
 }

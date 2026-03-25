@@ -7,6 +7,8 @@ import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryType;
 
+import java.util.Objects;
+
 /**
  * Class defining result extraction strategy {@link QueryLoader} should use when creating {@link Query}.
  *
@@ -71,4 +73,17 @@ public final class ExtractionStrategy<T> {
         this.targetClass = targetClass;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, targetClass);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ExtractionStrategy<?> that)) {
+            return false;
+        }
+        return this.type == that.type
+                && Objects.equals(this.targetClass, that.targetClass);
+    }
 }

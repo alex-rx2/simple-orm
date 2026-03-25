@@ -5,6 +5,7 @@ import io.vavr.collection.Seq;
 import io.vavr.collection.Traversable;
 import simple.orm.loader.QueryParser;
 import simple.orm.util.Mutable;
+import simple.orm.util.StringUtils;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -170,11 +171,7 @@ public class ParameterParserUtil {
         while (parts.get().size() < 6) {
             parts.apply(pp -> pp.append(""));
         }
-        return parts.get().map(ParameterParserUtil::nullify);
-    }
-
-    private static String nullify(String s) {
-        return s.isEmpty() ? null : s;
+        return parts.get().map(StringUtils::nullify);
     }
 
 }

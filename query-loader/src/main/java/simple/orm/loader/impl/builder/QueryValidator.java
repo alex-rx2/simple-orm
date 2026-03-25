@@ -1,4 +1,4 @@
-package simple.orm.loader.impl.loader;
+package simple.orm.loader.impl.builder;
 
 import io.vavr.collection.Traversable;
 import simple.orm.loader.ExtractionStrategy;
@@ -8,6 +8,7 @@ import simple.orm.loader.StrategyType;
 
 import static simple.orm.loader.QueryParser.ParamType.*;
 import static simple.orm.loader.StrategyType.*;
+import static simple.orm.util.StringUtils.empty;
 
 /**
  * Collection of utility methods validating strategies/parameters for different query types.
@@ -93,7 +94,7 @@ public class QueryValidator {
                         .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
                         .isDefined()) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing returned by parser for injection strategy " + INDEXED
+                            "broken parameter indexing for injection strategy " + INDEXED
                     );
                 }
                 // validate no directly specified labels
@@ -118,7 +119,7 @@ public class QueryValidator {
                         .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
                         .isDefined()) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing returned by parser for injection strategy " + NAMED
+                            "broken parameter indexing for injection strategy " + NAMED
                     );
                 }
                 if (iParams.find(qp -> empty(qp.propName())).isDefined()) {
@@ -160,7 +161,7 @@ public class QueryValidator {
                         .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
                         .isDefined()) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing returned by parser for extraction strategy " + INDEXED
+                            "broken parameter indexing for extraction strategy " + INDEXED
                     );
                 }
                 // validate no directly specified labels
@@ -199,7 +200,7 @@ public class QueryValidator {
                             .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
                             .isDefined()) {
                         throw new IllegalArgumentException(
-                                "broken parameter indexing returned by parser for extraction strategy " + NAMED
+                                "broken parameter indexing for extraction strategy " + NAMED
                         );
                     }
                 }
@@ -221,10 +222,6 @@ public class QueryValidator {
                 }
             }
         }
-    }
-
-    private boolean empty(String s) {
-        return s == null || s.isBlank();
     }
 
 }

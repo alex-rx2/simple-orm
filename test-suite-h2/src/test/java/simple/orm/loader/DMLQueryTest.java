@@ -292,7 +292,7 @@ public class DMLQueryTest extends BaseH2Test {
     }
 
     @Test
-    public void executeAnyQuery() throws SQLException {
+    public void testExecuteAnyQuery() throws SQLException {
         // test
         {
             simple.orm.jdbc.Connection conn = database.connect(10);

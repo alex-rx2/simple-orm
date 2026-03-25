@@ -16,6 +16,7 @@
         <module>db-h2</module>
         <module>test-suite-h2</module>
         <module>query-loader</module>
+        <module>repository</module>
     </modules>
 
     <properties>

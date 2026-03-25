@@ -38,7 +38,21 @@ public interface QueryParser {
                       String mapperName,
                       String tag,
                       String jdbcTypeName,
-                      String javaClassName) {
+                      String javaClassName
+    ) {
+        public QueryParser.QueryParam reindex(int newIndex) {
+            return new QueryParser.QueryParam(
+                    type,
+                    newIndex,
+                    label,
+                    labelGuessed,
+                    propName,
+                    mapperName,
+                    tag,
+                    jdbcTypeName,
+                    javaClassName
+            );
+        }
     }
 
     /**

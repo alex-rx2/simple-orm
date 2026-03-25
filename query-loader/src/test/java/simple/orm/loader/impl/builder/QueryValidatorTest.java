@@ -1,4 +1,4 @@
-package simple.orm.loader.impl.loader;
+package simple.orm.loader.impl.builder;
 
 import io.vavr.collection.List;
 import org.junit.jupiter.api.Test;

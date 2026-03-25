@@ -5,13 +5,13 @@ import simple.orm.loader.QuerySource;
 import java.io.Reader;
 
 /**
- * Implementation of {@link QuerySource}.
+ * Basic implementation of {@link QuerySource}.
  */
-public class QuerySourceImpl implements QuerySource {
+public class SimpleQuerySource implements QuerySource {
 
     private final Reader reader;
 
-    public QuerySourceImpl(Reader reader) {
+    public SimpleQuerySource(Reader reader) {
         if (reader == null) {
             throw new NullPointerException("reader is null");
         }

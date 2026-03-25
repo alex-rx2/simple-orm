@@ -17,10 +17,6 @@ import simple.orm.jdbc.map.NamedInjector;
 
 /**
  * Simple factory to create queries.
- * <br>
- * For default factory {@link #instance()} named parameters in SQL query
- * are strings of format <nobr><code>:[a-zA-Z0-9_]+</code></nobr> that are not inside comments or SQL string literals.
- * Said parameters are collected and replaced inside query with <code>?</code>.
  */
 public class QueryFactory {
 

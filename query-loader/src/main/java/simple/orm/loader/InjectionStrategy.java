@@ -5,6 +5,8 @@ import simple.orm.jdbc.map.IndexedInjector;
 import simple.orm.jdbc.map.NamedInjector;
 import simple.orm.jdbc.query.Query;
 
+import java.util.Objects;
+
 /**
  * Class defining parameter injection strategy {@link QueryLoader} should use when creating {@link Query}.
  *
@@ -53,6 +55,20 @@ public final class InjectionStrategy<T> {
     private InjectionStrategy(StrategyType type, Class<T> sourceClass) {
         this.type = type;
         this.sourceClass = sourceClass;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, sourceClass);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof InjectionStrategy<?> that)) {
+            return false;
+        }
+        return this.type == that.type
+                && Objects.equals(this.sourceClass, that.sourceClass);
     }
 
 }

@@ -1,4 +1,4 @@
-package simple.orm.loader.impl.loader;
+package simple.orm.loader.impl.builder;
 
 import io.vavr.collection.Traversable;
 import simple.orm.jdbc.map.IndexedExtractor;

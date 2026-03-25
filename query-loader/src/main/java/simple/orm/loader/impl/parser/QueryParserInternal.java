@@ -4,7 +4,11 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import simple.orm.loader.QueryParser;
 import simple.orm.loader.QuerySource;
+import simple.orm.loader.RuntimeIOException;
 import simple.orm.util.Mutable;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * Helper class performing actual SQL parsing. Stateful and not thread-safe.
@@ -26,13 +30,17 @@ public final class QueryParserInternal {
         STRING_LITERAL_DQ, // double quote " string
     }
 
+    private final Reader reader;
+    private final boolean autoclose;
     private final CharactersProvider input;
     private final CharactersConsumer output;
     private final Mutable<Seq<QueryParser.QueryParam>> params;
     private State state;
 
     public QueryParserInternal(QuerySource source) {
-        this.input = new CharactersProvider(source.getReader());
+        this.reader = source.getReader();
+        this.autoclose = source.autoclose();
+        this.input = new CharactersProvider(reader);
         this.output = new CharactersConsumer();
         this.params = Mutable.of(List.empty());
         this.state = State.PRE_PROCESS;
@@ -40,9 +48,23 @@ public final class QueryParserInternal {
 
     public QueryParser.ParsedQuery extract() {
         if (state == State.PRE_PROCESS) {
-            process();
+            try {
+                process();
+            } finally {
+                autoclose();
+            }
         }
         return new QueryParser.ParsedQuery(output.getSQL(), number(params.get()));
+    }
+
+    private void autoclose() {
+        if (autoclose) {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                throw new RuntimeIOException(e);
+            }
+        }
     }
 
     private Seq<QueryParser.QueryParam> number(Seq<QueryParser.QueryParam> params) {
@@ -53,29 +75,15 @@ public final class QueryParserInternal {
             if (qp.type() == QueryParser.ParamType.INJECTION) {
                 index = injection.get();
                 injection.set(index + 1);
-                return reIndex(qp, index);
+                return qp.reindex(index);
             } else if (qp.type() == QueryParser.ParamType.EXTRACTION) {
                 index = extraction.get();
                 extraction.set(index + 1);
-                return reIndex(qp, index);
+                return qp.reindex(index);
             } else {
                 return qp;
             }
         });
-    }
-
-    private QueryParser.QueryParam reIndex(QueryParser.QueryParam param, int newIndex) {
-        return new QueryParser.QueryParam(
-                param.type(),
-                newIndex,
-                param.label(),
-                param.labelGuessed(),
-                param.propName(),
-                param.mapperName(),
-                param.tag(),
-                param.jdbcTypeName(),
-                param.javaClassName()
-        );
     }
 
     private void process() {
@@ -150,10 +158,10 @@ public final class QueryParserInternal {
             }
         }
         // if no more data but inside comment - try to consume it
-        if (state==State.ONE_LINE_COMMENT) {
+        if (state == State.ONE_LINE_COMMENT) {
             consumeOneLineComment();
         }
-        if (state==State.MULTI_LINE_COMMENT) {
+        if (state == State.MULTI_LINE_COMMENT) {
             consumeMultiLineComment();
         }
     }
