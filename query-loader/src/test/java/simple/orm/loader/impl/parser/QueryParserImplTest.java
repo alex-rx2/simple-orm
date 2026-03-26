@@ -37,11 +37,11 @@ public class QueryParserImplTest {
         final Traversable<QueryParam> params = parsedQuery.parsedParams();
         assertThat(params)
                 .containsExactly(
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", true, null, null, null, null, null),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", true, null, null, null, null, null),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city", true, null, null, null, null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, null, null, null, null)
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", null, null, null, null, null),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", null, null, null, null, null),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city", null, null, null, null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, null, null, null, null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, null, null, null, null, null)
                 );
     }
 
@@ -69,16 +69,16 @@ public class QueryParserImplTest {
         final Traversable<QueryParam> params = parsedQuery.parsedParams();
         assertThat(params)
                 .containsExactly(
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", true, "id", "int", "int", "INT", "java.lang.Integer"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", true, "countryCode", "varchar", null, "VARCHAR", null),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city_id", true, "city.id", null, null, "VARCHAR", "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 4, "city_name", true, "city.name", null, null, null, "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 5, "city_zip", true, null, null, null, null, "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "some.object.propertyA", "int", "str", "INT", "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, "some.object.propertyB", "int", "int", "INT", null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, "some.object.propertyC", null, null, "TINYINT", "java.lang.Integer"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, false, "some.object.propertyD", null, null, null, "java.lang.Double"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, false, null, null, null, null, "java.lang.Float")
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", "id", "int", "int", "INT", "java.lang.Integer"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", "countryCode", "varchar", null, "VARCHAR", null),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city_id", "city.id", null, null, "VARCHAR", "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 4, "city_name", "city.name", null, null, null, "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 5, "city_zip", null, null, null, null, "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, "some.object.propertyA", "int", "str", "INT", "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, "some.object.propertyB", "int", "int", "INT", null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, "some.object.propertyC", null, null, "TINYINT", "java.lang.Integer"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, "some.object.propertyD", null, null, null, "java.lang.Double"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, null, null, null, null, "java.lang.Float")
                 );
     }
 
@@ -126,16 +126,16 @@ public class QueryParserImplTest {
         final Traversable<QueryParam> params = parsedQuery.parsedParams();
         assertThat(params)
                 .containsExactly(
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", false, "id", "int", "int", "INT", "java.lang.Integer"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", false, "countryCode", "varchar", null, "VARCHAR", null),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city_id", false, "city.id", null, null, "VARCHAR", "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "some.object.propertyA", "int", "str", "INT", "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, "some.object.propertyB", "int", "int", "INT", null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, "some.object.propertyC", null, null, "TINYINT", "java.lang.Integer"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, false, "some.object.propertyD", null, null, null, "java.lang.Double"),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, false, null, null, null, null, "java.lang.Float"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 4, null, false, "city.name", null, null, null, "java.lang.String"),
-                        new QueryParam(QueryParser.ParamType.EXTRACTION, 5, null, false, null, null, null, null, "java.lang.String")
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", "id", "int", "int", "INT", "java.lang.Integer"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 2, "country", "countryCode", "varchar", null, "VARCHAR", null),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 3, "city_id", "city.id", null, null, "VARCHAR", "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, "some.object.propertyA", "int", "str", "INT", "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, "some.object.propertyB", "int", "int", "INT", null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, "some.object.propertyC", null, null, "TINYINT", "java.lang.Integer"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, "some.object.propertyD", null, null, null, "java.lang.Double"),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, null, null, null, null, "java.lang.Float"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 4, null, "city.name", null, null, null, "java.lang.String"),
+                        new QueryParam(QueryParser.ParamType.EXTRACTION, 5, null, null, null, null, null, "java.lang.String")
                 );
     }
 
@@ -158,11 +158,11 @@ public class QueryParserImplTest {
         final Traversable<QueryParam> params = parsedQuery.parsedParams();
         assertThat(params)
                 .containsExactly(
-                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "int", null, null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "varchar", null, null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, null, "tinyint", "int", null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, false, null, "numeric", null, null, null),
-                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, false, null, "varchar", null, null, null)
+                        new QueryParam(QueryParser.ParamType.INJECTION, 1, null, null, "int", null, null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 2, null, null, "varchar", null, null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 3, null, null, "tinyint", "int", null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 4, null, null, "numeric", null, null, null),
+                        new QueryParam(QueryParser.ParamType.INJECTION, 5, null, null, "varchar", null, null, null)
                 );
     }
 

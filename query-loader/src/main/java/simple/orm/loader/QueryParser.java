@@ -33,7 +33,6 @@ public interface QueryParser {
     record QueryParam(ParamType type,
                       int indexWithinType, // starting with 1 as per JDBC API
                       String label,
-                      boolean labelGuessed, // label was guessed from last word in SQL
                       String propName,
                       String mapperName,
                       String tag,
@@ -45,7 +44,6 @@ public interface QueryParser {
                     type,
                     newIndex,
                     label,
-                    labelGuessed,
                     propName,
                     mapperName,
                     tag,

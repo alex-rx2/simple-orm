@@ -63,18 +63,18 @@ public class RepositoryBuilderImplTest {
         final ProxyHandlerBuilder mockHandlerBuilder = mock();
         // data
         final List<QueryParameter> method2InjectionParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, null, null, "int", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "int", null, null, null, null, null)
         );
         final List<QueryParameter> method2ExtractionParams = List.of(
-                new QueryParameter(ParameterType.EXTRACTION, 1, "id", false, "id", null, "int", null, null, null, null, null),
-                new QueryParameter(ParameterType.EXTRACTION, 2, "name", false, "name", null, "varchar", null, null, null, null, null)
+                new QueryParameter(ParameterType.EXTRACTION, 1, "id", "id", null, "int", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, "name", "name", null, "varchar", null, null, null, null, null)
         );
         final List<QueryParameter> method3InjectionParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, "uid", null, "uuid", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, "uid", null, "uuid", null, null, null, null, null)
         );
         final List<QueryParameter> method3ExtractionParams = List.of(
-                new QueryParameter(ParameterType.EXTRACTION, 1, null, false, null, null, "uuid", null, null, null, null, null),
-                new QueryParameter(ParameterType.EXTRACTION, 2, null, false, null, null, "timestamptz", "h2str", null, null, null, null)
+                new QueryParameter(ParameterType.EXTRACTION, 1, null, null, null, "uuid", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, null, null, null, "timestamptz", "h2str", null, null, null, null)
         );
         final RepositoryMeta repoMeta = new RepositoryMeta(
                 RepoType.QUERY,
@@ -122,12 +122,12 @@ public class RepositoryBuilderImplTest {
                 321
         );
         final List<QueryParser.QueryParam> parsedDMLParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "bigint", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "clob", null, null, null)
+                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, null, "bigint", null, null, null),
+                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, null, "clob", null, null, null)
         );
         final List<QueryParameter> convertedDMLParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, null, null, "bigint", null, null, null, null, null),
-                new QueryParameter(ParameterType.INJECTION, 2, null, false, null, null, "clob", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "bigint", null, null, null, null, null),
+                new QueryParameter(ParameterType.INJECTION, 2, null, null, null, "clob", null, null, null, null, null)
         );
         final QueryParser.ParsedQuery parsedDML = new QueryParser.ParsedQuery("parsed DML SQL", parsedDMLParams);
         final QuerySource querySourceMethod2 = mock();
@@ -214,18 +214,18 @@ public class RepositoryBuilderImplTest {
         final ProxyHandlerBuilder mockHandlerBuilder = mock();
         // data
         final List<QueryParameter> method2InjectionParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, null, null, "int", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "int", null, null, null, null, null)
         );
         final List<QueryParameter> method2ExtractionParams = List.of(
-                new QueryParameter(ParameterType.EXTRACTION, 1, "id", false, "id", null, "int", null, null, null, null, null),
-                new QueryParameter(ParameterType.EXTRACTION, 2, "name", false, "name", null, "varchar", null, null, null, null, null)
+                new QueryParameter(ParameterType.EXTRACTION, 1, "id", "id", null, "int", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, "name", "name", null, "varchar", null, null, null, null, null)
         );
         final List<QueryParameter> method3InjectionParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, "uid", null, "uuid", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, "uid", null, "uuid", null, null, null, null, null)
         );
         final List<QueryParameter> method3ExtractionParams = List.of(
-                new QueryParameter(ParameterType.EXTRACTION, 1, null, false, null, null, "uuid", null, null, null, null, null),
-                new QueryParameter(ParameterType.EXTRACTION, 2, null, false, null, null, "timestamptz", "h2str", null, null, null, null)
+                new QueryParameter(ParameterType.EXTRACTION, 1, null, null, null, "uuid", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, null, null, null, "timestamptz", "h2str", null, null, null, null)
         );
         final RepositoryMeta repoMeta = new RepositoryMeta(
                 RepoType.QUERY,
@@ -273,12 +273,12 @@ public class RepositoryBuilderImplTest {
                 321
         );
         final List<QueryParser.QueryParam> parsedDMLParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "bigint", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "clob", null, null, null)
+                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, null, "bigint", null, null, null),
+                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, null, "clob", null, null, null)
         );
         final List<QueryParameter> convertedDMLParams = List.of(
-                new QueryParameter(ParameterType.INJECTION, 1, null, false, null, null, "bigint", null, null, null, null, null),
-                new QueryParameter(ParameterType.INJECTION, 2, null, false, null, null, "clob", null, null, null, null, null)
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "bigint", null, null, null, null, null),
+                new QueryParameter(ParameterType.INJECTION, 2, null, null, null, "clob", null, null, null, null, null)
         );
         final QueryParser.ParsedQuery parsedDML = new QueryParser.ParsedQuery("parsed DML SQL", parsedDMLParams);
         final QuerySource querySourceMethod2 = mock();

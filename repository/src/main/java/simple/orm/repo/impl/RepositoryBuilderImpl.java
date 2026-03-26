@@ -166,7 +166,6 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
                 ParameterType.of(qParam.type()),
                 qParam.indexWithinType(),
                 qParam.label(),
-                qParam.labelGuessed(),
                 qParam.propName(),
                 null,
                 qParam.mapperName(),

@@ -86,11 +86,11 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    1, null, false, null, null, "int", null, null, null, null, null
+                                    1, null, null, null, "int", null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    2, null, false, null, null, "varchar", null, null, null, null, null
+                                    2, null, null, null, "varchar", null, null, null, null, null
                             )
                     );
             assertThat(methodMeta.extractParams()).isEmpty();
@@ -112,11 +112,11 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    1, null, false, "id", null, "int", null, null, null, null, null
+                                    1, null, "id", null, "int", null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    2, null, false, "name", null, "varchar", null, null, null, null, null
+                                    2, null, "name", null, "varchar", null, null, null, null, null
                             )
                     );
             assertThat(methodMeta.extractParams()).isEmpty();
@@ -159,15 +159,15 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    1, null, false, null, null, "rubItDaddy", null, null, "soft", null, null
+                                    1, null, null, null, "rubItDaddy", null, null, "soft", null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    2, null, false, null, null, null, "keepGoing", null, null, Integer.class, null
+                                    2, null, null, null, null, "keepGoing", null, null, Integer.class, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    3, null, false, null, null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
+                                    3, null, null, null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
                             )
                     );
             assertThat(methodMeta.queryTimeout()).isEqualTo(-1);
@@ -189,15 +189,15 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    1, "column1", false, "someProperty", null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
+                                    1, "column1", "someProperty", null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    2, "column2", false, "otherProperty", null, "rubItDaddy", null, null, "soft", null, null
+                                    2, "column2", "otherProperty", null, "rubItDaddy", null, null, "soft", null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    3, "the_hole", false, "property.deep.inside.me", null, null, "keepGoing", null, null, Integer.class, null
+                                    3, "the_hole", "property.deep.inside.me", null, null, "keepGoing", null, null, Integer.class, null
                             )
                     );
             assertThat(methodMeta.queryTimeout()).isEqualTo(-1);
@@ -218,30 +218,30 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    1, null, false, "someProperty", null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
+                                    1, null, "someProperty", null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    2, null, false, "otherProperty", null, "rubItDaddy", null, null, "soft", null, null
+                                    2, null, "otherProperty", null, "rubItDaddy", null, null, "soft", null, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    3, null, false, "property.deep.inside.me", null, null, "keepGoing", null, null, Integer.class, null
+                                    3, null, "property.deep.inside.me", null, null, "keepGoing", null, null, Integer.class, null
                             )
                     );
             assertThat(methodMeta.extractParams())
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    1, null, false, "p1", null, null, null, null, null, null, null
+                                    1, null, "p1", null, null, null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    2, null, false, "p2", null, null, null, null, null, null, null
+                                    2, null, "p2", null, null, null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    3, null, false, "p3", null, null, null, null, null, null, null
+                                    3, null, "p3", null, null, null, null, null, null, null
                             )
                     );
             assertThat(methodMeta.queryTimeout()).isEqualTo(-1);
@@ -262,30 +262,30 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    1, null, false, null, null, null, "keepGoing", null, null, Integer.class, null
+                                    1, null, null, null, null, "keepGoing", null, null, Integer.class, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    2, null, false, null, null, "rubItDaddy", null, null, "soft", null, null
+                                    2, null, null, null, "rubItDaddy", null, null, "soft", null, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    3, null, false, null, null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
+                                    3, null, null, null, "mapItBabby", "makeItHot", null, "hard", Boolean.class, null
                             )
                     );
             assertThat(methodMeta.extractParams())
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    1, null, false, null, null, "mapp", null, null, null, null, null
+                                    1, null, null, null, "mapp", null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    2, null, false, null, null, null, null, null, "BIGINT", Long.TYPE, null
+                                    2, null, null, null, null, null, null, "BIGINT", Long.TYPE, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    3, null, false, null, null, null, "tagg", null, null, null, null
+                                    3, null, null, null, null, "tagg", null, null, null, null
                             )
                     );
             assertThat(methodMeta.queryTimeout()).isEqualTo(-1);
@@ -306,22 +306,22 @@ public class MetadataCollectorTest {
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    1, null, false, null, null, null, null, null, null, null, null
+                                    1, null, null, null, null, null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.INJECTION,
-                                    2, null, false, null, null, null, null, null, null, null, null
+                                    2, null, null, null, null, null, null, null, null, null
                             )
                     );
             assertThat(methodMeta.extractParams())
                     .containsExactly(
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    1, null, false, null, null, null, null, null, null, null, null
+                                    1, null, null, null, null, null, null, null, null, null
                             ),
                             new QueryParameter(
                                     ParameterType.EXTRACTION,
-                                    2, null, false, null, null, null, null, null, null, null, null
+                                    2, null, null, null, null, null, null, null, null, null
                             )
                     );
             assertThat(methodMeta.queryTimeout()).isEqualTo(-1);

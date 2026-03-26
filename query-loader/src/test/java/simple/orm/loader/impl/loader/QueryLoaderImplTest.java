@@ -37,16 +37,16 @@ public class QueryLoaderImplTest {
         final ExtractionStrategy eStrat = ExtractionStrategy.noneDdl();
         final Traversable<QueryParser.QueryParam> params = List.of(
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION,
-                        11, null, false, null, "mapper", "tag", "jdbcType", "javaType"
+                        11, null, null, "mapper", "tag", "jdbcType", "javaType"
                 ),
                 new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION,
-                        1, "labbel", true, "proppy1", null, null, null, null
+                        1, "labbel", "proppy1", null, null, null, null
                 ),
                 new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION,
-                        2, "babbel", false, "proppy2", null, null, null, null
+                        2, "babbel", "proppy2", null, null, null, null
                 ),
                 new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION,
-                        3, null, false, "proppy3", null, null, null, null
+                        3, null, "proppy3", null, null, null, null
                 )
         );
         final QueryParser.ParsedQuery parsedQuery = new QueryParser.ParsedQuery("this is SQL", params);
@@ -68,16 +68,16 @@ public class QueryLoaderImplTest {
                 same(eStrat),
                 eq(List.of(
                         new QueryParameter(ParameterType.INJECTION,
-                                11, null, false, null, null, "mapper", "tag", null, "jdbcType", null, "javaType"
+                                11, null, null, null, "mapper", "tag", null, "jdbcType", null, "javaType"
                         ),
                         new QueryParameter(ParameterType.EXTRACTION,
-                                1, "labbel", true, "proppy1", null, null, null, null, null, null, null
+                                1, "labbel", "proppy1", null, null, null, null, null, null, null
                         ),
                         new QueryParameter(ParameterType.EXTRACTION,
-                                2, "babbel", false, "proppy2", null, null, null, null, null, null, null
+                                2, "babbel", "proppy2", null, null, null, null, null, null, null
                         ),
                         new QueryParameter(ParameterType.EXTRACTION,
-                                3, null, false, "proppy3", null, null, null, null, null, null, null
+                                3, null, "proppy3", null, null, null, null, null, null, null
                         )
                 )),
                 eq(123123)
@@ -101,13 +101,13 @@ public class QueryLoaderImplTest {
         final ExtractionStrategy eStrat = ExtractionStrategy.indexed();
         final Traversable<QueryParser.QueryParam> params = List.of(
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION,
-                        11, null, false, null, "mapper", "tag", "jdbcType", "javaType"
+                        11, null, null, "mapper", "tag", "jdbcType", "javaType"
                 ),
                 new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION,
-                        -11, "labbel", true, "proppy", null, null, null, null
+                        -11, "labbel", "proppy", null, null, null, null
                 ),
                 new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION,
-                        -22, "babbel", false, null, null, null, null, null
+                        -22, "babbel", null, null, null, null, null
                 )
         );
         final QueryParser.ParsedQuery parsedQuery = new QueryParser.ParsedQuery("this is SQL", params);
@@ -130,13 +130,13 @@ public class QueryLoaderImplTest {
                 same(eStrat),
                 eq(List.of(
                         new QueryParameter(ParameterType.INJECTION,
-                                11, null, false, null, null, "mapper", "tag", null, "jdbcType", null, "javaType"
+                                11, null, null, null, "mapper", "tag", null, "jdbcType", null, "javaType"
                         ),
                         new QueryParameter(ParameterType.EXTRACTION,
-                                -11, "labbel", true, "proppy", null, null, null, null, null, null, null
+                                -11, "labbel", "proppy", null, null, null, null, null, null, null
                         ),
                         new QueryParameter(ParameterType.EXTRACTION,
-                                -22, "babbel", false, null, null, null, null, null, null, null, null
+                                -22, "babbel", null, null, null, null, null, null, null, null
                         )
                 )),
                 eq(0)

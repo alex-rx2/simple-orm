@@ -51,11 +51,11 @@ public class QueryInjectorExtractorBuilderTest {
                 mockTypesCollection,
                 mockMappersFinder,
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
-                        new QueryParameter(INJECTION, 2, null, false, null, null, "mapper", "tag", null, null, null, null),
-                        new QueryParameter(INJECTION, 3, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(INJECTION, 4, null, false, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
-                        new QueryParameter(INJECTION, 5, null, false, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                        new QueryParameter(INJECTION, 1, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(INJECTION, 2, null, null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 4, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(INJECTION, 5, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
         // asserts & verifies
@@ -98,11 +98,11 @@ public class QueryInjectorExtractorBuilderTest {
                 mockTypesCollection,
                 mockMappersFinder,
                 List.of(
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
-                        new QueryParameter(EXTRACTION, 2, null, false, null, null, "mapper", "tag", null, null, null, null),
-                        new QueryParameter(EXTRACTION, 3, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 4, null, false, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
-                        new QueryParameter(EXTRACTION, 5, null, false, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                        new QueryParameter(EXTRACTION, 1, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, null, null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 5, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
         // asserts & verifies
@@ -148,11 +148,11 @@ public class QueryInjectorExtractorBuilderTest {
                 mockReflectionsFinder,
                 SomeComplexObject.class,
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
-                        new QueryParameter(INJECTION, 2, null, false, "prop2", null, "mapper", "tag", null, null, null, null),
-                        new QueryParameter(INJECTION, 3, null, false, "prop3", null, null, null, null, null, null, null),
-                        new QueryParameter(INJECTION, 4, null, false, "prop4", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
-                        new QueryParameter(INJECTION, 5, null, false, "prop5", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                        new QueryParameter(INJECTION, 1, null, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(INJECTION, 2, null, "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 4, null, "prop4", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(INJECTION, 5, null, "prop5", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
         // asserts & verifies
@@ -210,13 +210,13 @@ public class QueryInjectorExtractorBuilderTest {
                 mockReflectionsFinder,
                 SomeComplexObject.class,
                 List.of(
-                        new QueryParameter(EXTRACTION, 1, "label1", false, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
-                        new QueryParameter(EXTRACTION, 2, "label2", false, "prop2", null, "mapper", "tag", null, null, null, null),
-                        new QueryParameter(EXTRACTION, 3, "label3", true, "prop3", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 4, "label4", true, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 5, null, false, "prop5", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 6, null, false, "prop6", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
-                        new QueryParameter(EXTRACTION, 7, null, false, "prop7", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                        new QueryParameter(EXTRACTION, 1, "label1", "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, "label2", "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, "label3", "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, "label4", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, null, "prop5", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 6, null, "prop6", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, null, "prop7", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
         // asserts & verifies

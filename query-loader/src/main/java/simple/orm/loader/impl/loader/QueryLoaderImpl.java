@@ -81,7 +81,6 @@ public class QueryLoaderImpl implements QueryLoader {
                         ParameterType.of(qp.type()),
                         qp.indexWithinType(),
                         qp.label(),
-                        qp.labelGuessed(),
                         qp.propName(),
                         null,
                         qp.mapperName(),

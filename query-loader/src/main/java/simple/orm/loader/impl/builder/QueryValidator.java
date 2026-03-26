@@ -97,12 +97,12 @@ public class QueryValidator {
                             "broken parameter indexing for injection strategy " + INDEXED
                     );
                 }
-                // validate no directly specified labels
-                if (iParams.find(p -> !p.labelGuessed() && !empty(p.label())).isDefined()) {
-                    throw new IllegalArgumentException(
-                            "parameters should have no label defined for injection strategy " + INDEXED
-                    );
-                }
+                // validate no labels specified // todo simply ignore them?
+                // if (iParams.find(p -> !empty(p.label())).isDefined()) {
+                //     throw new IllegalArgumentException(
+                //             "parameters should have no labels defined for injection strategy " + INDEXED
+                //     );
+                // }
             }
             case NAMED -> {
                 // validate actually has params
@@ -164,12 +164,12 @@ public class QueryValidator {
                             "broken parameter indexing for extraction strategy " + INDEXED
                     );
                 }
-                // validate no directly specified labels
-                if (eParams.find(p -> !p.labelGuessed() && !empty(p.label())).isDefined()) {
-                    throw new IllegalArgumentException(
-                            "parameters should have no label defined for extraction strategy " + INDEXED
-                    );
-                }
+                // validate no labels specified // todo simply ignore them?
+                // if (eParams.find(p -> !empty(p.label())).isDefined()) {
+                //     throw new IllegalArgumentException(
+                //             "parameters should have no label defined for extraction strategy " + INDEXED
+                //     );
+                // }
             }
             case NAMED -> {
                 // validate actually has params

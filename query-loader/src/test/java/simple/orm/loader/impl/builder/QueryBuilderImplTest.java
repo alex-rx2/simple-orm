@@ -138,8 +138,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<Integer> extStrat = ExtractionStrategy.noneDml();
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final Query<Seq<Object>, Integer> factoryQuery = mock();
@@ -182,8 +182,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<Integer> extStrat = ExtractionStrategy.noneDml();
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final Query<SomeComplexObject, Integer> factoryQuery = mock();
@@ -228,8 +228,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final IndexedExtractor builtExtractor = mock();
@@ -279,8 +279,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedExtractor builtExtractor = mock();
         final Query<Void, Seq<Object>> factoryQuery = mock();
@@ -324,8 +324,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
@@ -382,8 +382,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
         final Query<Void, SomeComplexObject> factoryQuery = mock();
@@ -430,8 +430,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
@@ -486,8 +486,8 @@ public class QueryBuilderImplTest {
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
         final List<QueryParameter> params =
                 List.of(
-                        new QueryParameter(INJECTION, 1, null, false, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, false, null, null, null, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final IndexedExtractor builtExtractor = mock();
