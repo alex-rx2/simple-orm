@@ -17,6 +17,8 @@ import simple.orm.util.Mutable;
 
 /**
  * Builder for {@link NamedExtractor}.
+ * <br>
+ * Mixing extraction by index and extraction by label is not a good idea, though supported.
  */
 public class NamedExtractorBuilder<T> {
 

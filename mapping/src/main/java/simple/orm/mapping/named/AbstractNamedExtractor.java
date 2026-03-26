@@ -108,11 +108,12 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
                 );
             }
         }
-        final TypeMapper mapper = param.mapper != null ?
-                param.mapper :
-                (index == null ?
-                        mappersFinder.findMapper(label, paramInfo, rs) :
-                        mappersFinder.findMapper(index, paramInfo, rs)
+        final TypeMapper mapper = param.mapper != null
+                ? param.mapper
+                :
+                (index == null
+                        ? mappersFinder.findMapper(label, paramInfo, rs)
+                        : mappersFinder.findMapper(index, paramInfo, rs)
                 );
         final ParameterGetter getter = mapper.getJdbcType().getGetter();
         final Object jdbcValue = index == null ? getter.getValue(rs, label) : getter.getValue(rs, index);

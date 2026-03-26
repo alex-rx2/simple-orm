@@ -5,6 +5,8 @@ import simple.orm.mapping.type.TypeMapper;
 
 import java.util.Objects;
 
+import static simple.orm.util.StringUtils.empty;
+
 /**
  * Parameter information for {@link NamedExtractorImpl} and {@link NamedInjectorImpl}.
  */
@@ -32,7 +34,7 @@ public class NamedParameter {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
-        if (name.isEmpty()) {
+        if (empty(name)) {
             throw new NullPointerException("name is empty");
         }
         if (mapper == null) {
@@ -45,7 +47,7 @@ public class NamedParameter {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
-        if (name.isEmpty()) {
+        if (empty(name)) {
             throw new NullPointerException("name is empty");
         }
         if (info == null) {
@@ -58,13 +60,13 @@ public class NamedParameter {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
-        if (name.isEmpty()) {
+        if (empty(name)) {
             throw new NullPointerException("name is empty");
         }
         if (label == null) {
             throw new NullPointerException("label is null");
         }
-        if (label.isEmpty()) {
+        if (empty(label)) {
             throw new NullPointerException("label is empty");
         }
         if (mapper == null) {
@@ -77,13 +79,13 @@ public class NamedParameter {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
-        if (name.isEmpty()) {
+        if (empty(name)) {
             throw new NullPointerException("name is empty");
         }
         if (label == null) {
             throw new NullPointerException("label is null");
         }
-        if (label.isEmpty()) {
+        if (empty(label)) {
             throw new NullPointerException("label is empty");
         }
         if (info == null) {

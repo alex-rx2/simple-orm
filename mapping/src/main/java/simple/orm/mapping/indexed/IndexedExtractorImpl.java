@@ -49,12 +49,17 @@ public class IndexedExtractorImpl implements IndexedExtractor {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected Object doExtract(ResultSet rs, IndexedParameter param) {
-        final int index = param.index;
-        final TypeMapper mapper = param.mapper != null ?
-                param.mapper :
-                mappersFinder.findMapper(index, param.info, rs);
+        final Integer index = param.index;
+        final String label = param.label;
+        final TypeMapper mapper = param.mapper != null
+                ? param.mapper
+                :
+                (index == null
+                        ? mappersFinder.findMapper(label, param.info, rs)
+                        : mappersFinder.findMapper(index, param.info, rs)
+                );
         final ParameterGetter getter = mapper.getJdbcType().getGetter();
-        final Object jdbcValue = getter.getValue(rs, index);
+        final Object jdbcValue = index == null ? getter.getValue(rs, label) : getter.getValue(rs, index);
         return mapper.jdbcToJava(jdbcValue);
     }
 

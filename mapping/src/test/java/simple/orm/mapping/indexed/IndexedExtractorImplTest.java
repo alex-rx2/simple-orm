@@ -65,7 +65,7 @@ public class IndexedExtractorImplTest {
         when(rs.getInt(eq(1))).thenReturn(123);
         when(rs.getInt(eq(2))).thenReturn(0);
         when(rs.wasNull()).thenReturn(true);
-        when(rs.getString(eq(3))).thenReturn("some string");
+        when(rs.getString(eq("somelabel"))).thenReturn("some string");
 
         final MappersFinder mappersFinder = mock();
         when(mappersFinder.findMapper(
@@ -74,7 +74,7 @@ public class IndexedExtractorImplTest {
                 same(rs)
         )).thenReturn((TypeMapper) mapperInt);
         when(mappersFinder.findMapper(
-                eq(3),
+                eq("somelabel"),
                 same(paramInfo3),
                 same(rs)
         )).thenReturn((TypeMapper) mapperString);
@@ -83,7 +83,7 @@ public class IndexedExtractorImplTest {
                 mappersFinder,
                 List.of(IndexedParameter.of(1, mapperInt),
                         IndexedParameter.of(2, paramInfo2),
-                        IndexedParameter.of(3, paramInfo3))
+                        IndexedParameter.of("somelabel", paramInfo3))
         );
 
         // do test
@@ -99,8 +99,8 @@ public class IndexedExtractorImplTest {
         inOrder.verify(rs).getInt(eq(2));
         inOrder.verify(rs).wasNull();
         // param 3 - find mapper, get from resultset
-        inOrder.verify(mappersFinder).findMapper(eq(3), same(paramInfo3), same(rs));
-        inOrder.verify(rs).getString(eq(3));
+        inOrder.verify(mappersFinder).findMapper(eq("somelabel"), same(paramInfo3), same(rs));
+        inOrder.verify(rs).getString(eq("somelabel"));
 
         inOrder.verifyNoMoreInteractions();
         verifyNoMoreInteractions(mappersFinder, rs);
@@ -129,14 +129,14 @@ public class IndexedExtractorImplTest {
         final MappersFinder mappersFinder = mock();
 
         final ResultSet rs = mock();
-        when(rs.getInt(eq(1))).thenReturn(123);
+        when(rs.getInt(eq("a_label"))).thenReturn(123);
         when(rs.getInt(eq(2))).thenReturn(-321);
         when(rs.getInt(eq(3))).thenReturn(0);
         when(rs.wasNull()).thenReturn(true);
 
         final IndexedExtractorImpl extractor = new IndexedExtractorImpl(
                 mappersFinder,
-                List.of(IndexedParameter.of(1, mapperIntStr),
+                List.of(IndexedParameter.of("a_label", mapperIntStr),
                         IndexedParameter.of(2, mapperIntStr),
                         IndexedParameter.of(3, mapperIntStr))
         );
@@ -148,7 +148,7 @@ public class IndexedExtractorImplTest {
         // verify mocks
         final InOrder inOrder = inOrder(rs);
         // TypeMapper is always known, so only get value from ResultSet
-        inOrder.verify(rs).getInt(eq(1));
+        inOrder.verify(rs).getInt(eq("a_label"));
         inOrder.verify(rs).getInt(eq(2));
         inOrder.verify(rs).getInt(eq(3));
         inOrder.verify(rs).wasNull();

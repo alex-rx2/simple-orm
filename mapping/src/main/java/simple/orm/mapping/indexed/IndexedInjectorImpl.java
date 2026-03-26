@@ -32,6 +32,9 @@ public class IndexedInjectorImpl implements IndexedInjector {
         if (parameters.find(Objects::isNull).isDefined()) {
             throw new NullPointerException("parameters contains nulls");
         }
+        if (parameters.find(p -> p.index == null).isDefined()) {
+            throw new IllegalArgumentException("all parameters must have index for injection");
+        }
         this.mappersFinder = mappersFinder;
         this.parameters = parameters;
     }
