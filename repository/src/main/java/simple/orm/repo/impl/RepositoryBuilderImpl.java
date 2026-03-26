@@ -28,7 +28,6 @@ import java.lang.reflect.Proxy;
 import java.util.function.Supplier;
 
 import static io.vavr.API.*;
-import static simple.orm.util.StringUtils.empty;
 
 /**
  * Default implementation of {@link RepositoryBuilder}.
@@ -132,11 +131,15 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
 
     private QueryMethodMeta parseParamsIntoMeta(QueryMethodMeta qm) {
         QueryParser.ParsedQuery parsed = queryParser.parse(QuerySource.of(qm.querySQL()));
-        Traversable<QueryParameter> queryParameters = toQueryParameters(parsed.parsedParams(), qm.targetClass());
+        Traversable<QueryParser.QueryParam> parsedParams = parsed.parsedParams();
         return qm.replaceSQL(parsed.querySQL())
                 .replaceParams(
-                        queryParameters.filter(qp -> qp.type() == ParameterType.INJECTION),
-                        queryParameters.filter(qp -> qp.type() == ParameterType.EXTRACTION)
+                        parsedParams
+                                .filter(qp -> qp.type() == QueryParser.ParamType.INJECTION)
+                                .map(this::toQueryParameter),
+                        parsedParams
+                                .filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION)
+                                .map(this::toQueryParameter)
                 );
     }
 
@@ -158,25 +161,21 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
         );
     }
 
-    private Traversable<QueryParameter> toQueryParameters(Traversable<QueryParser.QueryParam> qParams, Class<?> targetClass) {
-        // TODO move all this to QueryParser? (tweaks around labels and propNames)
-        boolean extractionStartNamed = targetClass != null;
-        final boolean dropGuessedLabels = !extractionStartNamed
-                || qParams.find(qp -> qp.type() == QueryParser.ParamType.EXTRACTION && empty(qp.label())).isDefined();
-        return qParams.map(qParam ->
-                new QueryParameter(
-                        ParameterType.of(qParam.type()),
-                        qParam.indexWithinType(),
-                        qParam.labelGuessed() && dropGuessedLabels ? null : qParam.label(),
-                        qParam.propName(),
-                        null,
-                        qParam.mapperName(),
-                        qParam.tag(),
-                        null,
-                        qParam.jdbcTypeName(),
-                        null,
-                        qParam.javaClassName()
-                ));
+    private QueryParameter toQueryParameter(QueryParser.QueryParam qParam) {
+        return new QueryParameter(
+                ParameterType.of(qParam.type()),
+                qParam.indexWithinType(),
+                qParam.label(),
+                qParam.labelGuessed(),
+                qParam.propName(),
+                null,
+                qParam.mapperName(),
+                qParam.tag(),
+                null,
+                qParam.jdbcTypeName(),
+                null,
+                qParam.javaClassName()
+        );
     }
 
 }

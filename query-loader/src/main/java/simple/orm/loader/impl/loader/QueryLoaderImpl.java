@@ -19,8 +19,6 @@ import simple.orm.mapping.param.TypesCollection;
 
 import java.util.function.Supplier;
 
-import static simple.orm.util.StringUtils.empty;
-
 /**
  * Implementation of {@link QueryLoader}.
  */
@@ -76,29 +74,15 @@ public class QueryLoaderImpl implements QueryLoader {
         }
         // parse
         final QueryParser.ParsedQuery parsedQuery = parser.parse(source);
-        final String sql = parsedQuery.querySQL();
-        final Traversable<QueryParser.QueryParam> parsedParams = parsedQuery.parsedParams();
-        // keep guessed labels only for named extraction strategy if all labels are present
-        // also for named extraction strategy if no property name specified - use label instead
-        boolean extractionStartNamed = extractionStrategy.targetClass != null;
-        final boolean dropGuessedLabels = !extractionStartNamed
-                || parsedParams.find(qp -> qp.type() == QueryParser.ParamType.EXTRACTION && empty(qp.label())).isDefined();
         // build query
-        // TODO move all this to QueryParser? (tweaks around labels and propNames)
-        final Traversable<QueryParameter> params = parsedParams
+        final String sql = parsedQuery.querySQL();
+        final Traversable<QueryParameter> params = parsedQuery.parsedParams()
                 .map(qp -> new QueryParameter(
                         ParameterType.of(qp.type()),
                         qp.indexWithinType(),
-                        qp.labelGuessed()
-                                && dropGuessedLabels
-                                ? null
-                                : qp.label(),
-                        qp.type() == QueryParser.ParamType.EXTRACTION
-                                && extractionStartNamed
-                                && empty(qp.propName())
-                                && !empty(qp.label())
-                                ? qp.label()
-                                : qp.propName(),
+                        qp.label(),
+                        qp.labelGuessed(),
+                        qp.propName(),
                         null,
                         qp.mapperName(),
                         qp.tag(),

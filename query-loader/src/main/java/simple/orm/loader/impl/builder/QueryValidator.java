@@ -97,8 +97,8 @@ public class QueryValidator {
                             "broken parameter indexing for injection strategy " + INDEXED
                     );
                 }
-                // validate no labels specified
-                if (iParams.find(p -> !empty(p.label())).isDefined()) {
+                // validate no directly specified labels
+                if (iParams.find(p -> !p.labelGuessed() && !empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
                             "parameters should have no label defined for injection strategy " + INDEXED
                     );
@@ -164,8 +164,8 @@ public class QueryValidator {
                             "broken parameter indexing for extraction strategy " + INDEXED
                     );
                 }
-                // validate no labels specified
-                if (eParams.find(p -> !empty(p.label())).isDefined()) {
+                // validate no directly specified labels
+                if (eParams.find(p -> !p.labelGuessed() && !empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
                             "parameters should have no label defined for extraction strategy " + INDEXED
                     );
