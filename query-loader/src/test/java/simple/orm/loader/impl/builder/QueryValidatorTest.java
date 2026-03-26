@@ -5,9 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.QueryParameter;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static simple.orm.loader.builder.ParameterType.*;
 
 /**
  * Tests on {@link QueryValidator}.
@@ -49,14 +50,14 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDDL(
                 InjectionStrategy.none(),
                 ExtractionStrategy.noneDdl(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageEndingWith("should have no parameters");
         assertThatCode(() -> validator.validateDDL(
                 InjectionStrategy.none(),
                 ExtractionStrategy.noneDdl(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageEndingWith("should have no parameters");
@@ -86,7 +87,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.none(),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("query has extraction parameters");
@@ -98,13 +99,13 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .doesNotThrowAnyException();
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "name", null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, null, "name", null, null, null, null, null, null, null))
         ))
                 .doesNotThrowAnyException();
     }
@@ -123,7 +124,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
@@ -132,8 +133,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -141,7 +142,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 2, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("broken parameter indexing");
@@ -149,8 +150,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 0, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 0, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -159,7 +160,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, "label", false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have no label");
@@ -179,7 +180,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop1", null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
@@ -188,8 +189,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -197,7 +198,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, "prop1", null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 2, null, "prop1", null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("broken parameter indexing");
@@ -205,8 +206,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 0, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 0, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -215,7 +216,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have nonempty property name");
@@ -223,7 +224,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, "label", false, "prop1", null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, "label", "prop1", null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have no label");
@@ -246,21 +247,21 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.none(),
                 ExtractionStrategy.indexed(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .doesNotThrowAnyException();
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.none(),
                 ExtractionStrategy.named(SomeComplexObject.class),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "name", null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, "name", null, null, null, null, null, null, null))
         ))
                 .doesNotThrowAnyException();
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();
@@ -268,8 +269,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "label", false, "name", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "label", "name", null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();
@@ -277,8 +278,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "name", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, "name", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();
@@ -286,8 +287,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "name", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "label", false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, "name", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "label", null, null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();
@@ -300,7 +301,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
@@ -309,9 +310,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -320,8 +321,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 2, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -330,9 +331,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 0, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 0, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -342,8 +343,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, "label", false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -357,7 +358,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
@@ -366,9 +367,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 3, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -377,8 +378,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, "prop1", null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 2, null, "prop1", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -387,9 +388,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 0, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 0, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -399,8 +400,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -410,8 +411,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, "label", false, "prop1", null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, "label", "prop1", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -426,7 +427,7 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -436,9 +437,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -447,8 +448,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -457,9 +458,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 0, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 0, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -469,8 +470,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "label", false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "label", null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -484,7 +485,7 @@ public class QueryValidatorTest {
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
-                List.of(new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null))
+                List.of(new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
@@ -493,9 +494,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -504,8 +505,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, "prop1", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, "prop1", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -514,9 +515,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 0, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 0, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -526,8 +527,8 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -537,9 +538,9 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "label", false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "label", "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -553,10 +554,10 @@ public class QueryValidatorTest {
                         // then all labels should be present
                         // then all prop names can be empty (label will be used instead)
                         // so case without labels
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, "prop3", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, "prop3", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -565,10 +566,10 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, "prop2", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, "prop3", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, "prop2", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, "prop3", null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();
@@ -577,10 +578,10 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "prop1", false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, "prop2", false, "prop2", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, "prop3", false, "prop1", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "prop1", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, "prop2", "prop2", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, "prop3", "prop1", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -589,10 +590,10 @@ public class QueryValidatorTest {
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, "prop1", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, "prop2", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, "prop2", null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, "prop2", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)

@@ -134,13 +134,13 @@ public class RepositoryBuilderImplTest {
         when(mockMetaCollector.collectMetadata(any())).thenReturn(repoMeta);
         when(mockSQLLoader.loadFromURI(anyString(), anyString())).thenReturn("SELECT SQL");
         when(mockQParser.parse(any())).thenReturn(parsedDML);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.DML), anyString(), any(), any(), any(), anyInt()
         )).thenReturn((Query) queryDML);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.SELECT), eq("SELECT SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect2);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.SELECT), eq("SELECT-3 SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect3);
         when(mockHandlerBuilder.build(any(), any())).thenReturn(proxyHandler);
@@ -156,7 +156,7 @@ public class RepositoryBuilderImplTest {
         // - first method
         mockedStaticQuerySource.verify(() -> QuerySource.of(eq("DML SQL")));
         verify(mockQParser).parse(same(querySourceMethod2));
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.DML),
                 eq("parsed DML SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -166,7 +166,7 @@ public class RepositoryBuilderImplTest {
         );
         // - second method
         verify(mockSQLLoader).loadFromURI(eq("ftp://usa.gov/test/query/select"), eq("UTF-88"));
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.SELECT),
                 eq("SELECT SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -175,7 +175,7 @@ public class RepositoryBuilderImplTest {
                 eq(123)
         );
         // - third method
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.SELECT),
                 eq("SELECT-3 SQL"),
                 eq(InjectionStrategy.named(SomeComplexObject.class)),
@@ -281,13 +281,13 @@ public class RepositoryBuilderImplTest {
         when(mockMetaCollector.collectMetadata(any())).thenReturn(repoMeta);
         when(mockSQLLoader.loadFromURI(anyString(), anyString())).thenReturn("SELECT SQL");
         when(mockQParser.parse(any())).thenReturn(parsedDML);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.DML), anyString(), any(), any(), any(), anyInt()
         )).thenReturn((Query) queryDML);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.SELECT), eq("SELECT SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect2);
-        when(mockQBuilder.buildQuery(
+        when(mockQBuilder.buildQueryOld(
                 eq(QueryType.SELECT), eq("SELECT-3 SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect3);
         when(mockHandlerBuilder.buildLazy(any(), any())).thenReturn(proxyHandler);
@@ -322,7 +322,7 @@ public class RepositoryBuilderImplTest {
         assertThat(suppliers.get("methodOneLazy").get().get()).isSameAs(queryDML);
         mockedStaticQuerySource.verify(() -> QuerySource.of(eq("DML SQL")));
         verify(mockQParser).parse(same(querySourceMethod2));
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.DML),
                 eq("parsed DML SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -336,7 +336,7 @@ public class RepositoryBuilderImplTest {
         // - second method
         assertThat(suppliers.get("methodTwoLazy").get().get()).isSameAs(querySelect2);
         verify(mockSQLLoader).loadFromURI(eq("ftp://usa.gov/test/query/select"), eq("UTF-88"));
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.SELECT),
                 eq("SELECT SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -349,7 +349,7 @@ public class RepositoryBuilderImplTest {
         verifyNoInteractions(querySourceMethod2, queryDML, querySelect2, querySelect3, proxyHandler);
         // - third method
         assertThat(suppliers.get("methodThreeLazy").get().get()).isSameAs(querySelect3);
-        verify(mockQBuilder).buildQuery(
+        verify(mockQBuilder).buildQueryOld(
                 eq(QueryType.SELECT),
                 eq("SELECT-3 SQL"),
                 eq(InjectionStrategy.named(SomeComplexObject.class)),

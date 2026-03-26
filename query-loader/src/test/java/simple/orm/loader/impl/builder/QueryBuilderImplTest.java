@@ -13,13 +13,14 @@ import simple.orm.jdbc.query.QueryFactory;
 import simple.orm.jdbc.query.QueryType;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.builder.ReflectionsFinder;
 import simple.orm.mapping.param.TypesCollection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static simple.orm.loader.builder.ParameterType.*;
 
 /**
  * Tests on {@link QueryBuilderImpl}.
@@ -39,7 +40,7 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Void> injStrat = InjectionStrategy.none();
         final ExtractionStrategy<Void> extStrat = ExtractionStrategy.noneDdl();
-        final List<QueryParser.QueryParam> params = List.empty();
+        final List<QueryParameter> params = List.empty();
         final Query<Void, Void> factoryQuery = mock();
         // behaviour
         when(mockQFactory.ddlQuery(anyString(), anyInt())).thenReturn(factoryQuery);
@@ -71,7 +72,7 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Void> injStrat = InjectionStrategy.none();
         final ExtractionStrategy<Void> extStrat = ExtractionStrategy.noneDdl();
-        final List<QueryParser.QueryParam> params = List.empty();
+        final List<QueryParameter> params = List.empty();
         final Query<Void, Void> factoryQuery = mock();
         // behaviour
         when(mockQFactory.ddlQuery(anyString(), anyInt())).thenReturn(factoryQuery);
@@ -103,7 +104,7 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Void> injStrat = InjectionStrategy.none();
         final ExtractionStrategy<Integer> extStrat = ExtractionStrategy.noneDml();
-        final List<QueryParser.QueryParam> params = List.empty();
+        final List<QueryParameter> params = List.empty();
         final Query<Void, Integer> factoryQuery = mock();
         // behaviour
         when(mockQFactory.iudQueryWithoutParameters(anyString(), anyInt())).thenReturn(factoryQuery);
@@ -135,10 +136,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Seq<Object>> injStrat = InjectionStrategy.indexed();
         final ExtractionStrategy<Integer> extStrat = ExtractionStrategy.noneDml();
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final Query<Seq<Object>, Integer> factoryQuery = mock();
@@ -159,7 +160,7 @@ public class QueryBuilderImplTest {
         verify(mockQIEBuilder).buildIndexedInjector(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQFactory).iudQuery(eq("this is SQL"), eq(321), same(builtInjector));
         verifyNoMoreInteractions(mockQFactory, mockQValidator, mockQIEBuilder);
@@ -179,10 +180,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<SomeComplexObject> injStrat = InjectionStrategy.named(SomeComplexObject.class);
         final ExtractionStrategy<Integer> extStrat = ExtractionStrategy.noneDml();
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final Query<SomeComplexObject, Integer> factoryQuery = mock();
@@ -206,7 +207,7 @@ public class QueryBuilderImplTest {
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQFactory).iudQuery(eq("this is SQL"), eq(321), same(builtInjector));
         verifyNoMoreInteractions(mockQFactory, mockQValidator, mockQIEBuilder);
@@ -225,10 +226,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Seq<Object>> injStrat = InjectionStrategy.indexed();
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final IndexedExtractor builtExtractor = mock();
@@ -252,12 +253,12 @@ public class QueryBuilderImplTest {
         verify(mockQIEBuilder).buildIndexedInjector(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQIEBuilder).buildIndexedExtractor(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQuery(eq("this is SQL"), eq(0), same(builtInjector), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);
@@ -276,10 +277,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Void> injStrat = InjectionStrategy.none();
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedExtractor builtExtractor = mock();
         final Query<Void, Seq<Object>> factoryQuery = mock();
@@ -301,7 +302,7 @@ public class QueryBuilderImplTest {
         verify(mockQIEBuilder).buildIndexedExtractor(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQueryWithoutParameters(eq("this is SQL"), eq(111), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);
@@ -321,10 +322,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<SomeComplexObject> injStrat = InjectionStrategy.named(SomeComplexObject.class);
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
@@ -352,14 +353,14 @@ public class QueryBuilderImplTest {
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQIEBuilder).buildNamedExtractor(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQuery(eq("this is SQL"), eq(0), same(builtInjector), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);
@@ -379,10 +380,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Void> injStrat = InjectionStrategy.none();
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
         final Query<Void, SomeComplexObject> factoryQuery = mock();
@@ -407,7 +408,7 @@ public class QueryBuilderImplTest {
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQueryWithoutParameters(eq("this is SQL"), eq(0), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);
@@ -427,10 +428,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<Seq<Object>> injStrat = InjectionStrategy.indexed();
         final ExtractionStrategy<SomeComplexObject> extStrat = ExtractionStrategy.named(SomeComplexObject.class);
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final IndexedInjector builtInjector = mock();
         final NamedExtractor<SomeComplexObject> builtExtractor = mock();
@@ -456,14 +457,14 @@ public class QueryBuilderImplTest {
         verify(mockQIEBuilder).buildIndexedInjector(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQIEBuilder).buildNamedExtractor(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQuery(eq("this is SQL"), eq(0), same(builtInjector), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);
@@ -483,10 +484,10 @@ public class QueryBuilderImplTest {
         // data
         final InjectionStrategy<SomeComplexObject> injStrat = InjectionStrategy.named(SomeComplexObject.class);
         final ExtractionStrategy<Seq<Object>> extStrat = ExtractionStrategy.indexed();
-        final List<QueryParser.QueryParam> params =
+        final List<QueryParameter> params =
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null)
                 );
         final NamedInjector<SomeComplexObject> builtInjector = mock();
         final IndexedExtractor builtExtractor = mock();
@@ -514,12 +515,12 @@ public class QueryBuilderImplTest {
                 same(mockMappersFinder),
                 same(mockReflectionFinder),
                 eq(SomeComplexObject.class),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.INJECTION))
+                eq(params.filter(qp -> qp.type() == INJECTION))
         );
         verify(mockQIEBuilder).buildIndexedExtractor(
                 same(mockTypesCollection),
                 same(mockMappersFinder),
-                eq(params.filter(qp -> qp.type() == QueryParser.ParamType.EXTRACTION))
+                eq(params.filter(qp -> qp.type() == EXTRACTION))
         );
         verify(mockQFactory).selectQuery(eq("this is SQL"), eq(111), same(builtInjector), same(builtExtractor));
         verifyNoMoreInteractions(mockQIEBuilder, mockQFactory, mockQValidator);

@@ -114,7 +114,7 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
         if (method.paramStrat() == ParameterStrategy.PARSE_QUERY) {
             method = parseParamsIntoMeta(method);
         }
-        return queryBuilder.buildQuery(
+        return queryBuilder.buildQueryOld(
                 method.type(),
                 method.querySQL(),
                 injectionStrategy(method),
