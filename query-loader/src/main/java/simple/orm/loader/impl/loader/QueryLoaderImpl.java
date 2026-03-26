@@ -84,6 +84,7 @@ public class QueryLoaderImpl implements QueryLoader {
         final boolean dropGuessedLabels = !extractionStartNamed
                 || parsedParams.find(qp -> qp.type() == QueryParser.ParamType.EXTRACTION && empty(qp.label())).isDefined();
         // build query
+        // TODO move all this to QueryParser? (tweaks around labels and propNames)
         final Traversable<QueryParameter> params = parsedParams
                 .map(qp -> new QueryParameter(
                         ParameterType.of(qp.type()),

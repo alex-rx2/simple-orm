@@ -5,7 +5,8 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Traversable;
 import simple.orm.jdbc.query.Query;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.ParameterType;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.repo.RepositoryBuilderException;
 import simple.orm.repo.anno.ExtractParam;
 import simple.orm.repo.anno.InjectParam;
@@ -17,7 +18,6 @@ import simple.orm.util.Mutable;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
-import static io.vavr.API.*;
 import static simple.orm.jdbc.query.QueryType.*;
 import static simple.orm.repo.anno.ParameterStrategy.*;
 import static simple.orm.util.StringUtils.nullify;
@@ -218,35 +218,39 @@ public class MetadataCollector {
         );
     }
 
-    private QueryParser.QueryParam toQueryParam(InjectParam param) {
-        return new QueryParser.QueryParam(
-                QueryParser.ParamType.INJECTION,
+    private QueryParameter toQueryParam(InjectParam param) {
+        return new QueryParameter(
+                ParameterType.INJECTION,
                 param.index(),
                 null,
-                false,
                 nullify(param.prop()),
+                null,
                 nullify(param.mapper()),
                 nullify(param.tag()),
+                null,
                 nullify(param.jdbc()),
-                getJavaClassName(param.java())
+                param.java() == Object.class ? null : param.java(),
+                null
         );
     }
 
-    private QueryParser.QueryParam toQueryParam(ExtractParam param) {
-        return new QueryParser.QueryParam(
-                QueryParser.ParamType.EXTRACTION,
+    private QueryParameter toQueryParam(ExtractParam param) {
+        return new QueryParameter(
+                ParameterType.EXTRACTION,
                 param.index(),
                 nullify(param.label()),
-                false,
                 nullify(param.prop()),
+                null,
                 nullify(param.mapper()),
                 nullify(param.tag()),
+                null,
                 nullify(param.jdbc()),
-                getJavaClassName(param.java())
+                param.java() == Object.class ? null : param.java(),
+                null
         );
     }
 
-    private Traversable<QueryParser.QueryParam> reindexOrSort(Array<QueryParser.QueryParam> params) {
+    private Traversable<QueryParameter> reindexOrSort(Array<QueryParameter> params) {
         if (params.isEmpty()) {
             return params;
         }
@@ -255,35 +259,8 @@ public class MetadataCollector {
             return params.zipWithIndex((p, i) -> p.reindex(i + 1));
         } else {
             // or sort them if indexes were provided
-            return params.sortBy(QueryParser.QueryParam::indexWithinType);
+            return params.sortBy(QueryParameter::indexWithinType);
         }
-    }
-
-    private static String getJavaClassName(Class<?> aClass) {
-        // unfortunately have to use QueryParser.QueryParam with string to pass java class information
-        // works badly for primitive types (Class.forName can't load them)
-        // looks like in Java22 they have Class#forPrimitiveName
-        // but that's so half-assed... like everything they do though...
-        if (aClass == Object.class) {
-            return null;
-        }
-        if (aClass.isPrimitive()) {
-            return Match(aClass).of(
-                    Case($(same(Boolean.TYPE)), Boolean.class.getName()),
-                    Case($(same(Byte.TYPE)), Byte.class.getName()),
-                    Case($(same(Short.TYPE)), Short.class.getName()),
-                    Case($(same(Character.TYPE)), Character.class.getName()),
-                    Case($(same(Integer.TYPE)), Integer.class.getName()),
-                    Case($(same(Long.TYPE)), Long.class.getName()),
-                    Case($(same(Float.TYPE)), Float.class.getName()),
-                    Case($(same(Double.TYPE)), Double.class.getName()),
-                    Case($(same(Void.TYPE)), Void.class.getName()), // mmmm...anyway
-                    Case($(), () -> {
-                        throw new IllegalStateException("should be unreachable for " + aClass);
-                    })
-            );
-        }
-        return aClass.getName();
     }
 
     private static Predicate<Class<?>> same(Class<?> type) {

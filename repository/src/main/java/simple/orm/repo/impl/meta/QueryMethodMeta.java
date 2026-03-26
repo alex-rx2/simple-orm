@@ -2,7 +2,7 @@ package simple.orm.repo.impl.meta;
 
 import io.vavr.collection.Traversable;
 import simple.orm.jdbc.query.QueryType;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.repo.anno.ParameterStrategy;
 
 public record QueryMethodMeta(
@@ -14,8 +14,8 @@ public record QueryMethodMeta(
         ParameterStrategy paramStrat,
         Class<?> sourceClass, // not null for named injector only (Seq.class in annotation -> null)
         Class<?> targetClass, // not null for named extractor only (Seq.class in annotation -> null)
-        Traversable<QueryParser.QueryParam> injectParams,
-        Traversable<QueryParser.QueryParam> extractParams,
+        Traversable<QueryParameter> injectParams,
+        Traversable<QueryParameter> extractParams,
         int queryTimeout
 ) {
 
@@ -35,8 +35,8 @@ public record QueryMethodMeta(
         );
     }
 
-    public QueryMethodMeta replaceParams(Traversable<QueryParser.QueryParam> newInjectParams,
-                                         Traversable<QueryParser.QueryParam> newExtractParams) {
+    public QueryMethodMeta replaceParams(Traversable<QueryParameter> newInjectParams,
+                                         Traversable<QueryParameter> newExtractParams) {
         return new QueryMethodMeta(
                 methodName,
                 type,

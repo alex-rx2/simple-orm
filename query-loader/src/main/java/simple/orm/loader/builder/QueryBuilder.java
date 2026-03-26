@@ -51,14 +51,6 @@ public interface QueryBuilder {
                                   Traversable<QueryParameter> params,
                                   int queryTimeoutSeconds);
 
-    @Deprecated
-    <P, R> Query<P, R> buildQueryOld(QueryType type,
-                                  String sql,
-                                  InjectionStrategy<P> injectionStrategy,
-                                  ExtractionStrategy<R> extractionStrategy,
-                                  Traversable<QueryParser.QueryParam> params,
-                                  int queryTimeoutSeconds);
-
     /**
      * Factory method creating default {@link QueryBuilder} implementation.
      *

@@ -16,7 +16,9 @@ import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
 import simple.orm.loader.QueryParser;
 import simple.orm.loader.QuerySource;
+import simple.orm.loader.builder.ParameterType;
 import simple.orm.loader.builder.QueryBuilder;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.repo.ImplementationStyle;
 import simple.orm.repo.SQLLoader;
 import simple.orm.repo.anno.ParameterStrategy;
@@ -52,7 +54,7 @@ public class RepositoryBuilderImplTest {
     }
 
     @Test
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testBuildProxy() {
         final SQLLoader mockSQLLoader = mock();
         final QueryParser mockQParser = mock();
@@ -60,19 +62,19 @@ public class RepositoryBuilderImplTest {
         final MetadataCollector mockMetaCollector = mock();
         final ProxyHandlerBuilder mockHandlerBuilder = mock();
         // data
-        final List<QueryParser.QueryParam> method2InjectionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "int", null, null, null)
+        final List<QueryParameter> method2InjectionParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "int", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method2ExtractionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", false, "id", "int", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, "name", false, "name", "varchar", null, null, null)
+        final List<QueryParameter> method2ExtractionParams = List.of(
+                new QueryParameter(ParameterType.EXTRACTION, 1, "id", "id", null, "int", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, "name", "name", null, "varchar", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method3InjectionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "uid", "uuid", null, null, null)
+        final List<QueryParameter> method3InjectionParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, "uid", null, "uuid", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method3ExtractionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, "uuid", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, null, "timestamptz", "h2str", null, null)
+        final List<QueryParameter> method3ExtractionParams = List.of(
+                new QueryParameter(ParameterType.EXTRACTION, 1, null, null, null, "uuid", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, null, null, null, "timestamptz", "h2str", null, null, null, null)
         );
         final RepositoryMeta repoMeta = new RepositoryMeta(
                 RepoType.QUERY,
@@ -123,6 +125,10 @@ public class RepositoryBuilderImplTest {
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "bigint", null, null, null),
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "clob", null, null, null)
         );
+        final List<QueryParameter> convertedDMLParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "bigint", null, null, null, null, null),
+                new QueryParameter(ParameterType.INJECTION, 2, null, null, null, "clob", null, null, null, null, null)
+        );
         final QueryParser.ParsedQuery parsedDML = new QueryParser.ParsedQuery("parsed DML SQL", parsedDMLParams);
         final QuerySource querySourceMethod2 = mock();
         final Query<Seq<Object>, Void> queryDML = mock();
@@ -134,13 +140,13 @@ public class RepositoryBuilderImplTest {
         when(mockMetaCollector.collectMetadata(any())).thenReturn(repoMeta);
         when(mockSQLLoader.loadFromURI(anyString(), anyString())).thenReturn("SELECT SQL");
         when(mockQParser.parse(any())).thenReturn(parsedDML);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.DML), anyString(), any(), any(), any(), anyInt()
         )).thenReturn((Query) queryDML);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.SELECT), eq("SELECT SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect2);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.SELECT), eq("SELECT-3 SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect3);
         when(mockHandlerBuilder.build(any(), any())).thenReturn(proxyHandler);
@@ -156,17 +162,17 @@ public class RepositoryBuilderImplTest {
         // - first method
         mockedStaticQuerySource.verify(() -> QuerySource.of(eq("DML SQL")));
         verify(mockQParser).parse(same(querySourceMethod2));
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.DML),
                 eq("parsed DML SQL"),
                 eq(InjectionStrategy.indexed()),
                 eq(ExtractionStrategy.noneDml()),
-                eq(parsedDMLParams), // will be new list with only these parameters
+                eq(convertedDMLParams),
                 eq(321)
         );
         // - second method
         verify(mockSQLLoader).loadFromURI(eq("ftp://usa.gov/test/query/select"), eq("UTF-88"));
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.SELECT),
                 eq("SELECT SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -175,7 +181,7 @@ public class RepositoryBuilderImplTest {
                 eq(123)
         );
         // - third method
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.SELECT),
                 eq("SELECT-3 SQL"),
                 eq(InjectionStrategy.named(SomeComplexObject.class)),
@@ -199,7 +205,7 @@ public class RepositoryBuilderImplTest {
     }
 
     @Test
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testBuildProxyLazy() {
         final SQLLoader mockSQLLoader = mock();
         final QueryParser mockQParser = mock();
@@ -207,19 +213,19 @@ public class RepositoryBuilderImplTest {
         final MetadataCollector mockMetaCollector = mock();
         final ProxyHandlerBuilder mockHandlerBuilder = mock();
         // data
-        final List<QueryParser.QueryParam> method2InjectionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "int", null, null, null)
+        final List<QueryParameter> method2InjectionParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "int", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method2ExtractionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, "id", false, "id", "int", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, "name", false, "name", "varchar", null, null, null)
+        final List<QueryParameter> method2ExtractionParams = List.of(
+                new QueryParameter(ParameterType.EXTRACTION, 1, "id", "id", null, "int", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, "name", "name", null, "varchar", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method3InjectionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "uid", "uuid", null, null, null)
+        final List<QueryParameter> method3InjectionParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, "uid", null, "uuid", null, null, null, null, null)
         );
-        final List<QueryParser.QueryParam> method3ExtractionParams = List.of(
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, "uuid", null, null, null),
-                new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, null, "timestamptz", "h2str", null, null)
+        final List<QueryParameter> method3ExtractionParams = List.of(
+                new QueryParameter(ParameterType.EXTRACTION, 1, null, null, null, "uuid", null, null, null, null, null),
+                new QueryParameter(ParameterType.EXTRACTION, 2, null, null, null, "timestamptz", "h2str", null, null, null, null)
         );
         final RepositoryMeta repoMeta = new RepositoryMeta(
                 RepoType.QUERY,
@@ -270,6 +276,10 @@ public class RepositoryBuilderImplTest {
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "bigint", null, null, null),
                 new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "clob", null, null, null)
         );
+        final List<QueryParameter> convertedDMLParams = List.of(
+                new QueryParameter(ParameterType.INJECTION, 1, null, null, null, "bigint", null, null, null, null, null),
+                new QueryParameter(ParameterType.INJECTION, 2, null, null, null, "clob", null, null, null, null, null)
+        );
         final QueryParser.ParsedQuery parsedDML = new QueryParser.ParsedQuery("parsed DML SQL", parsedDMLParams);
         final QuerySource querySourceMethod2 = mock();
         final Query<Seq<Object>, Void> queryDML = mock();
@@ -281,13 +291,13 @@ public class RepositoryBuilderImplTest {
         when(mockMetaCollector.collectMetadata(any())).thenReturn(repoMeta);
         when(mockSQLLoader.loadFromURI(anyString(), anyString())).thenReturn("SELECT SQL");
         when(mockQParser.parse(any())).thenReturn(parsedDML);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.DML), anyString(), any(), any(), any(), anyInt()
         )).thenReturn((Query) queryDML);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.SELECT), eq("SELECT SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect2);
-        when(mockQBuilder.buildQueryOld(
+        when(mockQBuilder.buildQuery(
                 eq(QueryType.SELECT), eq("SELECT-3 SQL"), any(), any(), any(), anyInt()
         )).thenReturn((Query) querySelect3);
         when(mockHandlerBuilder.buildLazy(any(), any())).thenReturn(proxyHandler);
@@ -301,15 +311,10 @@ public class RepositoryBuilderImplTest {
         // verify
         verify(mockMetaCollector).collectMetadata(eq(TestInterface.class));
         // - handler
-        ArgumentCaptor<Map<String, Supplier<Query<?,?>>>> supplierCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, Supplier<Query<?, ?>>>> supplierCaptor = ArgumentCaptor.forClass(Map.class);
         verify(mockHandlerBuilder).buildLazy(
                 eq(TestInterface.class),
                 supplierCaptor.capture()
-                // eq(HashMap.of(
-                //         "methodOne", queryDML,
-                //         "methodTwo", querySelect2,
-                //         "methodThree", querySelect3
-                // ))
         );
         // - no more interactions (queries will be build only on methods first invocation!)
         mockedStaticQuerySource.verifyNoMoreInteractions();
@@ -317,17 +322,17 @@ public class RepositoryBuilderImplTest {
         verifyNoInteractions(querySourceMethod2, queryDML, querySelect2, querySelect3, proxyHandler);
         // check suppliers
         Map<String, Supplier<Query<?, ?>>> suppliers = supplierCaptor.getValue();
-        assertThat(suppliers.keySet()).containsExactlyInAnyOrder("methodOneLazy","methodTwoLazy","methodThreeLazy");
+        assertThat(suppliers.keySet()).containsExactlyInAnyOrder("methodOneLazy", "methodTwoLazy", "methodThreeLazy");
         // - first method
         assertThat(suppliers.get("methodOneLazy").get().get()).isSameAs(queryDML);
         mockedStaticQuerySource.verify(() -> QuerySource.of(eq("DML SQL")));
         verify(mockQParser).parse(same(querySourceMethod2));
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.DML),
                 eq("parsed DML SQL"),
                 eq(InjectionStrategy.indexed()),
                 eq(ExtractionStrategy.noneDml()),
-                eq(parsedDMLParams), // will be new list with only these parameters
+                eq(convertedDMLParams),
                 eq(321)
         );
         mockedStaticQuerySource.verifyNoMoreInteractions();
@@ -336,7 +341,7 @@ public class RepositoryBuilderImplTest {
         // - second method
         assertThat(suppliers.get("methodTwoLazy").get().get()).isSameAs(querySelect2);
         verify(mockSQLLoader).loadFromURI(eq("ftp://usa.gov/test/query/select"), eq("UTF-88"));
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.SELECT),
                 eq("SELECT SQL"),
                 eq(InjectionStrategy.indexed()),
@@ -349,7 +354,7 @@ public class RepositoryBuilderImplTest {
         verifyNoInteractions(querySourceMethod2, queryDML, querySelect2, querySelect3, proxyHandler);
         // - third method
         assertThat(suppliers.get("methodThreeLazy").get().get()).isSameAs(querySelect3);
-        verify(mockQBuilder).buildQueryOld(
+        verify(mockQBuilder).buildQuery(
                 eq(QueryType.SELECT),
                 eq("SELECT-3 SQL"),
                 eq(InjectionStrategy.named(SomeComplexObject.class)),

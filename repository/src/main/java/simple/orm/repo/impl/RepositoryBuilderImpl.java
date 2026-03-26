@@ -4,13 +4,16 @@ import io.vavr.Tuple;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
+import io.vavr.collection.Traversable;
 import simple.orm.jdbc.query.Query;
 import simple.orm.jdbc.query.QueryType;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
 import simple.orm.loader.QueryParser;
 import simple.orm.loader.QuerySource;
+import simple.orm.loader.builder.ParameterType;
 import simple.orm.loader.builder.QueryBuilder;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.repo.ImplementationStyle;
 import simple.orm.repo.RepositoryBuilder;
 import simple.orm.repo.SQLLoader;
@@ -25,6 +28,7 @@ import java.lang.reflect.Proxy;
 import java.util.function.Supplier;
 
 import static io.vavr.API.*;
+import static simple.orm.util.StringUtils.empty;
 
 /**
  * Default implementation of {@link RepositoryBuilder}.
@@ -114,12 +118,12 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
         if (method.paramStrat() == ParameterStrategy.PARSE_QUERY) {
             method = parseParamsIntoMeta(method);
         }
-        return queryBuilder.buildQueryOld(
+        return queryBuilder.buildQuery(
                 method.type(),
                 method.querySQL(),
                 injectionStrategy(method),
                 extractionStrategy(method),
-                List.<QueryParser.QueryParam>empty()
+                List.<QueryParameter>empty()
                         .appendAll(method.injectParams())
                         .appendAll(method.extractParams()),
                 method.queryTimeout() < 0 ? repo.timeout() : method.queryTimeout()
@@ -128,10 +132,11 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
 
     private QueryMethodMeta parseParamsIntoMeta(QueryMethodMeta qm) {
         QueryParser.ParsedQuery parsed = queryParser.parse(QuerySource.of(qm.querySQL()));
+        Traversable<QueryParameter> queryParameters = toQueryParameters(parsed.parsedParams(), qm.targetClass());
         return qm.replaceSQL(parsed.querySQL())
                 .replaceParams(
-                        parsed.parsedParams().filter(p -> p.type() == QueryParser.ParamType.INJECTION),
-                        parsed.parsedParams().filter(p -> p.type() == QueryParser.ParamType.EXTRACTION)
+                        queryParameters.filter(qp -> qp.type() == ParameterType.INJECTION),
+                        queryParameters.filter(qp -> qp.type() == ParameterType.EXTRACTION)
                 );
     }
 
@@ -151,6 +156,27 @@ public class RepositoryBuilderImpl implements RepositoryBuilder {
                 Case($(m -> m.targetClass() == null), m -> ExtractionStrategy.indexed()),
                 Case($(), m -> ExtractionStrategy.named(m.targetClass()))
         );
+    }
+
+    private Traversable<QueryParameter> toQueryParameters(Traversable<QueryParser.QueryParam> qParams, Class<?> targetClass) {
+        // TODO move all this to QueryParser? (tweaks around labels and propNames)
+        boolean extractionStartNamed = targetClass != null;
+        final boolean dropGuessedLabels = !extractionStartNamed
+                || qParams.find(qp -> qp.type() == QueryParser.ParamType.EXTRACTION && empty(qp.label())).isDefined();
+        return qParams.map(qParam ->
+                new QueryParameter(
+                        ParameterType.of(qParam.type()),
+                        qParam.indexWithinType(),
+                        qParam.labelGuessed() && dropGuessedLabels ? null : qParam.label(),
+                        qParam.propName(),
+                        null,
+                        qParam.mapperName(),
+                        qParam.tag(),
+                        null,
+                        qParam.jdbcTypeName(),
+                        null,
+                        qParam.javaClassName()
+                ));
     }
 
 }

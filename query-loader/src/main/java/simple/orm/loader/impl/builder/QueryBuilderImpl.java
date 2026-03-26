@@ -11,7 +11,6 @@ import simple.orm.jdbc.query.QueryFactory;
 import simple.orm.jdbc.query.QueryType;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
-import simple.orm.loader.QueryParser;
 import simple.orm.loader.builder.QueryBuilder;
 import simple.orm.loader.builder.QueryParameter;
 import simple.orm.mapping.builder.MappersFinder;
@@ -83,24 +82,6 @@ public class QueryBuilderImpl implements QueryBuilder {
     }
 
     @Override
-    @Deprecated
-    public <P, R> Query<P, R> buildQueryOld(QueryType type,
-                                            String sql,
-                                            InjectionStrategy<P> injectionStrategy,
-                                            ExtractionStrategy<R> extractionStrategy,
-                                            Traversable<QueryParser.QueryParam> params,
-                                            int queryTimeoutSeconds) {
-        return buildQuery(
-                type,
-                sql,
-                injectionStrategy,
-                extractionStrategy,
-                params.map(p -> QueryParameter.of(p, p.type() == QueryParser.ParamType.INJECTION || extractionStrategy.targetClass == null)),
-                queryTimeoutSeconds
-        );
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public <P, R> Query<P, R> buildQuery(QueryType type,
                                          String sql,
@@ -108,7 +89,6 @@ public class QueryBuilderImpl implements QueryBuilder {
                                          ExtractionStrategy<R> extractionStrategy,
                                          Traversable<QueryParameter> params,
                                          int queryTimeoutSeconds) {
-        // TODO
         if (type == null) {
             throw new NullPointerException("type is null");
         }

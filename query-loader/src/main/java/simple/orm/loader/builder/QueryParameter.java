@@ -1,6 +1,5 @@
 package simple.orm.loader.builder;
 
-import simple.orm.loader.QueryParser;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.type.TypeMapper;
 
@@ -21,20 +20,19 @@ public record QueryParameter(
         String javaTypeClassName
 ) {
 
-    @Deprecated
-    public static QueryParameter of(QueryParser.QueryParam qParam, boolean dropGuessedLabel) {
+    public QueryParameter reindex(int newIndex) {
         return new QueryParameter(
-                ParameterType.of(qParam.type()),
-                qParam.indexWithinType(),
-                qParam.labelGuessed() && dropGuessedLabel ? null : qParam.label(),
-                qParam.propName(),
-                null,
-                qParam.mapperName(),
-                qParam.tag(),
-                null,
-                qParam.jdbcTypeName(),
-                null,
-                qParam.javaClassName()
+                type,
+                newIndex,
+                label,
+                propName,
+                mapper,
+                mapperName,
+                tag,
+                jdbcType,
+                jdbcTypeName,
+                javaType,
+                javaTypeClassName
         );
     }
 
