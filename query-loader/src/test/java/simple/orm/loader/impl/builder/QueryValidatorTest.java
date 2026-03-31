@@ -156,14 +156,14 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("broken parameter indexing");
-        // - has no labels // todo remove cause ignored now?
-        // assertThatCode(() -> validator.validateDML(
-        //         InjectionStrategy.indexed(),
-        //         ExtractionStrategy.noneDml(),
-        //         List.of(new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null))
-        // ))
-        //         .isInstanceOf(IllegalArgumentException.class)
-        //         .hasMessageContaining("should have no label");
+        // - has no labels
+        assertThatCode(() -> validator.validateDML(
+                InjectionStrategy.indexed(),
+                ExtractionStrategy.noneDml(),
+                List.of(new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null))
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("should have no label");
     }
 
     @Test
@@ -338,17 +338,17 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("broken parameter indexing");
-        // - has no labels // todo remove cause ignored now?
-        // assertThatCode(() -> validator.validateSelect(
-        //         InjectionStrategy.indexed(),
-        //         ExtractionStrategy.indexed(),
-        //         List.of(
-        //                 new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
-        //                 new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null)
-        //         )
-        // ))
-        //         .isInstanceOf(IllegalArgumentException.class)
-        //         .hasMessageContaining("should have no label");
+        // - has no labels
+        assertThatCode(() -> validator.validateSelect(
+                InjectionStrategy.indexed(),
+                ExtractionStrategy.indexed(),
+                List.of(
+                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, 1, "label", null, null, null, null, null, null, null, null)
+                )
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("should have no label");
     }
 
     @Test
@@ -432,7 +432,7 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("should have at least one parameter");
-        // - properly indexed
+        // - properly indexed without labels
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
@@ -465,17 +465,18 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("broken parameter indexing");
-        // - has no labels // todo remove cause ignored now?
-        // assertThatCode(() -> validator.validateSelect(
-        //         InjectionStrategy.indexed(),
-        //         ExtractionStrategy.indexed(),
-        //         List.of(
-        //                 new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
-        //                 new QueryParameter(EXTRACTION, 1, "label", null, null, null, null, null, null, null, null)
-        //         )
-        // ))
-        //         .isInstanceOf(IllegalArgumentException.class)
-        //         .hasMessageContaining("should have no label");
+        // - all labelled if label present
+        assertThatCode(() -> validator.validateSelect(
+                InjectionStrategy.indexed(),
+                ExtractionStrategy.indexed(),
+                List.of(
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 1, "label1", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 2, null, null, null, null, null, null, null, null, null)
+                )
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("some parameters have labels, some don't");
     }
 
     @Test

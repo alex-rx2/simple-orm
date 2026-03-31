@@ -97,12 +97,12 @@ public class QueryValidator {
                             "broken parameter indexing for injection strategy " + INDEXED
                     );
                 }
-                // validate no labels specified // todo simply ignore them?
-                // if (iParams.find(p -> !empty(p.label())).isDefined()) {
-                //     throw new IllegalArgumentException(
-                //             "parameters should have no labels defined for injection strategy " + INDEXED
-                //     );
-                // }
+                // validate no labels specified
+                if (iParams.find(p -> !empty(p.label())).isDefined()) {
+                    throw new IllegalArgumentException(
+                            "parameters should have no labels defined for injection strategy " + INDEXED
+                    );
+                }
             }
             case NAMED -> {
                 // validate actually has params
@@ -155,21 +155,30 @@ public class QueryValidator {
                             "should have at least one parameter when using extraction strategy " + INDEXED
                     );
                 }
-                // validate indexing 1...n
-                if (eParams.toList()
-                        .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
-                    throw new IllegalArgumentException(
-                            "broken parameter indexing for extraction strategy " + INDEXED
-                    );
+                // validate all params either indexed, either labelled
+                // - validate indexing 1...n (in case of indexes)
+                // - validate all labels NONEMPTY (in case of labels)
+                final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                if (hasLabels) {
+                    // all should have nonempty labels
+                    if (eParams.find(p -> empty(p.label())).isDefined()) {
+                        throw new IllegalArgumentException(
+                                "some parameters have labels, some don't" +
+                                        " (either all should have nonempty label, either none at all)" +
+                                        " for extraction strategy " + NAMED
+                        );
+                    }
+                } else {
+                    // all should be properly indexed
+                    if (eParams.toList()
+                            .zipWithIndex()
+                            .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
+                            .isDefined()) {
+                        throw new IllegalArgumentException(
+                                "broken parameter indexing for extraction strategy " + NAMED
+                        );
+                    }
                 }
-                // validate no labels specified // todo simply ignore them?
-                // if (eParams.find(p -> !empty(p.label())).isDefined()) {
-                //     throw new IllegalArgumentException(
-                //             "parameters should have no label defined for extraction strategy " + INDEXED
-                //     );
-                // }
             }
             case NAMED -> {
                 // validate actually has params

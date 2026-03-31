@@ -77,15 +77,29 @@ public class QueryInjectorExtractorBuilder {
                                  IndexedExtractorBuilder builder,
                                  QueryParameter p) {
         try {
-            if (p.mapper() != null) {
-                builder.param(p.mapper());
+            if (!empty(p.label())) {
+                if (p.mapper() != null) {
+                    builder.param(p.label(), p.mapper());
+                } else {
+                    builder.param(
+                            p.label(),
+                            p.mapperName(),
+                            jdbcTypeFrom(p, typesCollection),
+                            javaTypeFrom(p),
+                            p.tag()
+                    );
+                }
             } else {
-                builder.param(
-                        p.mapperName(),
-                        jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
-                );
+                if (p.mapper() != null) {
+                    builder.param(p.mapper());
+                } else {
+                    builder.param(
+                            p.mapperName(),
+                            jdbcTypeFrom(p, typesCollection),
+                            javaTypeFrom(p),
+                            p.tag()
+                    );
+                }
             }
         } catch (ClassNotFoundException e) {
             throw new RuntimeClassNotFoundException("extraction parameter #" + p.indexWithinType() +

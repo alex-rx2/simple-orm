@@ -579,19 +579,115 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
         }
-        // test 2
+        // test 2 - extraction by index
         {
             Connection conn = database.connect(10);
             Query<NamedRow1, Seq<Object>> query = QLOADER.loadQuery(
                     QueryType.SELECT,
                     QuerySource.of(
                             """
+                            --//::date
+                            --//::varchar
+                            --//::varchar
+                            --//::time
+                            --//::timestamp
+                            --//::double
+                            --//::numeric
+                            SELECT
+                              col_date,
+                              col_str1,
+                              col_str2,
+                              col_time,
+                              col_timestamp,
+                              col_d,
+                              col_nu
+                            FROM table_one
+                            WHERE id=?--?:id:
+                              AND col_str1=?--?:str1:
+                              AND col_str2=?--?:str2:
+                            """
+                    ),
+                    InjectionStrategy.named(NamedRow1.class),
+                    ExtractionStrategy.indexed()
+            );
+            Result<Seq<Object>> result = conn.executeSelect(query, new NamedRow1(2, "n1", "n2"));
+            assertThat(result.hasNextRow()).isTrue();
+            Seq<Object> row = result.nextRow();
+            assertThat(row).containsExactly(
+                    LocalDate.of(2025, 10, 24),
+                    "n1",
+                    "n2",
+                    LocalTime.of(13, 20, 0, 111),
+                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123),
+                    -10.1d,
+                    new BigDecimal("-100.0010000000")
+            );
+            assertThat(result.hasNextRow()).isFalse();
+            conn.close();
+        }
+        // test 3 - extraction by label (immediate params)
+        {
+            Connection conn = database.connect(10);
+            Query<NamedRow1, Seq<Object>> query = QLOADER.loadQuery(
+                    QueryType.SELECT,
+                    // col_str1 and col_str2 are ignored, but because extraction is by label (all labels are guessed)
+                    // there is no errors (if extraction was by index we would try to extract --/::time with index 2 corresponding to col_str1 instead)
+                    QuerySource.of(
+                            """
                             SELECT
                               col_date,--/::date
+                              col_str1,
+                              col_str2,
                               col_time,--/::time
                               col_timestamp,--/::timestamp
                               col_d,--/::double
                               col_nu--/::numeric
+                            FROM table_one
+                            WHERE id=?--?:id:
+                              AND col_str1=?--?:str1:
+                              AND col_str2=?--?:str2:
+                            """
+                    ),
+                    InjectionStrategy.named(NamedRow1.class),
+                    ExtractionStrategy.indexed()
+            );
+            Result<Seq<Object>> result = conn.executeSelect(query, new NamedRow1(2, "n1", "n2"));
+            assertThat(result.hasNextRow()).isTrue();
+            Seq<Object> row = result.nextRow();
+            assertThat(row).containsExactly(
+                    LocalDate.of(2025, 10, 24),
+                    LocalTime.of(13, 20, 0, 111),
+                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123),
+                    -10.1d,
+                    new BigDecimal("-100.0010000000")
+            );
+            assertThat(result.hasNextRow()).isFalse();
+            conn.close();
+        }
+        // test 4 - extraction by label (anywhere params)
+        {
+            Connection conn = database.connect(10);
+            Query<NamedRow1, Seq<Object>> query = QLOADER.loadQuery(
+                    QueryType.SELECT,
+                    // col_str1 and col_str2 are ignored, but because extraction is by label (all labels are guessed)
+                    // there is no errors (if extraction was by index we would try to extract --/::time with index 2 corresponding to col_str1 instead)
+                    QuerySource.of(
+                            """
+                            /*
+                            //date::date
+                            //time::time
+                            //timestamp::timestamp
+                            //ddd::double
+                            //nnn::numeric
+                            */
+                            SELECT
+                              col_date AS date,
+                              col_str1 AS str1,
+                              col_str2 AS str2,
+                              col_time AS time,
+                              col_timestamp AS timestamp,
+                              col_d AS ddd,
+                              col_nu AS nnn
                             FROM table_one
                             WHERE id=?--?:id:
                               AND col_str1=?--?:str1:

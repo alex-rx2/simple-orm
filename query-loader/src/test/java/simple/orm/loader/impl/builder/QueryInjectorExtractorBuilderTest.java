@@ -92,7 +92,8 @@ public class QueryInjectorExtractorBuilderTest {
         final ParameterJdbcType mockJdbcType2 = mock();
         final TypeMapper mockTypeMapper = mock();
         // behaviour
-        when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
+        when(mockTypesCollection.findType(eq("jdbcType"))).thenReturn(mockJdbcType);
+        when(mockTypesCollection.findType(eq("jdbcType2"))).thenReturn(mockJdbcType2);
         // test
         IndexedExtractor extractor = qieBuilder.buildIndexedExtractor(
                 mockTypesCollection,
@@ -101,13 +102,16 @@ public class QueryInjectorExtractorBuilderTest {
                         new QueryParameter(EXTRACTION, 1, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
                         new QueryParameter(EXTRACTION, 2, null, null, null, "mapper", "tag", null, null, null, null),
                         new QueryParameter(EXTRACTION, 3, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 4, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
-                        new QueryParameter(EXTRACTION, 5, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                        new QueryParameter(EXTRACTION, 4, "label1", null, null, "mapper2", null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, "label2", null, null, null, null, null, "jdbcType2", null, "java.lang.Integer"),
+                        new QueryParameter(EXTRACTION, 6, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
         // asserts & verifies
         assertThat(extractor).isInstanceOf(IndexedExtractorImpl.class);
         verify(mockTypesCollection).findType(eq("jdbcType"));
+        verify(mockTypesCollection).findType(eq("jdbcType2"));
         verifyNoMoreInteractions(mockTypesCollection);
         verifyNoInteractions(mockMappersFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
         {
@@ -118,8 +122,10 @@ public class QueryInjectorExtractorBuilderTest {
                     IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
                     IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
                     IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
-                    IndexedParameter.of(4, mockTypeMapper),
-                    IndexedParameter.of(5, ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    IndexedParameter.of("label1", ParamInfo.of("mapper2", null, null, null)),
+                    IndexedParameter.of("label2", ParamInfo.of(null, mockJdbcType2, Integer.class, null)),
+                    IndexedParameter.of(6, mockTypeMapper),
+                    IndexedParameter.of(7, ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
             );
         }
         {
