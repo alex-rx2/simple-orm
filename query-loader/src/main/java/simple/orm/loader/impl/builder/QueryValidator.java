@@ -111,9 +111,7 @@ public class QueryValidator {
                             "should have at least one parameter when using injection strategy " + NAMED
                     );
                 }
-                // 1. validate indexing 1...n
-                // 2. all parameters have NONEMPTY propName
-                // 3. has no labels
+                // validate indexing 1...n
                 if (iParams.toList()
                         .zipWithIndex()
                         .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
@@ -122,14 +120,16 @@ public class QueryValidator {
                             "broken parameter indexing for injection strategy " + NAMED
                     );
                 }
+                // all parameters have NONEMPTY propName
                 if (iParams.find(p -> empty(p.propName())).isDefined()) {
                     throw new IllegalArgumentException(
                             "each parameter should have nonempty property name for injection strategy " + NAMED
                     );
                 }
+                // validate no labels specified
                 if (iParams.find(p -> !empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
-                            "parameters should have no label defined for injection strategy " + INDEXED
+                            "parameters should have no label defined for injection strategy " + NAMED
                     );
                 }
             }
@@ -156,7 +156,36 @@ public class QueryValidator {
                     );
                 }
                 // validate all params either indexed, either labelled
-                // - validate indexing 1...n (in case of indexes)
+                // - validate all indexes >0 (in case of indexes)
+                // - validate all labels NONEMPTY (in case of labels)
+                final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                if (hasLabels) {
+                    // all should have nonempty labels
+                    if (eParams.find(p -> empty(p.label())).isDefined()) {
+                        throw new IllegalArgumentException(
+                                "some parameters have labels, some don't" +
+                                        " (either all should have nonempty label, either none at all)" +
+                                        " for extraction strategy " + INDEXED
+                        );
+                    }
+                } else {
+                    // all should be properly indexed (all indexes >0)
+                    if (eParams.find(p -> p.indexWithinType() <= 0).isDefined()) {
+                        throw new IllegalArgumentException(
+                                "all indexes should be >0 for extraction strategy " + INDEXED
+                        );
+                    }
+                }
+            }
+            case NAMED -> {
+                // validate actually has params
+                if (eParams.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "should have at least one parameter when using extraction strategy " + NAMED
+                    );
+                }
+                // validate all params either indexed, either labelled
+                // - validate all indexes >0 (in case of indexes)
                 // - validate all labels NONEMPTY (in case of labels)
                 final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
                 if (hasLabels) {
@@ -169,57 +198,21 @@ public class QueryValidator {
                         );
                     }
                 } else {
-                    // all should be properly indexed
-                    if (eParams.toList()
-                            .zipWithIndex()
-                            .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                            .isDefined()) {
+                    // all should be properly indexed (all indexes >0)
+                    if (eParams.find(p -> p.indexWithinType() <= 0).isDefined()) {
                         throw new IllegalArgumentException(
-                                "broken parameter indexing for extraction strategy " + NAMED
+                                "all indexes should be >0 for extraction strategy " + NAMED
                         );
                     }
                 }
-            }
-            case NAMED -> {
-                // validate actually has params
-                if (eParams.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "should have at least one parameter when using extraction strategy " + NAMED
-                    );
-                }
-                // 1. validate all params either indexed, either labelled
-                // 1.1 validate indexing 1...n (in case of indexes)
-                // 1.2 validate all labels NONEMPTY (in case of labels)
-                // 2. all parameters have NONEMPTY propName
-                // 3. propNames should have no duplicates
-                final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
-                if (hasLabels) {
-                    // all should have nonempty labels
-                    if (eParams.find(p -> empty(p.label())).isDefined()) {
-                        throw new IllegalArgumentException(
-                                "some parameters have labels, some don't" +
-                                        " (either all should have nonempty label, either none at all)" +
-                                        " for extraction strategy " + NAMED
-                        );
-                    }
-                } else {
-                    // all should be properly indexed
-                    if (eParams.toList()
-                            .zipWithIndex()
-                            .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                            .isDefined()) {
-                        throw new IllegalArgumentException(
-                                "broken parameter indexing for extraction strategy " + NAMED
-                        );
-                    }
-                }
-                // validate propNames
+                // all parameters have NONEMPTY propName
                 if (eParams.find(p -> empty(p.propName()) && empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
                             "each parameter should have nonempty property name or label (which will be used instead)" +
                                     " for extraction strategy " + NAMED
                     );
                 }
+                // propNames should have no duplicates
                 if (eParams
                         .groupBy(p -> empty(p.propName()) ? p.label() : p.propName())
                         .find(t2 -> t2._2.size() > 1).isDefined()) {
