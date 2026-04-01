@@ -11,8 +11,8 @@ import simple.orm.jdbc.query.QueryFactory;
 import simple.orm.jdbc.query.QueryType;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
-import simple.orm.loader.QueryParser;
 import simple.orm.loader.builder.QueryBuilder;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.builder.ReflectionsFinder;
 import simple.orm.mapping.param.TypesCollection;
@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 
 import static io.vavr.API.*;
 import static simple.orm.jdbc.query.QueryType.*;
-import static simple.orm.loader.QueryParser.ParamType.*;
 import static simple.orm.loader.StrategyType.*;
+import static simple.orm.loader.builder.ParameterType.*;
 
 /**
  * Default {@link QueryBuilder} implementation.
@@ -87,7 +87,7 @@ public class QueryBuilderImpl implements QueryBuilder {
                                          String sql,
                                          InjectionStrategy<P> injectionStrategy,
                                          ExtractionStrategy<R> extractionStrategy,
-                                         Traversable<QueryParser.QueryParam> params,
+                                         Traversable<QueryParameter> params,
                                          int queryTimeoutSeconds) {
         if (type == null) {
             throw new NullPointerException("type is null");
@@ -124,10 +124,10 @@ public class QueryBuilderImpl implements QueryBuilder {
     }
 
     private Query<?, ?> createDML(String sql,
-                                  Traversable<QueryParser.QueryParam> params,
+                                  Traversable<QueryParameter> params,
                                   InjectionStrategy<?> istrat,
                                   int queryTimeoutSeconds) {
-        final Traversable<QueryParser.QueryParam> iparams = params.filter(qp -> qp.type() == INJECTION);
+        final Traversable<QueryParameter> iparams = params.filter(p -> p.type() == INJECTION);
         return Match(istrat.type).of(
                 Case($(NONE),
                         () -> qFactory.iudQueryWithoutParameters(
@@ -150,12 +150,12 @@ public class QueryBuilderImpl implements QueryBuilder {
     }
 
     private Query<?, ?> createSelect(String sql,
-                                     Traversable<QueryParser.QueryParam> params,
+                                     Traversable<QueryParameter> params,
                                      InjectionStrategy<?> istrat,
                                      ExtractionStrategy<?> estrat,
                                      int queryTimeoutSeconds) {
-        final Traversable<QueryParser.QueryParam> iparams = params.filter(qp -> qp.type() == INJECTION);
-        final Traversable<QueryParser.QueryParam> eparams = params.filter(qp -> qp.type() == EXTRACTION);
+        final Traversable<QueryParameter> iparams = params.filter(p -> p.type() == INJECTION);
+        final Traversable<QueryParameter> eparams = params.filter(p -> p.type() == EXTRACTION);
         return Match(Tuple.of(istrat.type, estrat.type)).of(
                 Case($(Tuple.of(NONE, INDEXED)),
                         () -> qFactory.selectQueryWithoutParameters(
@@ -200,7 +200,7 @@ public class QueryBuilderImpl implements QueryBuilder {
         );
     }
 
-    private IndexedInjector createIInjector(Traversable<QueryParser.QueryParam> params) {
+    private IndexedInjector createIInjector(Traversable<QueryParameter> params) {
         return ieBuilder.buildIndexedInjector(
                 typesCollection,
                 mappersFinderSupplier.get(),
@@ -208,7 +208,7 @@ public class QueryBuilderImpl implements QueryBuilder {
         );
     }
 
-    private <P> NamedInjector<P> createNInjector(Class<P> sourceClass, Traversable<QueryParser.QueryParam> params) {
+    private <P> NamedInjector<P> createNInjector(Class<P> sourceClass, Traversable<QueryParameter> params) {
         return ieBuilder.buildNamedInjector(
                 typesCollection,
                 mappersFinderSupplier.get(),
@@ -218,7 +218,7 @@ public class QueryBuilderImpl implements QueryBuilder {
         );
     }
 
-    private IndexedExtractor createIExtractor(Traversable<QueryParser.QueryParam> params) {
+    private IndexedExtractor createIExtractor(Traversable<QueryParameter> params) {
         return ieBuilder.buildIndexedExtractor(
                 typesCollection,
                 mappersFinderSupplier.get(),
@@ -226,7 +226,7 @@ public class QueryBuilderImpl implements QueryBuilder {
         );
     }
 
-    private <R> NamedExtractor<R> createNExtractor(Class<R> targetClass, Traversable<QueryParser.QueryParam> params) {
+    private <R> NamedExtractor<R> createNExtractor(Class<R> targetClass, Traversable<QueryParameter> params) {
         return ieBuilder.buildNamedExtractor(
                 typesCollection,
                 mappersFinderSupplier.get(),

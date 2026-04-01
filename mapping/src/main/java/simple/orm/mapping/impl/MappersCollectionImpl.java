@@ -108,9 +108,9 @@ public class MappersCollectionImpl implements MappersCollection {
 
     @Override
     public Traversable<TypeMapper<?, ?>> findMappers(String name,
+                                                     String tag,
                                                      ParameterJdbcType<?> jdbcType,
-                                                     Class<?> javaType,
-                                                     String tag
+                                                     Class<?> javaType
     ) {
         if (name != null) {
             return byName.getOrElse(name, List.empty())
@@ -140,12 +140,12 @@ public class MappersCollectionImpl implements MappersCollection {
     @Override
     public Traversable<TypeMapper<?, ?>> findMappers(int sqlType,
                                                      String name,
-                                                     Class<?> javaType,
-                                                     String tag
+                                                     String tag,
+                                                     Class<?> javaType
     ) {
         return byType.keySet()
                 .filter(type -> Objects.equals(type.getSQLType().getVendorTypeNumber(), sqlType))
-                .flatMap(type -> findMappers(name, type, javaType, tag))
+                .flatMap(type -> findMappers(name, tag, type, javaType))
                 .toList();
     }
 

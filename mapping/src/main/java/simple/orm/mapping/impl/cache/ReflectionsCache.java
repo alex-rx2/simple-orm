@@ -13,7 +13,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static simple.orm.util.RefUtils.isAssignableFrom;
 import static simple.orm.util.StringUtils.qnn;
 
 /**

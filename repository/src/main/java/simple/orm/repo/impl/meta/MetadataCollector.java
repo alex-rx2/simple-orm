@@ -5,7 +5,8 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Traversable;
 import simple.orm.jdbc.query.Query;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.ParameterType;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.repo.RepositoryBuilderException;
 import simple.orm.repo.anno.ExtractParam;
 import simple.orm.repo.anno.InjectParam;
@@ -17,7 +18,6 @@ import simple.orm.util.Mutable;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
-import static io.vavr.API.*;
 import static simple.orm.jdbc.query.QueryType.*;
 import static simple.orm.repo.anno.ParameterStrategy.*;
 import static simple.orm.util.StringUtils.nullify;
@@ -127,7 +127,7 @@ public class MetadataCollector {
             if (allIndexesSpecified) {
                 boolean brokenIndexing = params.sortBy(InjectParam::index)
                         .zipWithIndex()
-                        .find(t2 -> t2._1.index() - 1 != t2._2)
+                        .find(t2 -> t2._1.index() != t2._2 + 1)
                         .isDefined();
                 if (brokenIndexing) {
                     throw new RepositoryBuilderException(method.getName() +
@@ -162,21 +162,15 @@ public class MetadataCollector {
             // validate indexing
             boolean noIndexes = params.find(p -> p.index() != -1).isEmpty();
             boolean allIndexesSpecified = params.find(p -> p.index() == -1).isEmpty();
+            if (params.find(p -> p.index() <= 0 && p.index() != -1).isDefined()) {
+                throw new RepositoryBuilderException(method.getName() +
+                        " all " + ExtractParam.class.getSimpleName() +
+                        " must either have proper indexes (>0), either have no indexes at all");
+            }
             if (noLabels && !noIndexes && !allIndexesSpecified) {
                 throw new RepositoryBuilderException(method.getName() +
                         " all " + ExtractParam.class.getSimpleName() +
-                        " must be either properly indexed, either have no indexes");
-            }
-            if (noLabels && allIndexesSpecified) {
-                boolean brokenIndexing = params.sortBy(ExtractParam::index)
-                        .zipWithIndex()
-                        .find(t2 -> t2._1.index() - 1 != t2._2)
-                        .isDefined();
-                if (brokenIndexing) {
-                    throw new RepositoryBuilderException(method.getName() +
-                            " " + ExtractParam.class.getSimpleName() +
-                            " indexing is broken (must start with 1 and increment by 1)");
-                }
+                        " must either have proper indexes (>0), either have no indexes at all");
             }
             // check prop names specified if NamedExtractor is used
             if (annSimpleQuery.targetClass() != Seq.class) {
@@ -207,83 +201,60 @@ public class MetadataCollector {
                 annSimpleQuery.parameters(),
                 annSimpleQuery.sourceClass() == Seq.class ? null : annSimpleQuery.sourceClass(),
                 annSimpleQuery.targetClass() == Seq.class ? null : annSimpleQuery.targetClass(),
-                reindexOrSort(annInjectParam.length == 0 ?
+                reindexIfNoIndexes(annInjectParam.length == 0 ?
                         Array.empty() :
                         Array.of(annInjectParam).map(this::toQueryParam)
                 ),
-                reindexOrSort(annExtractParam.length == 0 ?
+                reindexIfNoIndexes(annExtractParam.length == 0 ?
                         Array.empty() :
                         Array.of(annExtractParam).map(this::toQueryParam)),
                 annSimpleQuery.timeout()
         );
     }
 
-    private QueryParser.QueryParam toQueryParam(InjectParam param) {
-        return new QueryParser.QueryParam(
-                QueryParser.ParamType.INJECTION,
-                param.index(),
+    private QueryParameter toQueryParam(InjectParam param) {
+        return new QueryParameter(
+                ParameterType.INJECTION,
+                param.index() < 0 ? null : param.index(),
                 null,
-                false,
                 nullify(param.prop()),
+                null,
                 nullify(param.mapper()),
                 nullify(param.tag()),
+                null,
                 nullify(param.jdbc()),
-                getJavaClassName(param.java())
+                param.java() == Object.class ? null : param.java(),
+                null
         );
     }
 
-    private QueryParser.QueryParam toQueryParam(ExtractParam param) {
-        return new QueryParser.QueryParam(
-                QueryParser.ParamType.EXTRACTION,
-                param.index(),
+    private QueryParameter toQueryParam(ExtractParam param) {
+        return new QueryParameter(
+                ParameterType.EXTRACTION,
+                param.index() < 0 ? null : param.index(),
                 nullify(param.label()),
-                false,
                 nullify(param.prop()),
+                null,
                 nullify(param.mapper()),
                 nullify(param.tag()),
+                null,
                 nullify(param.jdbc()),
-                getJavaClassName(param.java())
+                param.java() == Object.class ? null : param.java(),
+                null
         );
     }
 
-    private Traversable<QueryParser.QueryParam> reindexOrSort(Array<QueryParser.QueryParam> params) {
+    private Traversable<QueryParameter> reindexIfNoIndexes(Array<QueryParameter> params) {
         if (params.isEmpty()) {
             return params;
         }
         // reindex params if no indexes specified
-        if (params.get(0).indexWithinType() == -1) {
+        if (!params.find(qp -> qp.index() != null).isDefined()) {
             return params.zipWithIndex((p, i) -> p.reindex(i + 1));
         } else {
-            // or sort them if indexes were provided
-            return params.sortBy(QueryParser.QueryParam::indexWithinType);
+            // do nothing if at least one index is manually specified
+            return params;
         }
-    }
-
-    private static String getJavaClassName(Class<?> aClass) {
-        // unfortunately have to use QueryParser.QueryParam with string to pass java class information
-        // works badly for primitive types (Class.forName can't load them)
-        // looks like in Java22 they have Class#forPrimitiveName
-        // but that's so half-assed... like everything they do though...
-        if (aClass == Object.class) {
-            return null;
-        }
-        if (aClass.isPrimitive()) {
-            return Match(aClass).of(
-                    Case($(same(Boolean.TYPE)), Boolean.class.getName()),
-                    Case($(same(Byte.TYPE)), Byte.class.getName()),
-                    Case($(same(Short.TYPE)), Short.class.getName()),
-                    Case($(same(Character.TYPE)), Character.class.getName()),
-                    Case($(same(Integer.TYPE)), Integer.class.getName()),
-                    Case($(same(Long.TYPE)), Long.class.getName()),
-                    Case($(same(Float.TYPE)), Float.class.getName()),
-                    Case($(same(Double.TYPE)), Double.class.getName()),
-                    Case($(same(Void.TYPE)), Void.class.getName()), // mmmm...anyway
-                    Case($(), () -> {
-                        throw new IllegalStateException("should be unreachable for " + aClass);
-                    })
-            );
-        }
-        return aClass.getName();
     }
 
     private static Predicate<Class<?>> same(Class<?> type) {

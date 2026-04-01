@@ -72,7 +72,7 @@ public class NamedInjectorBuilder<T> {
         if (mapper == null) {
             throw new NullPointerException("mapper is null");
         }
-        params.apply(p -> p.append(NamedParameter.of(propertyName, p.size() + 1, mapper)));
+        params.apply(p -> p.append(NamedParameter.of(p.size() + 1, propertyName, mapper)));
         return this;
     }
 
@@ -83,23 +83,23 @@ public class NamedInjectorBuilder<T> {
         if (param == null) {
             throw new NullPointerException("param is null");
         }
-        params.apply(p -> p.append(NamedParameter.of(propertyName, p.size() + 1, param)));
+        params.apply(p -> p.append(NamedParameter.of(p.size() + 1, propertyName, param)));
         return this;
     }
 
     public NamedInjectorBuilder<T> param(String propertyName,
                                          String mapperName,
+                                         String tag,
                                          ParameterJdbcType<?> jdbcType,
-                                         Class<?> javaType,
-                                         String tag
+                                         Class<?> javaType
     ) {
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
         params.apply(p -> p.append(NamedParameter.of(
-                propertyName,
                 p.size() + 1,
-                ParamInfo.of(mapperName, jdbcType, javaType, tag)
+                propertyName,
+                ParamInfo.of(mapperName, tag, jdbcType, javaType)
         )));
         return this;
     }

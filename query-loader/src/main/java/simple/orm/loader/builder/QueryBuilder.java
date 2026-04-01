@@ -48,7 +48,7 @@ public interface QueryBuilder {
                                   String sql,
                                   InjectionStrategy<P> injectionStrategy,
                                   ExtractionStrategy<R> extractionStrategy,
-                                  Traversable<QueryParser.QueryParam> params,
+                                  Traversable<QueryParameter> params,
                                   int queryTimeoutSeconds);
 
     /**

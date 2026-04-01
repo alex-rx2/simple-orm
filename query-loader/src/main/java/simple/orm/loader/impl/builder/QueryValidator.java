@@ -3,11 +3,13 @@ package simple.orm.loader.impl.builder;
 import io.vavr.collection.Traversable;
 import simple.orm.loader.ExtractionStrategy;
 import simple.orm.loader.InjectionStrategy;
-import simple.orm.loader.QueryParser;
 import simple.orm.loader.StrategyType;
+import simple.orm.loader.builder.QueryParameter;
 
-import static simple.orm.loader.QueryParser.ParamType.*;
+import java.util.Objects;
+
 import static simple.orm.loader.StrategyType.*;
+import static simple.orm.loader.builder.ParameterType.*;
 import static simple.orm.util.StringUtils.empty;
 
 /**
@@ -29,7 +31,7 @@ public class QueryValidator {
 
     public void validateDDL(InjectionStrategy<?> injectionStrategy,
                             ExtractionStrategy<?> extractionStrategy,
-                            Traversable<QueryParser.QueryParam> parsedParams) {
+                            Traversable<QueryParameter> params) {
         if (injectionStrategy.type != NONE) {
             throw new IllegalArgumentException(
                     "DDL query injection strategy = " + extractionStrategy.type + ", should be " + NONE
@@ -40,38 +42,38 @@ public class QueryValidator {
                     "DDL query extraction strategy = " + extractionStrategy.type + ", should be " + NONE
             );
         }
-        if (!parsedParams.isEmpty()) {
+        if (!params.isEmpty()) {
             throw new IllegalArgumentException("DDL query should have no parameters");
         }
     }
 
     public void validateDML(InjectionStrategy<?> injectionStrategy,
                             ExtractionStrategy<?> extractionStrategy,
-                            Traversable<QueryParser.QueryParam> parsedParams) {
+                            Traversable<QueryParameter> params) {
         if (extractionStrategy.type != NONE) {
             throw new IllegalArgumentException(
                     "DML query extraction strategy = " + extractionStrategy.type + ", should be " + NONE
             );
         }
-        validateInjectionParams(injectionStrategy.type, parsedParams);
-        validateExtractionParams(extractionStrategy.type, parsedParams);
+        validateInjectionParams(injectionStrategy.type, params);
+        validateExtractionParams(extractionStrategy.type, params);
     }
 
     public void validateSelect(InjectionStrategy<?> injectionStrategy,
                                ExtractionStrategy<?> extractionStrategy,
-                               Traversable<QueryParser.QueryParam> parsedParams) {
+                               Traversable<QueryParameter> params) {
         if (extractionStrategy.type == NONE) {
             throw new IllegalArgumentException(
                     "select query extraction strategy is " + NONE
             );
         }
-        validateInjectionParams(injectionStrategy.type, parsedParams);
-        validateExtractionParams(extractionStrategy.type, parsedParams);
+        validateInjectionParams(injectionStrategy.type, params);
+        validateExtractionParams(extractionStrategy.type, params);
     }
 
-    private void validateInjectionParams(StrategyType type, Traversable<QueryParser.QueryParam> parsedParams) {
-        final Traversable<QueryParser.QueryParam> iParams =
-                parsedParams.filter(qp -> qp.type() == INJECTION);
+    private void validateInjectionParams(StrategyType type, Traversable<QueryParameter> params) {
+        final Traversable<QueryParameter> iParams =
+                params.filter(p -> p.type() == INJECTION);
         switch (type) {
             case NONE -> {
                 // must be no injection params
@@ -88,19 +90,22 @@ public class QueryValidator {
                             "should have at least one parameter when using injection strategy " + INDEXED
                     );
                 }
-                // validate indexing 1...n
-                if (iParams.toList()
+                // validate indexing 1...n or no indexes at all
+                final boolean hasIndexes = iParams.find(p -> p.index() != null).isDefined();
+                if (hasIndexes
+                        && iParams.toList()
                         .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
+                        .find(t2 -> !Objects.equals(t2._1.index(), t2._2 + 1))
+                        .isDefined()
+                ) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing for injection strategy " + INDEXED
+                            "parameters must be indexed 1...n or have no indexes at all for injection strategy " + INDEXED
                     );
                 }
-                // validate no directly specified labels
-                if (iParams.find(qp -> !qp.labelGuessed() && !empty(qp.label())).isDefined()) {
+                // validate no labels specified
+                if (iParams.find(p -> !empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
-                            "parameters should have no label defined for injection strategy " + INDEXED
+                            "parameters should have no labels defined for injection strategy " + INDEXED
                     );
                 }
             }
@@ -111,34 +116,37 @@ public class QueryValidator {
                             "should have at least one parameter when using injection strategy " + NAMED
                     );
                 }
-                // 1. validate indexing 1...n
-                // 2. all parameters have NONEMPTY propName
-                // 3. has no labels
-                if (iParams.toList()
+                // validate indexing 1...n or no indexes at all
+                final boolean hasIndexes = iParams.find(p -> p.index() != null).isDefined();
+                if (hasIndexes
+                        && iParams.toList()
                         .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
+                        .find(t2 -> !Objects.equals(t2._1.index(), t2._2 + 1))
+                        .isDefined()
+                ) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing for injection strategy " + NAMED
+                            "parameters must be indexed 1...n or have no indexes at all for injection strategy " + NAMED
                     );
                 }
-                if (iParams.find(qp -> empty(qp.propName())).isDefined()) {
+                // all parameters have NONEMPTY propName
+                if (iParams.find(p -> empty(p.propName())).isDefined()) {
                     throw new IllegalArgumentException(
                             "each parameter should have nonempty property name for injection strategy " + NAMED
                     );
                 }
-                if (iParams.find(qp -> !qp.labelGuessed() && !empty(qp.label())).isDefined()) {
+                // validate no labels specified
+                if (iParams.find(p -> !empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
-                            "parameters should have no label defined for injection strategy " + INDEXED
+                            "parameters should have no label defined for injection strategy " + NAMED
                     );
                 }
             }
         }
     }
 
-    private void validateExtractionParams(StrategyType type, Traversable<QueryParser.QueryParam> parsedParams) {
-        final Traversable<QueryParser.QueryParam> eParams =
-                parsedParams.filter(qp -> qp.type() == EXTRACTION);
+    private void validateExtractionParams(StrategyType type, Traversable<QueryParameter> parsedParams) {
+        final Traversable<QueryParameter> eParams =
+                parsedParams.filter(p -> p.type() == EXTRACTION);
         switch (type) {
             case NONE -> {
                 // must be no extraction params
@@ -155,20 +163,28 @@ public class QueryValidator {
                             "should have at least one parameter when using extraction strategy " + INDEXED
                     );
                 }
-                // validate indexing 1...n
-                if (eParams.toList()
-                        .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
-                    throw new IllegalArgumentException(
-                            "broken parameter indexing for extraction strategy " + INDEXED
-                    );
-                }
-                // validate no directly specified labels
-                if (eParams.find(qp -> !qp.labelGuessed() && !empty(qp.label())).isDefined()) {
-                    throw new IllegalArgumentException(
-                            "parameters should have no label defined for extraction strategy " + INDEXED
-                    );
+                // validate all params either indexed, either labelled
+                // - validate all indexes >0 (in case of indexes)
+                // - validate all labels NONEMPTY (in case of labels)
+                // - or no indexes and labels at all
+                final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                final boolean hasIndexes = eParams.find(p -> p.index() != null).isDefined();
+                if (hasLabels) {
+                    // all should have nonempty labels
+                    if (eParams.find(p -> empty(p.label())).isDefined()) {
+                        throw new IllegalArgumentException(
+                                "some parameters have labels, some don't" +
+                                        " (either all should have nonempty label, either none at all)" +
+                                        " for extraction strategy " + INDEXED
+                        );
+                    }
+                } else if (hasIndexes) {
+                    // all should be properly indexed (all indexes >0)
+                    if (eParams.find(p -> p.index() != null && p.index() <= 0).isDefined()) {
+                        throw new IllegalArgumentException(
+                                "all indexes should be >0 for extraction strategy " + INDEXED
+                        );
+                    }
                 }
             }
             case NAMED -> {
@@ -178,41 +194,39 @@ public class QueryValidator {
                             "should have at least one parameter when using extraction strategy " + NAMED
                     );
                 }
-                // 1. validate all params either indexed, either labelled
-                // 1.1 validate indexing 1...n (in case of indexes)
-                // 1.2 validate all labels NONEMPTY (in case of labels)
-                // 2. all parameters have NONEMPTY propName
-                // 3. propNames should have no duplicates
-                final boolean hasLabels = eParams.find(qp -> !empty(qp.label())).isDefined();
+                // validate all params either indexed, either labelled
+                // - validate all indexes >0 (in case of indexes)
+                // - validate all labels NONEMPTY (in case of labels)
+                // - or no indexes and labels at all
+                final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                final boolean hasIndexes = eParams.find(p -> p.index() != null).isDefined();
                 if (hasLabels) {
                     // all should have nonempty labels
-                    if (eParams.find(qp -> empty(qp.label())).isDefined()) {
+                    if (eParams.find(p -> empty(p.label())).isDefined()) {
                         throw new IllegalArgumentException(
                                 "some parameters have labels, some don't" +
                                         " (either all should have nonempty label, either none at all)" +
                                         " for extraction strategy " + NAMED
                         );
                     }
-                } else {
-                    // all should be properly indexed
-                    if (eParams.toList()
-                            .zipWithIndex()
-                            .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                            .isDefined()) {
+                } else if (hasIndexes) {
+                    // all should be properly indexed (all indexes >0)
+                    if (eParams.find(p -> p.index() != null && p.index() <= 0).isDefined()) {
                         throw new IllegalArgumentException(
-                                "broken parameter indexing for extraction strategy " + NAMED
+                                "all indexes should be >0 for extraction strategy " + NAMED
                         );
                     }
                 }
-                // validate propNames
-                if (eParams.find(qp -> empty(qp.propName()) && empty(qp.label())).isDefined()) {
+                // all parameters have NONEMPTY propName
+                if (eParams.find(p -> empty(p.propName()) && empty(p.label())).isDefined()) {
                     throw new IllegalArgumentException(
                             "each parameter should have nonempty property name or label (which will be used instead)" +
                                     " for extraction strategy " + NAMED
                     );
                 }
+                // propNames should have no duplicates
                 if (eParams
-                        .groupBy(qp -> empty(qp.propName()) ? qp.label() : qp.propName())
+                        .groupBy(p -> empty(p.propName()) ? p.label() : p.propName())
                         .find(t2 -> t2._2.size() > 1).isDefined()) {
                     throw new IllegalArgumentException(
                             "duplicate property names found" +

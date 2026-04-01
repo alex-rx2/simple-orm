@@ -115,9 +115,9 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassOne> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, mapperInt),
-                        NamedParameter.of("fieldStringOne", 2, mapperString),
-                        NamedParameter.of("fieldStringTwo", 3, mapperString)),
+                List.of(NamedParameter.of(1, "fieldInteger", mapperInt),
+                        NamedParameter.of(2, "fieldStringOne", mapperString),
+                        NamedParameter.of(3, "fieldStringTwo", mapperString)),
                 SomeClassOne.class,
                 List.empty(),
                 List.empty()
@@ -198,9 +198,9 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassOne> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("fieldStringOne", 2, paramInfo2),
-                        NamedParameter.of("fieldStringTwo", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "fieldStringOne", paramInfo2),
+                        NamedParameter.of(3, "fieldStringTwo", paramInfo3)),
                 SomeClassOne.class,
                 List.empty(),
                 List.empty()
@@ -282,9 +282,9 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3)),
                 SomeClassThree.class,
                 List.empty(),
                 List.empty()
@@ -372,11 +372,11 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", "int01", mapperInt),
-                        NamedParameter.of("classTwo.fieldInteger", "int02", mapperInt),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", "int03", mapperInt),
-                        NamedParameter.of("classTwo.classOne.fieldStringOne", "str01", mapperString),
-                        NamedParameter.of("classTwo.classOne.fieldStringTwo", "str02", mapperString)),
+                List.of(NamedParameter.of("int01", "fieldInteger", mapperInt),
+                        NamedParameter.of("int02", "classTwo.fieldInteger", mapperInt),
+                        NamedParameter.of("int03", "classTwo.classOne.fieldInteger", mapperInt),
+                        NamedParameter.of("str01", "classTwo.classOne.fieldStringOne", mapperString),
+                        NamedParameter.of("str02", "classTwo.classOne.fieldStringTwo", mapperString)),
                 SomeClassThree.class,
                 List.of(
                         ObjectConstructor.of(SomeClassOne.class, props -> CreatedObject.of(new SomeClassOne())),
@@ -461,9 +461,9 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3)),
                 SomeClassThree.class,
                 List.of(ObjectConstructor.of(SomeClassTwo.class, () -> null)),
                 List.empty()
@@ -549,10 +549,10 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3),
-                        NamedParameter.of("numberOfTheBeast", 4, paramInfo4)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3),
+                        NamedParameter.of(4, "numberOfTheBeast", paramInfo4)),
                 SomeClassThree.class,
                 List.of(ObjectConstructor.of(
                         SomeClassThree.class,
@@ -603,11 +603,11 @@ public class NamedExtractorImplTest {
         final ParamInfo<Object, Object> paramInfo3 = ParamInfo.of(null, null, null, null);
         final ParamInfo<Object, Object> paramInfo4 = ParamInfo.of(null, null, null, null);
         final ParamInfo<Object, Object> paramInfo5 = ParamInfo.of(null, null, null, null);
-        final ParamInfo<Object, Integer> derivedParamInfo1 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, Integer> derivedParamInfo2 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, Integer> derivedParamInfo3 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, String> derivedParamInfo4 = ParamInfo.of(null, null, String.class, null);
-        final ParamInfo<Object, String> derivedParamInfo5 = ParamInfo.of(null, null, String.class, null);
+        final ParamInfo<Object, Integer> derivedParamInfo1 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, Integer> derivedParamInfo2 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, Integer> derivedParamInfo3 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, String> derivedParamInfo4 = ParamInfo.of(null, null, null, String.class);
+        final ParamInfo<Object, String> derivedParamInfo5 = ParamInfo.of(null, null, null, String.class);
 
         final ParameterSetter<Integer> setterTypeInt = mock();
         final ParameterJdbcType<Integer> typeInt = ParameterJdbcType.of(JDBCType.INTEGER, Integer.class,
@@ -680,11 +680,11 @@ public class NamedExtractorImplTest {
         final NamedExtractorImpl<SomeClassThree> extractor = new NamedExtractorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3),
-                        NamedParameter.of("classTwo.classOne.fieldStringOne", 4, paramInfo4),
-                        NamedParameter.of("classTwo.classOne.fieldStringTwo", 5, paramInfo5)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3),
+                        NamedParameter.of(4, "classTwo.classOne.fieldStringOne", paramInfo4),
+                        NamedParameter.of(5, "classTwo.classOne.fieldStringTwo", paramInfo5)),
                 SomeClassThree.class,
                 List.empty(),
                 List.empty()
@@ -724,7 +724,7 @@ public class NamedExtractorImplTest {
         verify(reflectionsFinder).findSetter(eq("fieldStringTwo"), eq(SomeClassOne.class));
 
         verifyNoMoreInteractions(mappersFinder, reflectionsFinder, rs, rsMeta);
-        verifyNoInteractions(setterTypeInt,setterTypeString);
+        verifyNoInteractions(setterTypeInt, setterTypeString);
     }
 
     private static class SomeClassOne {

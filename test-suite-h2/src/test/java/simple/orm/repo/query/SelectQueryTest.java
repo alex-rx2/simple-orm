@@ -195,9 +195,9 @@ public class SelectQueryTest extends BaseH2Test {
             assertThat(result.hasNextRow()).isTrue();
             Seq<Object> row = result.nextRow();
             assertThat(row).containsExactly(
-                    LocalDate.of(2025, 10, 24),
+                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123),
                     LocalTime.of(13, 20, 0, 111),
-                    LocalDateTime.of(2025, 10, 24, 13, 20, 30, 123123123)
+                    LocalDate.of(2025, 10, 24)
             );
             assertThat(result.hasNextRow()).isFalse();
             conn.close();
@@ -430,10 +430,10 @@ public class SelectQueryTest extends BaseH2Test {
                               WHERE id=? AND col_d=? AND col_nu=? AND col_str1=? AND col_str2=?\
                              """)
         @InjectParam(index = 1, mapper = "intstr")
-        @InjectParam(index = 4, mapper = "varchar")
-        @InjectParam(index = 5, mapper = "varchar")
         @InjectParam(index = 2, mapper = "double")
         @InjectParam(index = 3, mapper = "numeric")
+        @InjectParam(index = 4, mapper = "varchar")
+        @InjectParam(index = 5, mapper = "varchar")
         @ExtractParam(index = 3, mapper = "timestamp")
         @ExtractParam(index = 2, mapper = "time")
         @ExtractParam(index = 1, mapper = "date")

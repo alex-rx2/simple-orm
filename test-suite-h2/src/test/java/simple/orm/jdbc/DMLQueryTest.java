@@ -113,15 +113,19 @@ public class DMLQueryTest extends BaseH2Test {
             Query<Seq<Object>, Integer> query = QFACTORY.iudQuery(
                     "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     InjectorsExtractors.indexedInjector(H2Mappers.collection())
-                            .params(
-                                    H2Mappers.INT,
-                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
-                                    H2Mappers.REAL, H2Mappers.VARCHAR,
-                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
-                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
-                            )
+                            .param(H2Mappers.INT)
+                            .param(H2Mappers.TINYINT_I)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.SMALLINT_I)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.BIGINT)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.REAL)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.DOUBLE)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.NUMERIC)
+                            .param(H2Mappers.VARCHAR)
                             .build()
             );
             int result = conn.executeDMLQuery(query,
@@ -281,15 +285,19 @@ public class DMLQueryTest extends BaseH2Test {
             Query<Seq<Object>, Integer> query1 = QFACTORY.iudQuery(
                     "INSERT INTO table_one VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     InjectorsExtractors.indexedInjector(H2Mappers.collection())
-                            .params(
-                                    H2Mappers.INT,
-                                    H2Mappers.TINYINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.SMALLINT_I, H2Mappers.VARCHAR,
-                                    H2Mappers.BIGINT, H2Mappers.VARCHAR,
-                                    H2Mappers.REAL, H2Mappers.VARCHAR,
-                                    H2Mappers.DOUBLE, H2Mappers.VARCHAR,
-                                    H2Mappers.NUMERIC, H2Mappers.VARCHAR
-                            )
+                            .param(H2Mappers.INT)
+                            .param(H2Mappers.TINYINT_I)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.SMALLINT_I)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.BIGINT)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.REAL)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.DOUBLE)
+                            .param(H2Mappers.VARCHAR)
+                            .param(H2Mappers.NUMERIC)
+                            .param(H2Mappers.VARCHAR)
                             .build()
             );
             int result1 = conn.executeAnyQuery(query1,

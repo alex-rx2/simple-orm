@@ -159,21 +159,17 @@ public class MetadataCollectorValidationTest {
             assertThatCode(() -> collector.collectMetadata(Test_extract_params_not_all_indexed.class))
                     .isInstanceOf(RepositoryBuilderException.class)
                     .hasMessageStartingWith("query")
-                    .hasMessageContaining("must be either properly indexed, either have no indexes");
+                    .hasMessageContaining("either have proper indexes (>0), either have no indexes at all");
         }
         {
-            assertThatCode(() -> collector.collectMetadata(Test_extract_params_indexed_with_gaps.class))
+            assertThatCode(() -> collector.collectMetadata(Test_extract_params_wrong_indexes.class))
                     .isInstanceOf(RepositoryBuilderException.class)
                     .hasMessageStartingWith("query")
-                    .hasMessageContaining("indexing is broken");
+                    .hasMessageContaining("either have proper indexes (>0), either have no indexes at all");
         }
         {
             assertThatCode(() -> collector.collectMetadata(Test_extract_params_not_all_indexed_ignored.class))
-                    .doesNotThrowAnyException(); // has labels, indexes ignored
-        }
-        {
-            assertThatCode(() -> collector.collectMetadata(Test_extract_params_indexed_with_gaps_ignored.class))
-                    .doesNotThrowAnyException(); // has labels, indexes ignored
+                    .doesNotThrowAnyException(); // has all labels - indexes ignored
         }
         {
             assertThatCode(() -> collector.collectMetadata(Test_extract_params_indexed_has_prop_names.class))
@@ -339,11 +335,11 @@ public class MetadataCollectorValidationTest {
     }
 
     @SimpleOrmRepo(type = RepoType.QUERY)
-    public interface Test_extract_params_indexed_with_gaps {
+    public interface Test_extract_params_wrong_indexes {
         @SimpleQuery(type = QueryType.SELECT, parameters = ParameterStrategy.PROVIDED)
         @QuerySource(query = "SQL")
         @ExtractParam(index = 1)
-        @ExtractParam(index = 3)
+        @ExtractParam(index = -3)
         Query<Void, Void> query();
     }
 
@@ -353,15 +349,6 @@ public class MetadataCollectorValidationTest {
         @QuerySource(query = "SQL")
         @ExtractParam(index = 1, label = "label1")
         @ExtractParam(label = "label2")
-        Query<Void, Void> query();
-    }
-
-    @SimpleOrmRepo(type = RepoType.QUERY)
-    public interface Test_extract_params_indexed_with_gaps_ignored {
-        @SimpleQuery(type = QueryType.SELECT, parameters = ParameterStrategy.PROVIDED)
-        @QuerySource(query = "SQL")
-        @ExtractParam(index = 1, label = "label1")
-        @ExtractParam(index = 3, label = "label2")
         Query<Void, Void> query();
     }
 

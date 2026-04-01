@@ -148,7 +148,7 @@ public abstract class AbstractNamedInjector<T> implements NamedInjector<T> {
         }
         // try to find provided extractor for superclass/interface
         extractorOpt = providedExtractors
-                .find(t2 -> propName.equals(t2._1.name()) && t2._1.target().isAssignableFrom(sourceClass))
+                .find(t2 -> propName.equals(t2._1.name) && t2._1.target.isAssignableFrom(sourceClass))
                 .map(Tuple2::_2);
         if (!extractorOpt.isDefined()) {
             // if nothing found - build new extractor

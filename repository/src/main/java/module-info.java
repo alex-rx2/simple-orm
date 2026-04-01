@@ -5,7 +5,6 @@ open module simple.orm.repository {
     requires simple.orm.mapping;
     requires simple.orm.queryloader;
     requires simple.orm.util;
-    requires org.jspecify;
 
     exports simple.orm.repo.anno;
     exports simple.orm.repo;

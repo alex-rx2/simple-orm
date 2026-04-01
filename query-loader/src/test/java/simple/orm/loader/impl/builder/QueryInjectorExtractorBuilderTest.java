@@ -8,7 +8,7 @@ import simple.orm.jdbc.map.IndexedExtractor;
 import simple.orm.jdbc.map.IndexedInjector;
 import simple.orm.jdbc.map.NamedExtractor;
 import simple.orm.jdbc.map.NamedInjector;
-import simple.orm.loader.QueryParser;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.builder.ReflectionsFinder;
 import simple.orm.mapping.indexed.IndexedExtractorImpl;
@@ -20,11 +20,13 @@ import simple.orm.mapping.named.NamedParameter;
 import simple.orm.mapping.param.ParamInfo;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.param.TypesCollection;
+import simple.orm.mapping.type.TypeMapper;
 
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static simple.orm.loader.builder.ParameterType.*;
 
 /**
  * Tests on {@link QueryInjectorExtractorBuilder}.
@@ -32,39 +34,45 @@ import static org.mockito.Mockito.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class QueryInjectorExtractorBuilderTest {
 
+    private final QueryInjectorExtractorBuilder qieBuilder = QueryInjectorExtractorBuilder.getInstance(); // stateless
+
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void testIndexedInjector() throws Exception {
         final TypesCollection mockTypesCollection = mock();
         final MappersFinder mockMappersFinder = mock();
         final ParameterJdbcType mockJdbcType = mock();
-
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
         when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
-
-        QueryInjectorExtractorBuilder qieBuilder = QueryInjectorExtractorBuilder.getInstance();
+        // test
         IndexedInjector injector = qieBuilder.buildIndexedInjector(
                 mockTypesCollection,
                 mockMappersFinder,
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, null, "mapper", "tag", "jdbcType", "java.lang.String"),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, null, "mapper", "tag", null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, null, null, null, null, null)
+                        new QueryParameter(INJECTION, null, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(INJECTION, null, null, null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(INJECTION, null, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, null, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(INJECTION, null, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
-
+        // asserts & verifies
         assertThat(injector).isInstanceOf(IndexedInjectorImpl.class);
         verify(mockTypesCollection).findType(eq("jdbcType"));
         verifyNoMoreInteractions(mockTypesCollection);
-        verifyNoInteractions(mockMappersFinder, mockJdbcType);
-
+        verifyNoInteractions(mockMappersFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
         {
             Field field = injector.getClass().getDeclaredField("parameters");
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(injector);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
-                    IndexedParameter.of(3, ParamInfo.of(null, null, null, null))
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
+                    IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
+                    IndexedParameter.of(4, mockTypeMapper),
+                    IndexedParameter.of(5, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -77,37 +85,153 @@ public class QueryInjectorExtractorBuilderTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void testIndexedExtractor() throws Exception {
+    public void testIndexedExtractor_index() throws Exception {
         final TypesCollection mockTypesCollection = mock();
         final MappersFinder mockMappersFinder = mock();
         final ParameterJdbcType mockJdbcType = mock();
-
-        when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
-
-        QueryInjectorExtractorBuilder qieBuilder = QueryInjectorExtractorBuilder.getInstance();
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
+        when(mockTypesCollection.findType(eq("jdbcType"))).thenReturn(mockJdbcType);
+        when(mockTypesCollection.findType(eq("jdbcType2"))).thenReturn(mockJdbcType2);
+        // test
         IndexedExtractor extractor = qieBuilder.buildIndexedExtractor(
                 mockTypesCollection,
                 mockMappersFinder,
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 1, null, false, null, "mapper", "tag", "jdbcType", "java.lang.String"),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 2, null, false, null, "mapper", "tag", null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.EXTRACTION, 3, null, false, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, null, null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, "label1", null, null, "mapper2", null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, "label2", null, null, null, null, null, "jdbcType2", null, "java.lang.Integer"),
+                        new QueryParameter(EXTRACTION, 6, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
-
+        // asserts & verifies
         assertThat(extractor).isInstanceOf(IndexedExtractorImpl.class);
         verify(mockTypesCollection).findType(eq("jdbcType"));
+        verify(mockTypesCollection).findType(eq("jdbcType2"));
         verifyNoMoreInteractions(mockTypesCollection);
-        verifyNoInteractions(mockMappersFinder, mockJdbcType);
-
+        verifyNoInteractions(mockMappersFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
         {
             Field field = extractor.getClass().getDeclaredField("parameters");
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
-                    IndexedParameter.of(3, ParamInfo.of(null, null, null, null))
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
+                    IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
+                    IndexedParameter.of(4, ParamInfo.of("mapper2", null, null, null)),
+                    IndexedParameter.of(5, ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
+                    IndexedParameter.of(6, mockTypeMapper),
+                    IndexedParameter.of(7, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
+            );
+        }
+        {
+            Field field = extractor.getClass().getDeclaredField("mappersFinder");
+            field.trySetAccessible();
+            MappersFinder mappersFinder = (MappersFinder) field.get(extractor);
+            assertThat(mappersFinder).isSameAs(mockMappersFinder);
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testIndexedExtractor_label() throws Exception {
+        final TypesCollection mockTypesCollection = mock();
+        final MappersFinder mockMappersFinder = mock();
+        final ParameterJdbcType mockJdbcType = mock();
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
+        when(mockTypesCollection.findType(eq("jdbcType"))).thenReturn(mockJdbcType);
+        when(mockTypesCollection.findType(eq("jdbcType2"))).thenReturn(mockJdbcType2);
+        // test
+        IndexedExtractor extractor = qieBuilder.buildIndexedExtractor(
+                mockTypesCollection,
+                mockMappersFinder,
+                List.of(
+                        new QueryParameter(EXTRACTION, 1, "label1", null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, "label2", null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, "label3", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, "label4", null, null, "mapper2", null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, "label5", null, null, null, null, null, "jdbcType2", null, "java.lang.Integer"),
+                        new QueryParameter(EXTRACTION, 6, "label6", null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, "label7", null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                )
+        );
+        // asserts & verifies
+        assertThat(extractor).isInstanceOf(IndexedExtractorImpl.class);
+        verify(mockTypesCollection).findType(eq("jdbcType"));
+        verify(mockTypesCollection).findType(eq("jdbcType2"));
+        verifyNoMoreInteractions(mockTypesCollection);
+        verifyNoInteractions(mockMappersFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
+        {
+            Field field = extractor.getClass().getDeclaredField("parameters");
+            field.trySetAccessible();
+            Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
+            assertThat(parameters).containsExactly(
+                    IndexedParameter.of("label1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of("label2", ParamInfo.of("mapper", "tag", null, null)),
+                    IndexedParameter.of("label3", ParamInfo.of(null, null, null, null)),
+                    IndexedParameter.of("label4", ParamInfo.of("mapper2", null, null, null)),
+                    IndexedParameter.of("label5", ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
+                    IndexedParameter.of("label6", mockTypeMapper),
+                    IndexedParameter.of("label7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
+            );
+        }
+        {
+            Field field = extractor.getClass().getDeclaredField("mappersFinder");
+            field.trySetAccessible();
+            MappersFinder mappersFinder = (MappersFinder) field.get(extractor);
+            assertThat(mappersFinder).isSameAs(mockMappersFinder);
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testIndexedExtractor_simple() throws Exception {
+        final TypesCollection mockTypesCollection = mock();
+        final MappersFinder mockMappersFinder = mock();
+        final ParameterJdbcType mockJdbcType = mock();
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
+        when(mockTypesCollection.findType(eq("jdbcType"))).thenReturn(mockJdbcType);
+        when(mockTypesCollection.findType(eq("jdbcType2"))).thenReturn(mockJdbcType2);
+        // test
+        IndexedExtractor extractor = qieBuilder.buildIndexedExtractor(
+                mockTypesCollection,
+                mockMappersFinder,
+                List.of(
+                        new QueryParameter(EXTRACTION, null, null, null, null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, null, null, null, null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, "label1", null, null, "mapper2", null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, "label2", null, null, null, null, null, "jdbcType2", null, "java.lang.Integer"),
+                        new QueryParameter(EXTRACTION, null, null, null, mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, null, null, null, null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                )
+        );
+        // asserts & verifies
+        assertThat(extractor).isInstanceOf(IndexedExtractorImpl.class);
+        verify(mockTypesCollection).findType(eq("jdbcType"));
+        verify(mockTypesCollection).findType(eq("jdbcType2"));
+        verifyNoMoreInteractions(mockTypesCollection);
+        verifyNoInteractions(mockMappersFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
+        {
+            Field field = extractor.getClass().getDeclaredField("parameters");
+            field.trySetAccessible();
+            Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
+            assertThat(parameters).containsExactly(
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
+                    IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
+                    IndexedParameter.of(4, ParamInfo.of("mapper2", null, null, null)),
+                    IndexedParameter.of(5, ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
+                    IndexedParameter.of(6, mockTypeMapper),
+                    IndexedParameter.of(7, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -125,35 +249,39 @@ public class QueryInjectorExtractorBuilderTest {
         final MappersFinder mockMappersFinder = mock();
         final ReflectionsFinder mockReflectionsFinder = mock();
         final ParameterJdbcType mockJdbcType = mock();
-
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
         when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
-
-        QueryInjectorExtractorBuilder qieBuilder = QueryInjectorExtractorBuilder.getInstance();
+        // test
         NamedInjector injector = qieBuilder.buildNamedInjector(
                 mockTypesCollection,
                 mockMappersFinder,
                 mockReflectionsFinder,
                 SomeComplexObject.class,
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, null, false, "prop1", "mapper", "tag", "jdbcType", "java.lang.String"),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, null, false, "prop2", "mapper", "tag", null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, null, false, "prop3", null, null, null, null)
+                        new QueryParameter(INJECTION, null, null, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(INJECTION, null, null, "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(INJECTION, null, null, "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(INJECTION, null, null, "prop4", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(INJECTION, null, null, "prop5", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
-
+        // asserts & verifies
         assertThat(injector).isInstanceOf(NamedInjectorImpl.class);
         verify(mockTypesCollection).findType(eq("jdbcType"));
         verifyNoMoreInteractions(mockTypesCollection);
-        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType);
-
+        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
         {
             Field field = injector.getClass().getSuperclass().getDeclaredField("parameters");
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(injector);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of("prop1", 1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of("prop2", 2, ParamInfo.of("mapper", null, null, "tag")),
-                    NamedParameter.of("prop3", 3, ParamInfo.of(null, null, null, null))
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
+                    NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(4, "prop4", mockTypeMapper),
+                    NamedParameter.of(5, "prop5", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -178,44 +306,180 @@ public class QueryInjectorExtractorBuilderTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void testNamedExtractor() throws Exception {
+    public void testNamedExtractor_index() throws Exception {
         final TypesCollection mockTypesCollection = mock();
         final MappersFinder mockMappersFinder = mock();
         final ReflectionsFinder mockReflectionsFinder = mock();
         final ParameterJdbcType mockJdbcType = mock();
-
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
         when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
-
-        QueryInjectorExtractorBuilder qieBuilder = QueryInjectorExtractorBuilder.getInstance();
+        // test
         NamedExtractor extractor = qieBuilder.buildNamedExtractor(
                 mockTypesCollection,
                 mockMappersFinder,
                 mockReflectionsFinder,
                 SomeComplexObject.class,
                 List.of(
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 1, "label1", false, "prop1", "mapper", "tag", "jdbcType", "java.lang.String"),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 2, "label2", false, "prop2", "mapper", "tag", null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 3, "label3", false, "prop3", null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 4, "label4", false, null, null, null, null, null),
-                        new QueryParser.QueryParam(QueryParser.ParamType.INJECTION, 5, null, false, "prop5", null, null, null, null)
+                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, "label2", "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, "label3", "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, "label4", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, null, "prop5", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 6, null, "prop6", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, null, "prop7", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
                 )
         );
-
+        // asserts & verifies
         assertThat(extractor).isInstanceOf(NamedExtractorImpl.class);
         verify(mockTypesCollection).findType(eq("jdbcType"));
         verifyNoMoreInteractions(mockTypesCollection);
-        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType);
-
+        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
         {
             Field field = extractor.getClass().getSuperclass().getDeclaredField("parameters");
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of("prop1", "label1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of("prop2", "label2", ParamInfo.of("mapper", null, null, "tag")),
-                    NamedParameter.of("prop3", "label3", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
+                    NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(4, "label4", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(5, "prop5", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(6, "prop6", mockTypeMapper),
+                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
+            );
+        }
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("targetClass");
+            field.trySetAccessible();
+            Class<?> targetClass = (Class<?>) field.get(extractor);
+            assertThat(targetClass).isSameAs(SomeComplexObject.class);
+        }
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("mappersFinder");
+            field.trySetAccessible();
+            MappersFinder mappersFinder = (MappersFinder) field.get(extractor);
+            assertThat(mappersFinder).isSameAs(mockMappersFinder);
+        }
+        {
+            Field field = extractor.getClass().getDeclaredField("reflectionsFinder");
+            field.trySetAccessible();
+            ReflectionsFinder reflectionsFinder = (ReflectionsFinder) field.get(extractor);
+            assertThat(reflectionsFinder).isSameAs(mockReflectionsFinder);
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testNamedExtractor_label() throws Exception {
+        final TypesCollection mockTypesCollection = mock();
+        final MappersFinder mockMappersFinder = mock();
+        final ReflectionsFinder mockReflectionsFinder = mock();
+        final ParameterJdbcType mockJdbcType = mock();
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
+        when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
+        // test
+        NamedExtractor extractor = qieBuilder.buildNamedExtractor(
+                mockTypesCollection,
+                mockMappersFinder,
+                mockReflectionsFinder,
+                SomeComplexObject.class,
+                List.of(
+                        new QueryParameter(EXTRACTION, 1, "label1", "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 2, "label2", "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, "label3", "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 4, "label4", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 5, "label5", "prop5", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 6, "label6", "prop6", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, 7, "label7", "prop7", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                )
+        );
+        // asserts & verifies
+        assertThat(extractor).isInstanceOf(NamedExtractorImpl.class);
+        verify(mockTypesCollection).findType(eq("jdbcType"));
+        verifyNoMoreInteractions(mockTypesCollection);
+        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("parameters");
+            field.trySetAccessible();
+            Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
+            assertThat(parameters).containsExactly(
+                    NamedParameter.of("label1", "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of("label2", "prop2", ParamInfo.of("mapper", "tag", null, null)),
+                    NamedParameter.of("label3", "prop3", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of("label4", "label4", ParamInfo.of(null, null, null, null)),
-                    NamedParameter.of("prop5", 5, ParamInfo.of(null, null, null, null))
+                    NamedParameter.of("label5", "prop5", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of("label6", "prop6", mockTypeMapper),
+                    NamedParameter.of("label7", "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
+            );
+        }
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("targetClass");
+            field.trySetAccessible();
+            Class<?> targetClass = (Class<?>) field.get(extractor);
+            assertThat(targetClass).isSameAs(SomeComplexObject.class);
+        }
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("mappersFinder");
+            field.trySetAccessible();
+            MappersFinder mappersFinder = (MappersFinder) field.get(extractor);
+            assertThat(mappersFinder).isSameAs(mockMappersFinder);
+        }
+        {
+            Field field = extractor.getClass().getDeclaredField("reflectionsFinder");
+            field.trySetAccessible();
+            ReflectionsFinder reflectionsFinder = (ReflectionsFinder) field.get(extractor);
+            assertThat(reflectionsFinder).isSameAs(mockReflectionsFinder);
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testNamedExtractor_simple() throws Exception {
+        final TypesCollection mockTypesCollection = mock();
+        final MappersFinder mockMappersFinder = mock();
+        final ReflectionsFinder mockReflectionsFinder = mock();
+        final ParameterJdbcType mockJdbcType = mock();
+        final ParameterJdbcType mockJdbcType2 = mock();
+        final TypeMapper mockTypeMapper = mock();
+        // behaviour
+        when(mockTypesCollection.findType(anyString())).thenReturn(mockJdbcType);
+        // test
+        NamedExtractor extractor = qieBuilder.buildNamedExtractor(
+                mockTypesCollection,
+                mockMappersFinder,
+                mockReflectionsFinder,
+                SomeComplexObject.class,
+                List.of(
+                        new QueryParameter(EXTRACTION, null, null, "prop1", null, "mapper", "tag", null, "jdbcType", null, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, null, "label2", "prop2", null, "mapper", "tag", null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, "label3", "prop3", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, "label4", null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, "prop5", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, "prop6", mockTypeMapper, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String"),
+                        new QueryParameter(EXTRACTION, null, null, "prop7", null, "mapper", "tag", mockJdbcType2, "jdbcType", Integer.class, "java.lang.String")
+                )
+        );
+        // asserts & verifies
+        assertThat(extractor).isInstanceOf(NamedExtractorImpl.class);
+        verify(mockTypesCollection).findType(eq("jdbcType"));
+        verifyNoMoreInteractions(mockTypesCollection);
+        verifyNoInteractions(mockMappersFinder, mockReflectionsFinder, mockJdbcType, mockJdbcType2, mockTypeMapper);
+        {
+            Field field = extractor.getClass().getSuperclass().getDeclaredField("parameters");
+            field.trySetAccessible();
+            Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
+            assertThat(parameters).containsExactly(
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
+                    NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(4, "label4", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(5, "prop5", ParamInfo.of(null, null, null, null)),
+                    NamedParameter.of(6, "prop6", mockTypeMapper),
+                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {

@@ -1,7 +1,6 @@
 package simple.orm.mapping.indexed;
 
 import io.vavr.Tuple;
-import io.vavr.collection.Array;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.JdbcException;
 import simple.orm.jdbc.map.IndexedInjector;
@@ -32,13 +31,11 @@ public class IndexedInjectorImpl implements IndexedInjector {
         if (parameters.find(Objects::isNull).isDefined()) {
             throw new NullPointerException("parameters contains nulls");
         }
+        if (parameters.find(p -> p.index == null).isDefined()) {
+            throw new IllegalArgumentException("all parameters must have index for injection");
+        }
         this.mappersFinder = mappersFinder;
         this.parameters = parameters;
-    }
-
-    @Override
-    public void injectParameters(PreparedStatement stmt, Object... values) {
-        injectParameters(stmt, Array.of(values));
     }
 
     @Override

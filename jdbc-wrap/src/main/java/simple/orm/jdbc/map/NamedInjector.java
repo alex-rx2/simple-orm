@@ -7,6 +7,10 @@ import java.sql.SQLException;
 
 /**
  * Injector of properties of object into JDBC statement (using object properties names and named parameters in a query).
+ * <br>
+ * Named in the name means that source of parameters is a single Object with named properties.
+ * <br>
+ * Each parameter in a sequence is injected under incrementing index starting with 1 (as per JDBC API).
  *
  * @param <T> class of object used as source of parameters' values for query.
  */

@@ -1,9 +1,7 @@
 package simple.orm.mapping.builder;
 
-import io.vavr.collection.Array;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import io.vavr.collection.Traversable;
 import simple.orm.jdbc.map.IndexedInjector;
 import simple.orm.mapping.impl.cache.FoundMappersCache;
 import simple.orm.mapping.indexed.IndexedInjectorImpl;
@@ -14,10 +12,14 @@ import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 import simple.orm.util.Mutable;
 
-import java.util.Objects;
+import java.sql.PreparedStatement;
 
 /**
  * Builder for {@link IndexedInjector}.
+ * <br>
+ * Mapping of sequence objects into {@link PreparedStatement} indexes is obvious and very strict
+ * so no indexes are passed to the builder itself. The index for injection is equal to the position
+ * of object in a passed sequence (first object is injected as parameter #1, next as parameter #2 and so on).
  */
 public class IndexedInjectorBuilder {
 
@@ -44,21 +46,6 @@ public class IndexedInjectorBuilder {
         return this;
     }
 
-    public IndexedInjectorBuilder params(TypeMapper<?, ?>... mappers) {
-        return paramsMappers(Array.of(mappers));
-    }
-
-    public IndexedInjectorBuilder paramsMappers(Traversable<TypeMapper<?, ?>> mappers) {
-        if (mappers == null) {
-            throw new NullPointerException("mappers is null");
-        }
-        if (mappers.find(Objects::isNull).isDefined()) {
-            throw new NullPointerException("mappers contains null elements");
-        }
-        mappers.forEach(this::param);
-        return this;
-    }
-
     public IndexedInjectorBuilder param(ParamInfo<?, ?> param) {
         if (param == null) {
             throw new NullPointerException("param is null");
@@ -67,29 +54,14 @@ public class IndexedInjectorBuilder {
         return this;
     }
 
-    public IndexedInjectorBuilder params(ParamInfo<?, ?>... params) {
-        return paramsInfos(Array.of(params));
-    }
-
-    public IndexedInjectorBuilder paramsInfos(Traversable<ParamInfo<?, ?>> params) {
-        if (params == null) {
-            throw new NullPointerException("params is null");
-        }
-        if (params.find(Objects::isNull).isDefined()) {
-            throw new NullPointerException("params contains null elements");
-        }
-        params.forEach(this::param);
-        return this;
-    }
-
     public IndexedInjectorBuilder param(String mapperName,
+                                        String tag,
                                         ParameterJdbcType<?> jdbcType,
-                                        Class<?> javaType,
-                                        String tag
+                                        Class<?> javaType
     ) {
         params.apply(p -> p.append(IndexedParameter.of(
                 p.size() + 1,
-                ParamInfo.of(mapperName, jdbcType, javaType, tag)
+                ParamInfo.of(mapperName, tag, jdbcType, javaType)
         )));
         return this;
     }

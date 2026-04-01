@@ -94,7 +94,7 @@ public class ParameterParserUtil {
     private static QueryParser.QueryParam extract(String parameter, boolean allowImmediate, String lastWord) {
         if (parameter.startsWith("??")) {
             // injection anywhere - simplest case
-            return extractParts(QueryParser.ParamType.INJECTION, parameter.substring(2), false);
+            return extractParts(QueryParser.ParamType.INJECTION, parameter.substring(2));
         }
         if (parameter.startsWith("?") && allowImmediate) {
             // immediate injection - must follow "?" (or "?,")
@@ -102,11 +102,11 @@ public class ParameterParserUtil {
                     || (!lastWord.endsWith("?") && !lastWord.endsWith("?,"))) {
                 return null;
             }
-            return extractParts(QueryParser.ParamType.INJECTION, parameter.substring(1), false);
+            return extractParts(QueryParser.ParamType.INJECTION, parameter.substring(1));
         }
         if (parameter.startsWith("//")) {
             // extraction anywhere - same simplest case
-            return extractParts(QueryParser.ParamType.EXTRACTION, parameter.substring(2), false);
+            return extractParts(QueryParser.ParamType.EXTRACTION, parameter.substring(2));
         }
         if (parameter.startsWith("/") && allowImmediate) {
             // immediate extraction - if follows "label" or "label,"
@@ -120,21 +120,18 @@ public class ParameterParserUtil {
             } else {
                 label = "";
             }
-            return extractParts(QueryParser.ParamType.EXTRACTION, label + parameter.substring(1), true);
+            return extractParts(QueryParser.ParamType.EXTRACTION, label + parameter.substring(1));
         }
         // should be very-very unreachable
         throw new IllegalStateException("should be unreachable");
     }
 
-    private static QueryParser.QueryParam extractParts(QueryParser.ParamType type,
-                                                       String parameterParts,
-                                                       boolean labelGuessed) {
+    private static QueryParser.QueryParam extractParts(QueryParser.ParamType type, String parameterParts) {
         Seq<String> parts = splitParts(parameterParts);
         return new QueryParser.QueryParam(
                 type,
                 -1, // will be renumbered after all parameters are parsed
                 parts.get(0),
-                parts.get(0) != null && labelGuessed,
                 parts.get(1),
                 parts.get(2),
                 parts.get(3),

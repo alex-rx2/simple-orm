@@ -25,7 +25,8 @@ public class FastHashKey<T> {
     @Override
     public boolean equals(Object obj) {
         if (key == obj) return true;
-        if (key != null) return obj != null && key.equals(obj);
+        if (obj == null) return false;
+        if (key != null) return key.equals(obj);
         return false;
     }
 

@@ -9,7 +9,9 @@ import simple.orm.loader.InjectionStrategy;
 import simple.orm.loader.QueryLoader;
 import simple.orm.loader.QueryParser;
 import simple.orm.loader.QuerySource;
+import simple.orm.loader.builder.ParameterType;
 import simple.orm.loader.builder.QueryBuilder;
+import simple.orm.loader.builder.QueryParameter;
 import simple.orm.loader.impl.builder.QueryBuilderImpl;
 import simple.orm.mapping.builder.MappersFinder;
 import simple.orm.mapping.builder.ReflectionsFinder;
@@ -72,9 +74,22 @@ public class QueryLoaderImpl implements QueryLoader {
         }
         // parse
         final QueryParser.ParsedQuery parsedQuery = parser.parse(source);
-        final String sql = parsedQuery.querySQL();
-        final Traversable<QueryParser.QueryParam> params = parsedQuery.parsedParams();
         // build query
+        final String sql = parsedQuery.querySQL();
+        final Traversable<QueryParameter> params = parsedQuery.parsedParams()
+                .map(qp -> new QueryParameter(
+                        ParameterType.of(qp.type()),
+                        qp.indexWithinType(),
+                        qp.label(),
+                        qp.propName(),
+                        null,
+                        qp.mapperName(),
+                        qp.tag(),
+                        null,
+                        qp.jdbcTypeName(),
+                        null,
+                        qp.javaClassName()
+                ));
         return builder.buildQuery(type, sql, injectionStrategy, extractionStrategy, params, queryTimeoutSeconds);
     }
 
