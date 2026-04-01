@@ -1,7 +1,6 @@
 package simple.orm.mapping.indexed;
 
 import io.vavr.Tuple;
-import io.vavr.collection.Array;
 import io.vavr.collection.Seq;
 import simple.orm.jdbc.JdbcException;
 import simple.orm.jdbc.map.IndexedInjector;
@@ -37,11 +36,6 @@ public class IndexedInjectorImpl implements IndexedInjector {
         }
         this.mappersFinder = mappersFinder;
         this.parameters = parameters;
-    }
-
-    @Override
-    public void injectParameters(PreparedStatement stmt, Object... values) {
-        injectParameters(stmt, Array.of(values));
     }
 
     @Override

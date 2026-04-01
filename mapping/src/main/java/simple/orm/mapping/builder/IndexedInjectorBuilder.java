@@ -12,8 +12,14 @@ import simple.orm.mapping.type.MappersCollection;
 import simple.orm.mapping.type.TypeMapper;
 import simple.orm.util.Mutable;
 
+import java.sql.PreparedStatement;
+
 /**
  * Builder for {@link IndexedInjector}.
+ * <br>
+ * Mapping of sequence objects into {@link PreparedStatement} indexes is obvious and very strict
+ * so no indexes are passed to the builder itself. The index for injection is equal to the position
+ * of object in a passed sequence (first object is injected as parameter #1, next as parameter #2 and so on).
  */
 public class IndexedInjectorBuilder {
 

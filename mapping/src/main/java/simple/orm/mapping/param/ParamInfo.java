@@ -11,6 +11,7 @@ import simple.orm.mapping.type.TypeMapper;
  * Note: object of this class should properly implement
  * {@link Object#hashCode()}, {@link Object#equals(Object)} and {@link Object#toString()}.
  */
+// TODO move tag after mapper name everywhere
 public interface ParamInfo<Jdbc, Java> {
 
     /**
