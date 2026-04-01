@@ -6,6 +6,8 @@ import simple.orm.loader.InjectionStrategy;
 import simple.orm.loader.StrategyType;
 import simple.orm.loader.builder.QueryParameter;
 
+import java.util.Objects;
+
 import static simple.orm.loader.StrategyType.*;
 import static simple.orm.loader.builder.ParameterType.*;
 import static simple.orm.util.StringUtils.empty;
@@ -88,13 +90,16 @@ public class QueryValidator {
                             "should have at least one parameter when using injection strategy " + INDEXED
                     );
                 }
-                // validate indexing 1...n
-                if (iParams.toList()
+                // validate indexing 1...n or no indexes at all
+                final boolean hasIndexes = iParams.find(p -> p.index() != null).isDefined();
+                if (hasIndexes
+                        && iParams.toList()
                         .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
+                        .find(t2 -> !Objects.equals(t2._1.index(), t2._2 + 1))
+                        .isDefined()
+                ) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing for injection strategy " + INDEXED
+                            "parameters must be indexed 1...n or have no indexes at all for injection strategy " + INDEXED
                     );
                 }
                 // validate no labels specified
@@ -111,13 +116,16 @@ public class QueryValidator {
                             "should have at least one parameter when using injection strategy " + NAMED
                     );
                 }
-                // validate indexing 1...n
-                if (iParams.toList()
+                // validate indexing 1...n or no indexes at all
+                final boolean hasIndexes = iParams.find(p -> p.index() != null).isDefined();
+                if (hasIndexes
+                        && iParams.toList()
                         .zipWithIndex()
-                        .find(t2 -> t2._1.indexWithinType() != t2._2 + 1)
-                        .isDefined()) {
+                        .find(t2 -> !Objects.equals(t2._1.index(), t2._2 + 1))
+                        .isDefined()
+                ) {
                     throw new IllegalArgumentException(
-                            "broken parameter indexing for injection strategy " + NAMED
+                            "parameters must be indexed 1...n or have no indexes at all for injection strategy " + NAMED
                     );
                 }
                 // all parameters have NONEMPTY propName
@@ -158,7 +166,9 @@ public class QueryValidator {
                 // validate all params either indexed, either labelled
                 // - validate all indexes >0 (in case of indexes)
                 // - validate all labels NONEMPTY (in case of labels)
+                // - or no indexes and labels at all
                 final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                final boolean hasIndexes = eParams.find(p -> p.index() != null).isDefined();
                 if (hasLabels) {
                     // all should have nonempty labels
                     if (eParams.find(p -> empty(p.label())).isDefined()) {
@@ -168,9 +178,9 @@ public class QueryValidator {
                                         " for extraction strategy " + INDEXED
                         );
                     }
-                } else {
+                } else if (hasIndexes) {
                     // all should be properly indexed (all indexes >0)
-                    if (eParams.find(p -> p.indexWithinType() <= 0).isDefined()) {
+                    if (eParams.find(p -> p.index() != null && p.index() <= 0).isDefined()) {
                         throw new IllegalArgumentException(
                                 "all indexes should be >0 for extraction strategy " + INDEXED
                         );
@@ -187,7 +197,9 @@ public class QueryValidator {
                 // validate all params either indexed, either labelled
                 // - validate all indexes >0 (in case of indexes)
                 // - validate all labels NONEMPTY (in case of labels)
+                // - or no indexes and labels at all
                 final boolean hasLabels = eParams.find(p -> !empty(p.label())).isDefined();
+                final boolean hasIndexes = eParams.find(p -> p.index() != null).isDefined();
                 if (hasLabels) {
                     // all should have nonempty labels
                     if (eParams.find(p -> empty(p.label())).isDefined()) {
@@ -197,9 +209,9 @@ public class QueryValidator {
                                         " for extraction strategy " + NAMED
                         );
                     }
-                } else {
+                } else if (hasIndexes) {
                     // all should be properly indexed (all indexes >0)
-                    if (eParams.find(p -> p.indexWithinType() <= 0).isDefined()) {
+                    if (eParams.find(p -> p.index() != null && p.index() <= 0).isDefined()) {
                         throw new IllegalArgumentException(
                                 "all indexes should be >0 for extraction strategy " + NAMED
                         );

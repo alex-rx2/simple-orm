@@ -45,13 +45,14 @@ public class QueryInjectorExtractorBuilder {
                                                 MappersFinder mappersFinder,
                                                 Traversable<QueryParameter> params) {
         IndexedInjectorBuilder builder = IndexedInjectorBuilder.builder(mappersFinder);
-        params.forEach(p -> appendToBuilder(typesCollection, builder, p));
+        params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
         return builder.build();
     }
 
     private void appendToBuilder(TypesCollection typesCollection,
                                  IndexedInjectorBuilder builder,
-                                 QueryParameter p) {
+                                 QueryParameter p,
+                                 int paramIndex) {
         try {
             if (p.mapper() != null) {
                 builder.param(p.mapper());
@@ -64,7 +65,7 @@ public class QueryInjectorExtractorBuilder {
                 );
             }
         } catch (ClassNotFoundException e) {
-            throw new RuntimeClassNotFoundException("injection parameter #" + p.indexWithinType() +
+            throw new RuntimeClassNotFoundException("injection parameter #" + (paramIndex + 1) +
                     " referenced class " + qnn(p.javaTypeClassName()) + " not found", e);
         }
     }
@@ -76,8 +77,7 @@ public class QueryInjectorExtractorBuilder {
             LabelIndexedExtractorBuilder builder = LabelIndexedExtractorBuilder.builder(mappersFinder);
             params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
             return builder.build();
-        } else if ((Integer) params.head().indexWithinType() != null) {
-            // TODO fix after indexWithinType replaced with Integer index
+        } else if (params.head().index() != null) {
             IndexIndexedExtractorBuilder builder = IndexIndexedExtractorBuilder.builder(mappersFinder);
             params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
             return builder.build();
@@ -116,10 +116,10 @@ public class QueryInjectorExtractorBuilder {
                                  int paramIndex) {
         try {
             if (p.mapper() != null) {
-                builder.param(p.indexWithinType(), p.mapper());
+                builder.param(p.index(), p.mapper());
             } else {
                 builder.param(
-                        p.indexWithinType(),
+                        p.index(),
                         p.mapperName(),
                         p.tag(),
                         jdbcTypeFrom(p, typesCollection),
@@ -159,13 +159,14 @@ public class QueryInjectorExtractorBuilder {
                                                    Class<T> sourceClass,
                                                    Traversable<QueryParameter> params) {
         NamedInjectorBuilder<T> builder = NamedInjectorBuilder.builder(mappersFinder, reflectionsFinder, sourceClass);
-        params.forEach(p -> appendToBuilder(typesCollection, builder, p));
+        params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
         return builder.build();
     }
 
     private <T> void appendToBuilder(TypesCollection typesCollection,
                                      NamedInjectorBuilder<T> builder,
-                                     QueryParameter p) {
+                                     QueryParameter p,
+                                     int paramIndex) {
         try {
             if (p.mapper() != null) {
                 builder.param(
@@ -182,7 +183,7 @@ public class QueryInjectorExtractorBuilder {
                 );
             }
         } catch (ClassNotFoundException e) {
-            throw new RuntimeClassNotFoundException("injection parameter #" + p.indexWithinType() +
+            throw new RuntimeClassNotFoundException("injection parameter #" + (paramIndex + 1) +
                     " referenced class " + qnn(p.javaTypeClassName()) + " not found", e);
         }
     }
@@ -196,8 +197,7 @@ public class QueryInjectorExtractorBuilder {
             LabelNamedExtractorBuilder<T> builder = LabelNamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
             params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
             return builder.build();
-        } else if ((Integer) params.head().indexWithinType() != null) {
-            // TODO fix after indexWithinType replaced with Integer index
+        } else if (params.head().index() != null) {
             IndexNamedExtractorBuilder<T> builder = IndexNamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
             params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
             return builder.build();
@@ -242,13 +242,13 @@ public class QueryInjectorExtractorBuilder {
         try {
             if (p.mapper() != null) {
                 builder.param(
-                        p.indexWithinType(),
+                        p.index(),
                         empty(p.propName()) ? p.label() : p.propName(),
                         p.mapper()
                 );
             } else {
                 builder.param(
-                        p.indexWithinType(),
+                        p.index(),
                         empty(p.propName()) ? p.label() : p.propName(),
                         p.mapperName(),
                         p.tag(),

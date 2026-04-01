@@ -138,14 +138,14 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
                 List.of(new QueryParameter(INJECTION, 2, null, null, null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.noneDml(),
@@ -155,7 +155,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         // - has no labels
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.indexed(),
@@ -194,14 +194,14 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
                 List.of(new QueryParameter(INJECTION, 2, null, "prop1", null, null, null, null, null, null, null))
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.noneDml(),
@@ -211,7 +211,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         // - has defined property name
         assertThatCode(() -> validator.validateDML(
                 InjectionStrategy.named(SomeComplexObject.class),
@@ -316,7 +316,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
@@ -326,7 +326,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
                 ExtractionStrategy.indexed(),
@@ -337,7 +337,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         // - has no labels
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
@@ -373,7 +373,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
@@ -383,7 +383,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.named(SomeComplexObject.class),
                 ExtractionStrategy.indexed(),
@@ -394,7 +394,7 @@ public class QueryValidatorTest {
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("broken parameter indexing");
+                .hasMessageContaining("must be indexed 1...n or have no indexes at all");
         // - has defined property name
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.named(SomeComplexObject.class),
@@ -438,8 +438,8 @@ public class QueryValidatorTest {
                 ExtractionStrategy.indexed(),
                 List.of(
                         new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, -3, null, null, null, null, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, -1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, null, null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -466,6 +466,17 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("some parameters have labels, some don't");
+        // - no labels no indexes is acceptable
+        assertThatCode(() -> validator.validateSelect(
+                InjectionStrategy.indexed(),
+                ExtractionStrategy.indexed(),
+                List.of(
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null)
+                )
+        ))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -485,8 +496,8 @@ public class QueryValidatorTest {
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
                         new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, -3, null, "prop2", null, null, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, -1, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, 3, null, "prop2", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -524,6 +535,17 @@ public class QueryValidatorTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("some parameters have labels, some don't");
+        // - no labels no indexes is acceptable
+        assertThatCode(() -> validator.validateSelect(
+                InjectionStrategy.indexed(),
+                ExtractionStrategy.indexed(),
+                List.of(
+                        new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null)
+                )
+        ))
+                .doesNotThrowAnyException();
         // - has prop names (or label to be used instead)
         assertThatCode(() -> validator.validateSelect(
                 InjectionStrategy.indexed(),
@@ -534,9 +556,9 @@ public class QueryValidatorTest {
                         // then all prop names can be empty (label will be used instead)
                         // so case without labels
                         new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 2, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 3, null, "prop3", null, null, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, null, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, null, null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, "prop3", null, null, null, null, null, null, null)
                 )
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -546,9 +568,9 @@ public class QueryValidatorTest {
                 ExtractionStrategy.named(SomeComplexObject.class),
                 List.of(
                         new QueryParameter(INJECTION, 1, null, null, null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 1, null, "prop1", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 2, null, "prop2", null, null, null, null, null, null, null),
-                        new QueryParameter(EXTRACTION, 3, null, "prop3", null, null, null, null, null, null, null)
+                        new QueryParameter(EXTRACTION, null, null, "prop1", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, "prop2", null, null, null, null, null, null, null),
+                        new QueryParameter(EXTRACTION, null, null, "prop3", null, null, null, null, null, null, null)
                 )
         ))
                 .doesNotThrowAnyException();

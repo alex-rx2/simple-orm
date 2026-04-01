@@ -127,7 +127,7 @@ public class MetadataCollector {
             if (allIndexesSpecified) {
                 boolean brokenIndexing = params.sortBy(InjectParam::index)
                         .zipWithIndex()
-                        .find(t2 -> t2._1.index() - 1 != t2._2)
+                        .find(t2 -> t2._1.index() != t2._2 + 1)
                         .isDefined();
                 if (brokenIndexing) {
                     throw new RepositoryBuilderException(method.getName() +
@@ -162,21 +162,15 @@ public class MetadataCollector {
             // validate indexing
             boolean noIndexes = params.find(p -> p.index() != -1).isEmpty();
             boolean allIndexesSpecified = params.find(p -> p.index() == -1).isEmpty();
+            if (params.find(p -> p.index() <= 0 && p.index() != -1).isDefined()) {
+                throw new RepositoryBuilderException(method.getName() +
+                        " all " + ExtractParam.class.getSimpleName() +
+                        " must either have proper indexes (>0), either have no indexes at all");
+            }
             if (noLabels && !noIndexes && !allIndexesSpecified) {
                 throw new RepositoryBuilderException(method.getName() +
                         " all " + ExtractParam.class.getSimpleName() +
-                        " must be either properly indexed, either have no indexes");
-            }
-            if (noLabels && allIndexesSpecified) {
-                boolean brokenIndexing = params.sortBy(ExtractParam::index)
-                        .zipWithIndex()
-                        .find(t2 -> t2._1.index() - 1 != t2._2)
-                        .isDefined();
-                if (brokenIndexing) {
-                    throw new RepositoryBuilderException(method.getName() +
-                            " " + ExtractParam.class.getSimpleName() +
-                            " indexing is broken (must start with 1 and increment by 1)");
-                }
+                        " must either have proper indexes (>0), either have no indexes at all");
             }
             // check prop names specified if NamedExtractor is used
             if (annSimpleQuery.targetClass() != Seq.class) {
@@ -207,11 +201,11 @@ public class MetadataCollector {
                 annSimpleQuery.parameters(),
                 annSimpleQuery.sourceClass() == Seq.class ? null : annSimpleQuery.sourceClass(),
                 annSimpleQuery.targetClass() == Seq.class ? null : annSimpleQuery.targetClass(),
-                reindexOrSort(annInjectParam.length == 0 ?
+                reindexIfNoIndexes(annInjectParam.length == 0 ?
                         Array.empty() :
                         Array.of(annInjectParam).map(this::toQueryParam)
                 ),
-                reindexOrSort(annExtractParam.length == 0 ?
+                reindexIfNoIndexes(annExtractParam.length == 0 ?
                         Array.empty() :
                         Array.of(annExtractParam).map(this::toQueryParam)),
                 annSimpleQuery.timeout()
@@ -221,7 +215,7 @@ public class MetadataCollector {
     private QueryParameter toQueryParam(InjectParam param) {
         return new QueryParameter(
                 ParameterType.INJECTION,
-                param.index(),
+                param.index() < 0 ? null : param.index(),
                 null,
                 nullify(param.prop()),
                 null,
@@ -237,7 +231,7 @@ public class MetadataCollector {
     private QueryParameter toQueryParam(ExtractParam param) {
         return new QueryParameter(
                 ParameterType.EXTRACTION,
-                param.index(),
+                param.index() < 0 ? null : param.index(),
                 nullify(param.label()),
                 nullify(param.prop()),
                 null,
@@ -250,16 +244,16 @@ public class MetadataCollector {
         );
     }
 
-    private Traversable<QueryParameter> reindexOrSort(Array<QueryParameter> params) {
+    private Traversable<QueryParameter> reindexIfNoIndexes(Array<QueryParameter> params) {
         if (params.isEmpty()) {
             return params;
         }
         // reindex params if no indexes specified
-        if (params.get(0).indexWithinType() == -1) {
+        if (!params.find(qp -> qp.index() != null).isDefined()) {
             return params.zipWithIndex((p, i) -> p.reindex(i + 1));
         } else {
-            // or sort them if indexes were provided
-            return params.sortBy(QueryParameter::indexWithinType);
+            // do nothing if at least one index is manually specified
+            return params;
         }
     }
 

@@ -8,7 +8,7 @@ import simple.orm.mapping.type.TypeMapper;
  */
 public record QueryParameter(
         ParameterType type,
-        int indexWithinType, // starting with 1 as per JDBC API
+        Integer index, // starting with 1 as per JDBC API
         String label,
         String propName,
         TypeMapper<?, ?> mapper, // takes precedence over mapperName,tag,jdbcType,jdbcTypeName,javaType,javaTypeClassName
@@ -20,7 +20,7 @@ public record QueryParameter(
         String javaTypeClassName
 ) {
 
-    public QueryParameter reindex(int newIndex) {
+    public QueryParameter reindex(Integer newIndex) {
         return new QueryParameter(
                 type,
                 newIndex,
