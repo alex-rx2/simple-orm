@@ -62,9 +62,9 @@ public class IndexNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
     public IndexNamedExtractorBuilder<T> param(int index,
                                                String propertyName,
                                                String mapperName,
+                                               String tag,
                                                ParameterJdbcType<?> jdbcType,
-                                               Class<?> javaType,
-                                               String tag
+                                               Class<?> javaType
     ) {
         if (index <= 0) {
             throw new IllegalArgumentException("index must be positive");
@@ -72,7 +72,7 @@ public class IndexNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
-        return param(NamedParameter.of(index, propertyName, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(NamedParameter.of(index, propertyName, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }

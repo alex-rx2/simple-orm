@@ -57,14 +57,14 @@ public class SimpleNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilde
 
     public SimpleNamedExtractorBuilder<T> param(String propertyName,
                                                 String mapperName,
+                                                String tag,
                                                 ParameterJdbcType<?> jdbcType,
-                                                Class<?> javaType,
-                                                String tag
+                                                Class<?> javaType
     ) {
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
-        return param(NamedParameter.of(params.get().size() + 1, propertyName, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(NamedParameter.of(params.get().size() + 1, propertyName, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }

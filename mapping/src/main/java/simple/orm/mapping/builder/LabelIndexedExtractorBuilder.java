@@ -46,14 +46,14 @@ public class LabelIndexedExtractorBuilder extends AbstractIndexedExtractorBuilde
 
     public LabelIndexedExtractorBuilder param(String label,
                                               String mapperName,
+                                              String tag,
                                               ParameterJdbcType<?> jdbcType,
-                                              Class<?> javaType,
-                                              String tag
+                                              Class<?> javaType
     ) {
         if (empty(label)) {
             throw new IllegalArgumentException("label is empty or null");
         }
-        return param(IndexedParameter.of(label, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(IndexedParameter.of(label, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }

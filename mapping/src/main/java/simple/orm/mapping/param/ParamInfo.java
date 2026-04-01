@@ -11,7 +11,6 @@ import simple.orm.mapping.type.TypeMapper;
  * Note: object of this class should properly implement
  * {@link Object#hashCode()}, {@link Object#equals(Object)} and {@link Object#toString()}.
  */
-// TODO move tag after mapper name everywhere
 public interface ParamInfo<Jdbc, Java> {
 
     /**
@@ -20,6 +19,13 @@ public interface ParamInfo<Jdbc, Java> {
      * @return type mapper name.
      */
     String getMapperName();
+
+    /**
+     * Provided type mapper tag name.
+     *
+     * @return type mapper tag name.
+     */
+    String getMapperTag();
 
     /**
      * Provided JDBC API type {@link ParameterJdbcType}.
@@ -34,13 +40,6 @@ public interface ParamInfo<Jdbc, Java> {
      * @return type used in java application.
      */
     Class<Java> getJavaType();
-
-    /**
-     * Provided type mapper tag name.
-     *
-     * @return type mapper tag name.
-     */
-    String getMapperTag();
 
     /**
      * Factory method to create empty {@link ParamInfo} (no information provided).
@@ -69,7 +68,7 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, String tag) {
-        return new BasicParamInfo<>(name, null, null, tag);
+        return new BasicParamInfo<>(name, tag, null, null);
     }
 
     /**
@@ -80,7 +79,7 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(ParameterJdbcType<Jdbc> jdbcType, Class<Java> javaType) {
-        return new BasicParamInfo<>(null, jdbcType, javaType, null);
+        return new BasicParamInfo<>(null, null, jdbcType, javaType);
     }
 
     /**
@@ -92,7 +91,7 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(ParameterJdbcType<Jdbc> jdbcType, Class<Java> javaType, String tag) {
-        return new BasicParamInfo<>(null, jdbcType, javaType, tag);
+        return new BasicParamInfo<>(null, tag, jdbcType, javaType);
     }
 
     /**
@@ -103,19 +102,19 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, Class<Java> javaType) {
-        return new BasicParamInfo<>(name, null, javaType, null);
+        return new BasicParamInfo<>(name, null, null, javaType);
     }
 
     /**
      * Factory method to create {@link ParamInfo} with information provided.
      *
      * @param name     mapper name.
-     * @param javaType application java type.
      * @param tag      mapper tag.
+     * @param javaType application java type.
      * @return new {@link ParamInfo}.
      */
-    static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, Class<Java> javaType, String tag) {
-        return new BasicParamInfo<>(name, null, javaType, tag);
+    static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, String tag, Class<Java> javaType) {
+        return new BasicParamInfo<>(name, tag, null, javaType);
     }
 
     /**
@@ -125,7 +124,7 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(Class<Java> javaType) {
-        return new BasicParamInfo<>(null, null, javaType, null);
+        return new BasicParamInfo<>(null, null, null, javaType);
     }
 
     /**
@@ -136,7 +135,7 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(Class<Java> javaType, String tag) {
-        return new BasicParamInfo<>(null, null, javaType, tag);
+        return new BasicParamInfo<>(null, tag, null, javaType);
     }
 
     /**
@@ -148,20 +147,20 @@ public interface ParamInfo<Jdbc, Java> {
      * @return new {@link ParamInfo}.
      */
     static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, ParameterJdbcType<Jdbc> jdbcType, Class<Java> javaType) {
-        return new BasicParamInfo<>(name, jdbcType, javaType, null);
+        return new BasicParamInfo<>(name, null, jdbcType, javaType);
     }
 
     /**
      * Factory method to create {@link ParamInfo} with information provided.
      *
      * @param name     mapper name.
+     * @param tag      mapper tag.
      * @param jdbcType JDBC API type.
      * @param javaType application java type.
-     * @param tag      mapper tag.
      * @return new {@link ParamInfo}.
      */
-    static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, ParameterJdbcType<Jdbc> jdbcType, Class<Java> javaType, String tag) {
-        return new BasicParamInfo<>(name, jdbcType, javaType, tag);
+    static <Jdbc, Java> ParamInfo<Jdbc, Java> of(String name, String tag, ParameterJdbcType<Jdbc> jdbcType, Class<Java> javaType) {
+        return new BasicParamInfo<>(name, tag, jdbcType, javaType);
     }
 
 }

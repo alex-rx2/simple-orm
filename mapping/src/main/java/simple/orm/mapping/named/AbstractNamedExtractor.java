@@ -102,9 +102,9 @@ public abstract class AbstractNamedExtractor<T> implements NamedExtractor<T> {
             if (javaType != null) {
                 paramInfo = ParamInfo.of(
                         paramInfo.getMapperName(),
+                        paramInfo.getMapperTag(),
                         paramInfo.getJdbcType(),
-                        javaType,
-                        paramInfo.getMapperTag()
+                        javaType
                 );
             }
         }

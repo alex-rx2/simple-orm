@@ -58,9 +58,9 @@ public class QueryInjectorExtractorBuilder {
             } else {
                 builder.param(
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -99,9 +99,9 @@ public class QueryInjectorExtractorBuilder {
                 builder.param(
                         p.label(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -121,9 +121,9 @@ public class QueryInjectorExtractorBuilder {
                 builder.param(
                         p.indexWithinType(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -142,9 +142,9 @@ public class QueryInjectorExtractorBuilder {
             } else {
                 builder.param(
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -176,9 +176,9 @@ public class QueryInjectorExtractorBuilder {
                 builder.param(
                         p.propName(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -224,9 +224,9 @@ public class QueryInjectorExtractorBuilder {
                         p.label(),
                         empty(p.propName()) ? p.label() : p.propName(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -251,9 +251,9 @@ public class QueryInjectorExtractorBuilder {
                         p.indexWithinType(),
                         empty(p.propName()) ? p.label() : p.propName(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {
@@ -276,9 +276,9 @@ public class QueryInjectorExtractorBuilder {
                 builder.param(
                         empty(p.propName()) ? p.label() : p.propName(),
                         p.mapperName(),
+                        p.tag(),
                         jdbcTypeFrom(p, typesCollection),
-                        javaTypeFrom(p),
-                        p.tag()
+                        javaTypeFrom(p)
                 );
             }
         } catch (ClassNotFoundException e) {

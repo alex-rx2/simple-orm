@@ -55,13 +55,13 @@ public class IndexedInjectorBuilder {
     }
 
     public IndexedInjectorBuilder param(String mapperName,
+                                        String tag,
                                         ParameterJdbcType<?> jdbcType,
-                                        Class<?> javaType,
-                                        String tag
+                                        Class<?> javaType
     ) {
         params.apply(p -> p.append(IndexedParameter.of(
                 p.size() + 1,
-                ParamInfo.of(mapperName, jdbcType, javaType, tag)
+                ParamInfo.of(mapperName, tag, jdbcType, javaType)
         )));
         return this;
     }

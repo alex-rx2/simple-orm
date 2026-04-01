@@ -41,11 +41,11 @@ public class SimpleIndexedExtractorBuilder extends AbstractIndexedExtractorBuild
     }
 
     public SimpleIndexedExtractorBuilder param(String mapperName,
+                                               String tag,
                                                ParameterJdbcType<?> jdbcType,
-                                               Class<?> javaType,
-                                               String tag
+                                               Class<?> javaType
     ) {
-        return param(IndexedParameter.of(params.get().size() + 1, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(IndexedParameter.of(params.get().size() + 1, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }

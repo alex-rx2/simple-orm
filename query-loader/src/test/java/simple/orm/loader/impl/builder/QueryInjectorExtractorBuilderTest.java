@@ -68,11 +68,11 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(injector);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
                     IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
                     IndexedParameter.of(4, mockTypeMapper),
-                    IndexedParameter.of(5, ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    IndexedParameter.of(5, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -119,13 +119,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
                     IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
                     IndexedParameter.of(4, ParamInfo.of("mapper2", null, null, null)),
-                    IndexedParameter.of(5, ParamInfo.of(null, mockJdbcType2, Integer.class, null)),
+                    IndexedParameter.of(5, ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
                     IndexedParameter.of(6, mockTypeMapper),
-                    IndexedParameter.of(7, ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    IndexedParameter.of(7, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -172,13 +172,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of("label1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of("label2", ParamInfo.of("mapper", null, null, "tag")),
+                    IndexedParameter.of("label1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of("label2", ParamInfo.of("mapper", "tag", null, null)),
                     IndexedParameter.of("label3", ParamInfo.of(null, null, null, null)),
                     IndexedParameter.of("label4", ParamInfo.of("mapper2", null, null, null)),
-                    IndexedParameter.of("label5", ParamInfo.of(null, mockJdbcType2, Integer.class, null)),
+                    IndexedParameter.of("label5", ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
                     IndexedParameter.of("label6", mockTypeMapper),
-                    IndexedParameter.of("label7", ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    IndexedParameter.of("label7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -226,13 +226,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<IndexedParameter> parameters = (Seq<IndexedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    IndexedParameter.of(1, ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    IndexedParameter.of(2, ParamInfo.of("mapper", null, null, "tag")),
+                    IndexedParameter.of(1, ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    IndexedParameter.of(2, ParamInfo.of("mapper", "tag", null, null)),
                     IndexedParameter.of(3, ParamInfo.of(null, null, null, null)),
                     IndexedParameter.of(4, ParamInfo.of("mapper2", null, null, null)),
-                    IndexedParameter.of(5, ParamInfo.of(null, mockJdbcType2, Integer.class, null)),
+                    IndexedParameter.of(5, ParamInfo.of(null, null, mockJdbcType2, Integer.class)),
                     IndexedParameter.of(6, mockTypeMapper),
-                    IndexedParameter.of(7, ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    IndexedParameter.of(7, ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -278,11 +278,11 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(injector);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", null, null, "tag")),
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
                     NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(4, "prop4", mockTypeMapper),
-                    NamedParameter.of(5, "prop5", ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    NamedParameter.of(5, "prop5", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -342,13 +342,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", null, null, "tag")),
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
                     NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(4, "label4", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(5, "prop5", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(6, "prop6", mockTypeMapper),
-                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -408,13 +408,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of("label1", "prop1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of("label2", "prop2", ParamInfo.of("mapper", null, null, "tag")),
+                    NamedParameter.of("label1", "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of("label2", "prop2", ParamInfo.of("mapper", "tag", null, null)),
                     NamedParameter.of("label3", "prop3", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of("label4", "label4", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of("label5", "prop5", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of("label6", "prop6", mockTypeMapper),
-                    NamedParameter.of("label7", "prop7", ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    NamedParameter.of("label7", "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {
@@ -475,13 +475,13 @@ public class QueryInjectorExtractorBuilderTest {
             field.trySetAccessible();
             Seq<NamedParameter> parameters = (Seq<NamedParameter>) field.get(extractor);
             assertThat(parameters).containsExactly(
-                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", mockJdbcType, String.class, "tag")),
-                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", null, null, "tag")),
+                    NamedParameter.of(1, "prop1", ParamInfo.of("mapper", "tag", mockJdbcType, String.class)),
+                    NamedParameter.of(2, "prop2", ParamInfo.of("mapper", "tag", null, null)),
                     NamedParameter.of(3, "prop3", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(4, "label4", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(5, "prop5", ParamInfo.of(null, null, null, null)),
                     NamedParameter.of(6, "prop6", mockTypeMapper),
-                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", mockJdbcType2, Integer.class, "tag"))
+                    NamedParameter.of(7, "prop7", ParamInfo.of("mapper", "tag", mockJdbcType2, Integer.class))
             );
         }
         {

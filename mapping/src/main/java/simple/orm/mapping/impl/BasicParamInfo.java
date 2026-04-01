@@ -7,32 +7,39 @@ import simple.orm.mapping.param.ParameterJdbcType;
 
 import java.util.Objects;
 
+import static simple.orm.util.StringUtils.qnn;
+
 /**
  * Implementation of {@link ParamInfo}.
  */
 public class BasicParamInfo<Jdbc, Java> implements ParamInfo<Jdbc, Java> {
 
     private final String mapperName;
+    private final String mapperTag;
     private final ParameterJdbcType<Jdbc> jdbcType;
     private final Class<Java> javaType;
-    private final String mapperTag;
 
     private Option<Integer> hashCode = Option.none();
 
     public BasicParamInfo(String mapperName,
+                          String mapperTag,
                           ParameterJdbcType<Jdbc> jdbcType,
-                          Class<Java> javaType,
-                          String mapperTag
+                          Class<Java> javaType
     ) {
         this.mapperName = mapperName;
+        this.mapperTag = mapperTag;
         this.jdbcType = jdbcType;
         this.javaType = javaType;
-        this.mapperTag = mapperTag;
     }
 
     @Override
     public String getMapperName() {
         return mapperName;
+    }
+
+    @Override
+    public String getMapperTag() {
+        return mapperTag;
     }
 
     @Override
@@ -43,11 +50,6 @@ public class BasicParamInfo<Jdbc, Java> implements ParamInfo<Jdbc, Java> {
     @Override
     public Class<Java> getJavaType() {
         return javaType;
-    }
-
-    @Override
-    public String getMapperTag() {
-        return mapperTag;
     }
 
     @Override
@@ -71,10 +73,10 @@ public class BasicParamInfo<Jdbc, Java> implements ParamInfo<Jdbc, Java> {
     @Override
     public String toString() {
         return Array.of(
-                        mapperName == null ? "" : mapperName,
-                        jdbcType == null ? "" : jdbcType.toString(),
-                        javaType == null ? "" : javaType.getName(),
-                        mapperTag == null ? "" : mapperTag
+                        qnn(mapperName),
+                        qnn(mapperTag),
+                        qnn(jdbcType == null ? null : jdbcType.toString()),
+                        qnn(javaType == null ? null : javaType.getName())
                 )
                 .mkString("ParamInfo(", ",", ")");
     }

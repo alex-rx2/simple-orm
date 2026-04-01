@@ -603,11 +603,11 @@ public class NamedExtractorImplTest {
         final ParamInfo<Object, Object> paramInfo3 = ParamInfo.of(null, null, null, null);
         final ParamInfo<Object, Object> paramInfo4 = ParamInfo.of(null, null, null, null);
         final ParamInfo<Object, Object> paramInfo5 = ParamInfo.of(null, null, null, null);
-        final ParamInfo<Object, Integer> derivedParamInfo1 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, Integer> derivedParamInfo2 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, Integer> derivedParamInfo3 = ParamInfo.of(null, null, Integer.class, null);
-        final ParamInfo<Object, String> derivedParamInfo4 = ParamInfo.of(null, null, String.class, null);
-        final ParamInfo<Object, String> derivedParamInfo5 = ParamInfo.of(null, null, String.class, null);
+        final ParamInfo<Object, Integer> derivedParamInfo1 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, Integer> derivedParamInfo2 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, Integer> derivedParamInfo3 = ParamInfo.of(null, null, null, Integer.class);
+        final ParamInfo<Object, String> derivedParamInfo4 = ParamInfo.of(null, null, null, String.class);
+        final ParamInfo<Object, String> derivedParamInfo5 = ParamInfo.of(null, null, null, String.class);
 
         final ParameterSetter<Integer> setterTypeInt = mock();
         final ParameterJdbcType<Integer> typeInt = ParameterJdbcType.of(JDBCType.INTEGER, Integer.class,

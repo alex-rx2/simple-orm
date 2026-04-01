@@ -80,7 +80,7 @@ public interface MappersCollection {
      * @return found mappers.
      * @throws IllegalArgumentException if both name and jdbcType are null.
      */
-    Traversable<TypeMapper<?, ?>> findMappers(String name, ParameterJdbcType<?> jdbcType, Class<?> javaType, String tag);
+    Traversable<TypeMapper<?, ?>> findMappers(String name, String tag, ParameterJdbcType<?> jdbcType, Class<?> javaType);
 
     /**
      * Auxiliary method to search collection for mappers if {@link ParameterJdbcType} is not provided, but
@@ -91,11 +91,11 @@ public interface MappersCollection {
      *
      * @param sqlType  JDBC API SQL type.
      * @param name     desired registration name.
-     * @param javaType desired application java type.
      * @param tag      desired registration tag.
+     * @param javaType desired application java type.
      * @return found mappers.
      */
-    Traversable<TypeMapper<?, ?>> findMappers(int sqlType, String name, Class<?> javaType, String tag);
+    Traversable<TypeMapper<?, ?>> findMappers(int sqlType, String name, String tag, Class<?> javaType);
 
     /**
      * Returns all registered mappers.

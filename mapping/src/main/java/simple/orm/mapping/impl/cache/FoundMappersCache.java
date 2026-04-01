@@ -186,7 +186,7 @@ public class FoundMappersCache implements MappersFinder {
                 // ignore
             }
             if (sqlType != null) {
-                Traversable<TypeMapper<?, ?>> found = findWithParents(sqlType, mapperName, javaType, mapperTag);
+                Traversable<TypeMapper<?, ?>> found = findWithParents(sqlType, mapperName, mapperTag, javaType);
                 if (found.size() > 1) {
                     throw new ManyMappersFoundException(found.size() + " mappers" +
                             " found for parameter " + designator.toShortString() +
@@ -200,7 +200,7 @@ public class FoundMappersCache implements MappersFinder {
         }
         // try to use provided info if name or jdbcType is provided
         if (mapper == null && (mapperName != null || jdbcType != null)) {
-            Traversable<TypeMapper<?, ?>> found = findWithParents(mapperName, jdbcType, javaType, mapperTag);
+            Traversable<TypeMapper<?, ?>> found = findWithParents(mapperName, mapperTag, jdbcType, javaType);
             if (found.size() > 1) {
                 throw new ManyMappersFoundException(found.size() + " mappers" +
                         " found for parameter " + designator.toShortString() +
@@ -224,36 +224,37 @@ public class FoundMappersCache implements MappersFinder {
     }
 
     private Traversable<TypeMapper<?, ?>> findWithParents(String mapperName,
+                                                          String mapperTag,
                                                           ParameterJdbcType<?> jdbcType,
-                                                          Class<?> javaType,
-                                                          String mapperTag
+                                                          Class<?> javaType
     ) {
-        Traversable<TypeMapper<?, ?>> found = mappers.findMappers(mapperName, jdbcType, javaType, mapperTag);
+        Traversable<TypeMapper<?, ?>> found = mappers.findMappers(mapperName, mapperTag, jdbcType, javaType);
         if (!found.isEmpty()) {
             return found; // error for size>1 will be processed outside this method
         } else if (javaType != null && javaType != Objects.class) {
             // find mapper for parent classes / implemented interfaces
             // omit Object.class cause we use it for special case of javaType==null in caching
-            return findOnlyParents(mapperName, jdbcType, javaType, mapperTag);
+            return findOnlyParents(mapperName, mapperTag, jdbcType, javaType);
         } else {
             return found;
         }
     }
 
     private Traversable<TypeMapper<?, ?>> findOnlyParents(String mapperName,
+                                                          String mapperTag,
                                                           ParameterJdbcType<?> jdbcType,
-                                                          Class<?> javaType,
-                                                          String mapperTag) {
+                                                          Class<?> javaType
+    ) {
         Traversable<TypeMapper<?, ?>> found = List.empty();
         // first check actual superclasses
         Class<?> superclass = javaType.getSuperclass();
         if (superclass != null) {
-            found = findWithParents(mapperName, jdbcType, superclass, mapperTag);
+            found = findWithParents(mapperName, mapperTag, jdbcType, superclass);
         }
         // then check implemented interfaces
         if (found.isEmpty()) {
             for (Class<?> anInterface : javaType.getInterfaces()) {
-                found = findWithParents(mapperName, jdbcType, anInterface, mapperTag);
+                found = findWithParents(mapperName, mapperTag, jdbcType, anInterface);
                 if (!found.isEmpty()) {
                     break; // found
                 }
@@ -264,16 +265,16 @@ public class FoundMappersCache implements MappersFinder {
 
     private Traversable<TypeMapper<?, ?>> findWithParents(int sqlType,
                                                           String mapperName,
-                                                          Class<?> javaType,
-                                                          String mapperTag
+                                                          String mapperTag,
+                                                          Class<?> javaType
     ) {
-        Traversable<TypeMapper<?, ?>> found = mappers.findMappers(sqlType, mapperName, javaType, mapperTag);
+        Traversable<TypeMapper<?, ?>> found = mappers.findMappers(sqlType, mapperName, mapperTag, javaType);
         if (!found.isEmpty()) {
             return found; // error for size>1 will be processed outside this method
         } else if (javaType != null && javaType != Objects.class) {
             // find mapper for parent classes / implemented interfaces
             // omit Object.class cause we use it for special case of javaType==null in caching
-            return findOnlyParents(sqlType, mapperName, javaType, mapperTag);
+            return findOnlyParents(sqlType, mapperName, mapperTag, javaType);
         } else {
             return found;
         }
@@ -281,18 +282,19 @@ public class FoundMappersCache implements MappersFinder {
 
     private Traversable<TypeMapper<?, ?>> findOnlyParents(int sqlType,
                                                           String mapperName,
-                                                          Class<?> javaType,
-                                                          String mapperTag) {
+                                                          String mapperTag,
+                                                          Class<?> javaType
+    ) {
         Traversable<TypeMapper<?, ?>> found = List.empty();
         // first check actual superclasses
         Class<?> superclass = javaType.getSuperclass();
         if (superclass != null) {
-            found = findWithParents(sqlType, mapperName, superclass, mapperTag);
+            found = findWithParents(sqlType, mapperName, mapperTag, superclass);
         }
         // then check implemented interfaces
         if (found.isEmpty()) {
             for (Class<?> anInterface : javaType.getInterfaces()) {
-                found = findWithParents(sqlType, mapperName, anInterface, mapperTag);
+                found = findWithParents(sqlType, mapperName, mapperTag, anInterface);
                 if (!found.isEmpty()) {
                     break; // found
                 }

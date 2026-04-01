@@ -64,9 +64,9 @@ public class LabelNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
     public LabelNamedExtractorBuilder<T> param(String label,
                                                String propertyName,
                                                String mapperName,
+                                               String tag,
                                                ParameterJdbcType<?> jdbcType,
-                                               Class<?> javaType,
-                                               String tag
+                                               Class<?> javaType
     ) {
         if (empty(label)) {
             throw new IllegalArgumentException("label is empty or null");
@@ -74,7 +74,7 @@ public class LabelNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
-        return param(NamedParameter.of(label, propertyName, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(NamedParameter.of(label, propertyName, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }

@@ -44,14 +44,14 @@ public class IndexIndexedExtractorBuilder extends AbstractIndexedExtractorBuilde
 
     public IndexIndexedExtractorBuilder param(int index,
                                               String mapperName,
+                                              String tag,
                                               ParameterJdbcType<?> jdbcType,
-                                              Class<?> javaType,
-                                              String tag
+                                              Class<?> javaType
     ) {
         if (index <= 0) {
             throw new IllegalArgumentException("index must be positive");
         }
-        return param(IndexedParameter.of(index, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(IndexedParameter.of(index, ParamInfo.of(mapperName, tag, jdbcType, javaType)));
     }
 
 }
