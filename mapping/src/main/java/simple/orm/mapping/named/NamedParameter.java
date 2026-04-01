@@ -10,7 +10,6 @@ import static simple.orm.util.StringUtils.empty;
 /**
  * Parameter information for {@link NamedExtractorImpl} and {@link NamedInjectorImpl}.
  */
-// TODO make index/label first argument
 public class NamedParameter {
 
     public final Integer index;
@@ -31,7 +30,7 @@ public class NamedParameter {
         this.info = info;
     }
 
-    public static NamedParameter of(String name, int index, TypeMapper<?, ?> mapper) {
+    public static NamedParameter of(int index, String name, TypeMapper<?, ?> mapper) {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
@@ -44,7 +43,7 @@ public class NamedParameter {
         return new NamedParameter(index, null, name, mapper, null);
     }
 
-    public static NamedParameter of(String name, int index, ParamInfo<?, ?> info) {
+    public static NamedParameter of(int index, String name, ParamInfo<?, ?> info) {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
@@ -57,18 +56,18 @@ public class NamedParameter {
         return new NamedParameter(index, null, name, null, info);
     }
 
-    public static NamedParameter of(String name, String label, TypeMapper<?, ?> mapper) {
-        if (name == null) {
-            throw new NullPointerException("name is null");
-        }
-        if (empty(name)) {
-            throw new NullPointerException("name is empty");
-        }
+    public static NamedParameter of(String label, String name, TypeMapper<?, ?> mapper) {
         if (label == null) {
             throw new NullPointerException("label is null");
         }
         if (empty(label)) {
             throw new NullPointerException("label is empty");
+        }
+        if (name == null) {
+            throw new NullPointerException("name is null");
+        }
+        if (empty(name)) {
+            throw new NullPointerException("name is empty");
         }
         if (mapper == null) {
             throw new NullPointerException("mapper is null");
@@ -76,18 +75,18 @@ public class NamedParameter {
         return new NamedParameter(null, label, name, mapper, null);
     }
 
-    public static NamedParameter of(String name, String label, ParamInfo<?, ?> info) {
-        if (name == null) {
-            throw new NullPointerException("name is null");
-        }
-        if (empty(name)) {
-            throw new NullPointerException("name is empty");
-        }
+    public static NamedParameter of(String label, String name, ParamInfo<?, ?> info) {
         if (label == null) {
             throw new NullPointerException("label is null");
         }
         if (empty(label)) {
             throw new NullPointerException("label is empty");
+        }
+        if (name == null) {
+            throw new NullPointerException("name is null");
+        }
+        if (empty(name)) {
+            throw new NullPointerException("name is empty");
         }
         if (info == null) {
             throw new NullPointerException("info is null");

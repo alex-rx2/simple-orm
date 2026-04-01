@@ -43,7 +43,7 @@ public class IndexNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
         if (mapper == null) {
             throw new NullPointerException("mapper is null");
         }
-        return param(NamedParameter.of(propertyName, index, mapper));
+        return param(NamedParameter.of(index, propertyName, mapper));
     }
 
     public IndexNamedExtractorBuilder<T> param(int index, String propertyName, ParamInfo<?, ?> param) {
@@ -56,7 +56,7 @@ public class IndexNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
         if (param == null) {
             throw new NullPointerException("param is null");
         }
-        return param(NamedParameter.of(propertyName, index, param));
+        return param(NamedParameter.of(index, propertyName, param));
     }
 
     public IndexNamedExtractorBuilder<T> param(int index,
@@ -72,7 +72,7 @@ public class IndexNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilder
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
-        return param(NamedParameter.of(propertyName, index, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(NamedParameter.of(index, propertyName, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
     }
 
 }

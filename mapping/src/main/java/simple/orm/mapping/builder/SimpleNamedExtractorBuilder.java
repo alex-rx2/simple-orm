@@ -42,7 +42,7 @@ public class SimpleNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilde
         if (mapper == null) {
             throw new NullPointerException("mapper is null");
         }
-        return param(NamedParameter.of(propertyName, params.get().size() + 1, mapper));
+        return param(NamedParameter.of(params.get().size() + 1, propertyName, mapper));
     }
 
     public SimpleNamedExtractorBuilder<T> param(String propertyName, ParamInfo<?, ?> param) {
@@ -52,7 +52,7 @@ public class SimpleNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilde
         if (param == null) {
             throw new NullPointerException("param is null");
         }
-        return param(NamedParameter.of(propertyName, params.get().size() + 1, param));
+        return param(NamedParameter.of(params.get().size() + 1, propertyName, param));
     }
 
     public SimpleNamedExtractorBuilder<T> param(String propertyName,
@@ -64,7 +64,7 @@ public class SimpleNamedExtractorBuilder<T> extends AbstractNamedExtractorBuilde
         if (propertyName == null) {
             throw new NullPointerException("propertyName is null");
         }
-        return param(NamedParameter.of(propertyName, params.get().size() + 1, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
+        return param(NamedParameter.of(params.get().size() + 1, propertyName, ParamInfo.of(mapperName, jdbcType, javaType, tag)));
     }
 
 }

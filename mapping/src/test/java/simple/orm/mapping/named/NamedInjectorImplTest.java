@@ -97,9 +97,9 @@ public class NamedInjectorImplTest {
         final NamedInjectorImpl<SomeClassOne> injector = new NamedInjectorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, mapperInt),
-                        NamedParameter.of("fieldStringOne", 2, mapperString),
-                        NamedParameter.of("fieldStringTwo", 3, mapperString)),
+                List.of(NamedParameter.of(1, "fieldInteger", mapperInt),
+                        NamedParameter.of(2, "fieldStringOne", mapperString),
+                        NamedParameter.of(3, "fieldStringTwo", mapperString)),
                 SomeClassOne.class,
                 List.empty()
         );
@@ -177,9 +177,9 @@ public class NamedInjectorImplTest {
         final NamedInjectorImpl<SomeClassOne> injector = new NamedInjectorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("fieldStringOne", 2, paramInfo2),
-                        NamedParameter.of("fieldStringTwo", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "fieldStringOne", paramInfo2),
+                        NamedParameter.of(3, "fieldStringTwo", paramInfo3)),
                 SomeClassOne.class,
                 List.empty()
         );
@@ -256,9 +256,9 @@ public class NamedInjectorImplTest {
         final NamedInjectorImpl<SomeClassThree> injector = new NamedInjectorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3)),
                 SomeClassThree.class,
                 List.empty()
         );
@@ -348,9 +348,9 @@ public class NamedInjectorImplTest {
         final NamedInjectorImpl<SomeClassThree> injector = new NamedInjectorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, paramInfo1),
-                        NamedParameter.of("classTwo.fieldInteger", 2, paramInfo2),
-                        NamedParameter.of("classTwo.classOne.fieldInteger", 3, paramInfo3)),
+                List.of(NamedParameter.of(1, "fieldInteger", paramInfo1),
+                        NamedParameter.of(2, "classTwo.fieldInteger", paramInfo2),
+                        NamedParameter.of(3, "classTwo.classOne.fieldInteger", paramInfo3)),
                 SomeClassThree.class,
                 List.empty()
         );
@@ -415,9 +415,9 @@ public class NamedInjectorImplTest {
         final NamedInjectorImpl<SomeClassOne> injector = new NamedInjectorImpl<>(
                 mappersFinder,
                 reflectionsFinder,
-                List.of(NamedParameter.of("fieldInteger", 1, mapperInt),
-                        NamedParameter.of("fieldStringOne", 2, mapperString),
-                        NamedParameter.of("fieldStringTwo", 3, mapperString)),
+                List.of(NamedParameter.of(1, "fieldInteger", mapperInt),
+                        NamedParameter.of(2, "fieldStringOne", mapperString),
+                        NamedParameter.of(3, "fieldStringTwo", mapperString)),
                 SomeClassOne.class,
                 List.of(pe1, pe2, pe3)
         );
