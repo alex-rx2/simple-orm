@@ -4,28 +4,38 @@ import java.util.Objects;
 
 /**
  * Referenced by name. A concept of something referenced by name in reflections API.
- *
- * @param name   the name.
- * @param target the target class.
  */
-public record RefName(String name, Class<?> target) {
+public final class RefName {
 
-    public RefName {
+    public final String name;
+    public final Class<?> target;
+    private final int hashCode;
+
+    public RefName(String name, Class<?> target) {
         if (name == null) {
             throw new NullPointerException("name is null");
         }
         if (target == null) {
             throw new NullPointerException("target is null");
         }
+        this.name = name;
+        this.target = target;
+        this.hashCode = Objects.hash(name, target);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RefName(String name2, Class<?> target2))) {
-            return false;
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return Objects.equals(name, name2)
-                && Objects.equals(target, target2);
+        return obj instanceof RefName that
+                && Objects.equals(this.name, that.name)
+                && Objects.equals(this.target, that.target);
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
     }
 
     @Override

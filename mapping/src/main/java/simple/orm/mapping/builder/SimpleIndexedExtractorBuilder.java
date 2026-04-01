@@ -18,12 +18,12 @@ import java.sql.ResultSet;
  */
 public class SimpleIndexedExtractorBuilder extends AbstractIndexedExtractorBuilder<SimpleIndexedExtractorBuilder> {
 
-    public static SimpleIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
-        return new SimpleIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
-    }
-
     public static SimpleIndexedExtractorBuilder builder(MappersCollection mappers) {
         return new SimpleIndexedExtractorBuilder().withDefaultMappersFinder(mappers);
+    }
+
+    public static SimpleIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
+        return new SimpleIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
     }
 
     public SimpleIndexedExtractorBuilder param(TypeMapper<?, ?> mapper) {

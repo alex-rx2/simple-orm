@@ -14,12 +14,12 @@ import simple.orm.mapping.type.TypeMapper;
  */
 public class IndexIndexedExtractorBuilder extends AbstractIndexedExtractorBuilder<IndexIndexedExtractorBuilder> {
 
-    public static IndexIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
-        return new IndexIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
-    }
-
     public static IndexIndexedExtractorBuilder builder(MappersCollection mappers) {
         return new IndexIndexedExtractorBuilder().withDefaultMappersFinder(mappers);
+    }
+
+    public static IndexIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
+        return new IndexIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
     }
 
     public IndexIndexedExtractorBuilder param(int index, TypeMapper<?, ?> mapper) {

@@ -10,6 +10,7 @@ import static simple.orm.util.StringUtils.empty;
 /**
  * Parameter information for {@link NamedExtractorImpl} and {@link NamedInjectorImpl}.
  */
+// TODO make index/label first argument
 public class NamedParameter {
 
     public final Integer index;

@@ -16,12 +16,12 @@ import static simple.orm.util.StringUtils.empty;
  */
 public class LabelIndexedExtractorBuilder extends AbstractIndexedExtractorBuilder<LabelIndexedExtractorBuilder> {
 
-    public static LabelIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
-        return new LabelIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
-    }
-
     public static LabelIndexedExtractorBuilder builder(MappersCollection mappers) {
         return new LabelIndexedExtractorBuilder().withDefaultMappersFinder(mappers);
+    }
+
+    public static LabelIndexedExtractorBuilder builder(MappersFinder mappersFinder) {
+        return new LabelIndexedExtractorBuilder().withCustomMappersFinder(mappersFinder);
     }
 
     public LabelIndexedExtractorBuilder param(String label, TypeMapper<?, ?> mapper) {

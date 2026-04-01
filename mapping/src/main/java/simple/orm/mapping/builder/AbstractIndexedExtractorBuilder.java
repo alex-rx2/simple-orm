@@ -10,7 +10,7 @@ import simple.orm.mapping.type.MappersCollection;
 import simple.orm.util.Mutable;
 
 /**
- * Abstract base for builder for {@link IndexedExtractor}.
+ * Abstract base class for builder of {@link IndexedExtractor}.
  *
  * @param <SELF> actual builder, extending this abstract one.
  */
@@ -23,6 +23,7 @@ public class AbstractIndexedExtractorBuilder<SELF extends AbstractIndexedExtract
         this.params = Mutable.of(List.empty());
     }
 
+    @SuppressWarnings("unchecked")
     SELF param(IndexedParameter param) {
         if (param == null) {
             throw new NullPointerException("param is null");
@@ -31,6 +32,7 @@ public class AbstractIndexedExtractorBuilder<SELF extends AbstractIndexedExtract
         return (SELF) this;
     }
 
+    @SuppressWarnings("unchecked")
     public SELF withCustomMappersFinder(MappersFinder mappersFinder) {
         if (mappersFinder == null) {
             throw new NullPointerException("mappersFinder is null");
@@ -39,6 +41,7 @@ public class AbstractIndexedExtractorBuilder<SELF extends AbstractIndexedExtract
         return (SELF) this;
     }
 
+    @SuppressWarnings("unchecked")
     public SELF withDefaultMappersFinder(MappersCollection mappers) {
         if (mappers == null) {
             throw new NullPointerException("mappers is null");

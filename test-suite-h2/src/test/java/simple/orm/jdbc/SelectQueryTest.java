@@ -365,7 +365,7 @@ public class SelectQueryTest extends BaseH2Test {
                     InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build(),
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                    InjectorsExtractors.namedExtractorSimple(H2Mappers.collection(), NamedRow2.class)
                             .param("id", H2Mappers.INT)
                             .param("doublePrecision", H2Mappers.DOUBLE)
                             .param("num", H2Mappers.NUMERIC)
@@ -401,15 +401,15 @@ public class SelectQueryTest extends BaseH2Test {
                     InjectorsExtractors.namedInjector(H2Mappers.collection(), HasId.class)
                             .param("id", H2Mappers.INT)
                             .build(),
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                    InjectorsExtractors.namedExtractorByLabel(H2Mappers.collection(), NamedRow2.class)
                             .param("id", "id", H2Mappers.INT)
                             .param("doublePrecision", "doublePrecision", H2Mappers.DOUBLE)
                             .param("num", "num", H2Mappers.NUMERIC)
-                            .param("str1", "col_str1", H2Mappers.VARCHAR)
-                            .param("str2", "col_str2", H2Mappers.VARCHAR)
-                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
-                            .param("date", "col_date", H2Mappers.DATE_STR)
-                            .param("time", "col_time", H2Mappers.TIME_STR)
+                            .param("col_str1", "str1", H2Mappers.VARCHAR)
+                            .param("col_str2", "str2", H2Mappers.VARCHAR)
+                            .param("col_date", "date", H2Mappers.DATE_STR)
+                            .param("col_time", "time", H2Mappers.TIME_STR)
+                            .param("col_timestamp", "timestamp", H2Mappers.TIMESTAMP_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, new HasId(2));
@@ -440,7 +440,7 @@ public class SelectQueryTest extends BaseH2Test {
                     InjectorsExtractors.indexedInjector(H2Mappers.collection())
                             .param(INT_STRING_MAPPER)
                             .build(),
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                    InjectorsExtractors.namedExtractorSimple(H2Mappers.collection(), NamedRow2.class)
                             .param("id", H2Mappers.INT)
                             .param("doublePrecision", H2Mappers.DOUBLE)
                             .param("num", H2Mappers.NUMERIC)
@@ -478,13 +478,13 @@ public class SelectQueryTest extends BaseH2Test {
                             .param(H2Mappers.VARCHAR)
                             .param(H2Mappers.VARCHAR)
                             .build(),
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                    InjectorsExtractors.namedExtractorByLabel(H2Mappers.collection(), NamedRow2.class)
                             .param("id", "id", H2Mappers.INT)
                             .param("doublePrecision", "doublePrecision", H2Mappers.DOUBLE)
                             .param("num", "num", H2Mappers.NUMERIC)
-                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
-                            .param("date", "col_date", H2Mappers.DATE_STR)
-                            .param("time", "col_time", H2Mappers.TIME_STR)
+                            .param("col_timestamp", "timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param("col_date", "date", H2Mappers.DATE_STR)
+                            .param("col_time", "time", H2Mappers.TIME_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, 2, "n1", "n2");
@@ -619,15 +619,15 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=1\
                     """,
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
-                            .param("id", H2Mappers.INT)
-                            .param("doublePrecision", H2Mappers.DOUBLE)
-                            .param("num", H2Mappers.NUMERIC)
-                            .param("str1", H2Mappers.VARCHAR)
-                            .param("str2", H2Mappers.VARCHAR)
-                            .param("date", H2Mappers.DATE_STR)
-                            .param("time", H2Mappers.TIME_STR)
-                            .param("timestamp", H2Mappers.TIMESTAMP_STR)
+                    InjectorsExtractors.namedExtractorByIndex(H2Mappers.collection(), NamedRow2.class)
+                            .param(1, "id", H2Mappers.INT)
+                            .param(6, "date", H2Mappers.DATE_STR)
+                            .param(7, "time", H2Mappers.TIME_STR)
+                            .param(8, "timestamp", H2Mappers.TIMESTAMP_STR)
+                            .param(2, "doublePrecision", H2Mappers.DOUBLE)
+                            .param(3, "num", H2Mappers.NUMERIC)
+                            .param(4, "str1", H2Mappers.VARCHAR)
+                            .param(5, "str2", H2Mappers.VARCHAR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query);
@@ -652,15 +652,15 @@ public class SelectQueryTest extends BaseH2Test {
                      FROM table_one\
                      WHERE id=2\
                     """,
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
+                    InjectorsExtractors.namedExtractorByLabel(H2Mappers.collection(), NamedRow2.class)
                             .param("id", "id", H2Mappers.INT)
+                            .param("col_date", "date", H2Mappers.DATE_STR)
+                            .param("col_time", "time", H2Mappers.TIME_STR)
+                            .param("col_timestamp", "timestamp", H2Mappers.TIMESTAMP_STR)
                             .param("doublePrecision", "doublePrecision", H2Mappers.DOUBLE)
                             .param("num", "num", H2Mappers.NUMERIC)
-                            .param("str1", "col_str1", H2Mappers.VARCHAR)
-                            .param("str2", "col_str2", H2Mappers.VARCHAR)
-                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
-                            .param("date", "col_date", H2Mappers.DATE_STR)
-                            .param("time", "col_time", H2Mappers.TIME_STR)
+                            .param("col_str1", "str1", H2Mappers.VARCHAR)
+                            .param("col_str2", "str2", H2Mappers.VARCHAR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query);
@@ -721,16 +721,15 @@ public class SelectQueryTest extends BaseH2Test {
                             .param("id", H2Mappers.INT)
                             .param("str2", H2Mappers.VARCHAR)
                             .build(),
-                    // mixed by index and by label
-                    InjectorsExtractors.namedExtractor(H2Mappers.collection(), NamedRow2.class)
-                            .param("id", H2Mappers.INT)
-                            .param("doublePrecision", H2Mappers.DOUBLE)
-                            .param("num", H2Mappers.NUMERIC)
-                            .param("str1", "col_str1", H2Mappers.VARCHAR)
-                            .param("str2", "col_str2", H2Mappers.VARCHAR)
-                            .param("timestamp", "col_timestamp", H2Mappers.TIMESTAMP_STR)
-                            .param("date", "col_date", H2Mappers.DATE_STR)
-                            .param("time", "col_time", H2Mappers.TIME_STR)
+                    InjectorsExtractors.namedExtractorByIndex(H2Mappers.collection(), NamedRow2.class)
+                            .param(1, "id", H2Mappers.INT)
+                            .param(2, "doublePrecision", H2Mappers.DOUBLE)
+                            .param(3, "num", H2Mappers.NUMERIC)
+                            .param(4, "str1", H2Mappers.VARCHAR)
+                            .param(5, "str2", H2Mappers.VARCHAR)
+                            .param(6, "date", H2Mappers.DATE_STR)
+                            .param(7, "time", H2Mappers.TIME_STR)
+                            .param(8, "timestamp", H2Mappers.TIMESTAMP_STR)
                             .build()
             );
             Result<NamedRow2> result = conn.executeSelect(query, new NamedRow1(3, "n2", "p2"));

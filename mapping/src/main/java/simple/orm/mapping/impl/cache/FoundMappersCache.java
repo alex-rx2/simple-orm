@@ -34,16 +34,19 @@ public class FoundMappersCache implements MappersFinder {
 
         public final int index;
         public final String label;
-
-        private Option<Integer> hashCode = Option.none();
+        private final int hashCode;
 
         private Designator(int index, String label) {
             this.index = index;
             this.label = label;
+            this.hashCode = Objects.hash(index, label);
         }
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof Designator d
                     && index == d.index
                     && Objects.equals(label, d.label)
@@ -52,10 +55,7 @@ public class FoundMappersCache implements MappersFinder {
 
         @Override
         public int hashCode() {
-            if (!hashCode.isDefined()) {
-                hashCode = Option.of(Objects.hash(index, label));
-            }
-            return hashCode.get();
+            return hashCode;
         }
 
         @Override

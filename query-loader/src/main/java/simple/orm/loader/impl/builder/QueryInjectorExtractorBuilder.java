@@ -8,13 +8,15 @@ import simple.orm.jdbc.map.NamedInjector;
 import simple.orm.loader.RuntimeClassNotFoundException;
 import simple.orm.loader.builder.QueryParameter;
 import simple.orm.mapping.builder.IndexIndexedExtractorBuilder;
+import simple.orm.mapping.builder.IndexNamedExtractorBuilder;
 import simple.orm.mapping.builder.IndexedInjectorBuilder;
 import simple.orm.mapping.builder.LabelIndexedExtractorBuilder;
+import simple.orm.mapping.builder.LabelNamedExtractorBuilder;
 import simple.orm.mapping.builder.MappersFinder;
-import simple.orm.mapping.builder.NamedExtractorBuilder;
 import simple.orm.mapping.builder.NamedInjectorBuilder;
 import simple.orm.mapping.builder.ReflectionsFinder;
 import simple.orm.mapping.builder.SimpleIndexedExtractorBuilder;
+import simple.orm.mapping.builder.SimpleNamedExtractorBuilder;
 import simple.orm.mapping.param.ParameterJdbcType;
 import simple.orm.mapping.param.TypesCollection;
 
@@ -190,50 +192,97 @@ public class QueryInjectorExtractorBuilder {
                                                      ReflectionsFinder reflectionsFinder,
                                                      Class<T> targetClass,
                                                      Traversable<QueryParameter> params) {
-        NamedExtractorBuilder<T> builder = NamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
-        params.forEach(p -> appendToBuilder(typesCollection, builder, p));
-        return builder.build();
+        if (!empty(params.head().label())) {
+            LabelNamedExtractorBuilder<T> builder = LabelNamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
+            params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
+            return builder.build();
+        } else if ((Integer) params.head().indexWithinType() != null) {
+            // TODO fix after indexWithinType replaced with Integer index
+            IndexNamedExtractorBuilder<T> builder = IndexNamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
+            params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
+            return builder.build();
+        } else {
+            SimpleNamedExtractorBuilder<T> builder = SimpleNamedExtractorBuilder.builder(mappersFinder, reflectionsFinder, targetClass);
+            params.forEachWithIndex((p, i) -> appendToBuilder(typesCollection, builder, p, i));
+            return builder.build();
+        }
     }
 
     private <T> void appendToBuilder(TypesCollection typesCollection,
-                                     NamedExtractorBuilder<T> builder,
-                                     QueryParameter p) {
+                                     LabelNamedExtractorBuilder<T> builder,
+                                     QueryParameter p,
+                                     int paramIndex) {
         try {
-            if (!empty(p.label())) {
-                if (p.mapper() != null) {
-                    builder.param(
-                            empty(p.propName()) ? p.label() : p.propName(),
-                            p.label(),
-                            p.mapper()
-                    );
-                } else {
-                    builder.param(
-                            empty(p.propName()) ? p.label() : p.propName(),
-                            p.label(),
-                            p.mapperName(),
-                            jdbcTypeFrom(p, typesCollection),
-                            javaTypeFrom(p),
-                            p.tag()
-                    );
-                }
+            if (p.mapper() != null) {
+                builder.param(
+                        p.label(),
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapper()
+                );
             } else {
-                if (p.mapper() != null) {
-                    builder.param(
-                            p.propName(),
-                            p.mapper()
-                    );
-                } else {
-                    builder.param(
-                            p.propName(),
-                            p.mapperName(),
-                            jdbcTypeFrom(p, typesCollection),
-                            javaTypeFrom(p),
-                            p.tag()
-                    );
-                }
+                builder.param(
+                        p.label(),
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapperName(),
+                        jdbcTypeFrom(p, typesCollection),
+                        javaTypeFrom(p),
+                        p.tag()
+                );
             }
         } catch (ClassNotFoundException e) {
-            throw new RuntimeClassNotFoundException("extraction parameter #" + p.indexWithinType() +
+            throw new RuntimeClassNotFoundException("extraction parameter #" + (paramIndex + 1) +
+                    " referenced class " + qnn(p.javaTypeClassName()) + " not found", e);
+        }
+    }
+
+    private <T> void appendToBuilder(TypesCollection typesCollection,
+                                     IndexNamedExtractorBuilder<T> builder,
+                                     QueryParameter p,
+                                     int paramIndex) {
+        try {
+            if (p.mapper() != null) {
+                builder.param(
+                        p.indexWithinType(),
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapper()
+                );
+            } else {
+                builder.param(
+                        p.indexWithinType(),
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapperName(),
+                        jdbcTypeFrom(p, typesCollection),
+                        javaTypeFrom(p),
+                        p.tag()
+                );
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeClassNotFoundException("extraction parameter #" + (paramIndex + 1) +
+                    " referenced class " + qnn(p.javaTypeClassName()) + " not found", e);
+        }
+    }
+
+    private <T> void appendToBuilder(TypesCollection typesCollection,
+                                     SimpleNamedExtractorBuilder<T> builder,
+                                     QueryParameter p,
+                                     int paramIndex) {
+        try {
+            if (p.mapper() != null) {
+                builder.param(
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapper()
+                );
+            } else {
+                builder.param(
+                        empty(p.propName()) ? p.label() : p.propName(),
+                        p.mapperName(),
+                        jdbcTypeFrom(p, typesCollection),
+                        javaTypeFrom(p),
+                        p.tag()
+                );
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeClassNotFoundException("extraction parameter #" + (paramIndex + 1) +
                     " referenced class " + qnn(p.javaTypeClassName()) + " not found", e);
         }
     }
